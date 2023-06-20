@@ -1,0 +1,101 @@
+{
+  "menu": [
+    {
+      "name": "Dashboards",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "slug": "dashboard"
+    },
+    {
+      "name": "Users",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "laravel-example",
+      "submenu": [
+        {
+          "url": "laravel/user-management",
+          "name": "User Management",
+          "slug": "laravel-example-user-management"
+        }
+      ]
+    },
+    {
+      "menuHeader": "Masters"
+    },
+    {
+      "name": "Users",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "app-user",
+      "submenu": [
+        {
+          "url": "app/user/list",
+          "name": "List",
+          "slug": "app-user-list"
+        },
+        {
+          "name": "View",
+          "slug": "app-user-view",
+          "submenu": [
+            {
+              "url": "app/user/view/account",
+              "name": "Account",
+              "slug": "app-user-view-account"
+            },
+            {
+              "url": "app/user/view/security",
+              "name": "Security",
+              "slug": "app-user-view-security"
+            },
+            {
+              "url": "app/user/view/billing",
+              "name": "Billing & Plans",
+              "slug": "app-user-view-billing"
+            },
+            {
+              "url": "app/user/view/notifications",
+              "name": "Notifications",
+              "slug": "app-user-view-notifications"
+            },
+            {
+              "url": "app/user/view/connections",
+              "name": "Connections",
+              "slug": "app-user-view-connections"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Roles & Permissions",
+      "icon": "menu-icon tf-icons ti ti-settings",
+      "slug": "app-access",
+      "submenu": [
+        {
+          "url": "app/access-roles",
+          "name": "Roles",
+          "slug": "app-access-roles"
+        },
+        {
+          "url": "app/access-permission",
+          "name": "Permission",
+          "slug": "app-access-permission"
+        }
+      ]
+    },
+    {
+      "menuHeader": "Help"
+    },
+    {
+      "url": "https://pixinvent.ticksy.com/",
+      "icon": "menu-icon tf-icons ti ti-lifebuoy",
+      "name": "Support",
+      "slug": "support",
+      "target": "_blank"
+    },
+    {
+      "url": "https://demos.pixinvent.com/vuexy-html-admin-template/documentation/laravel-introduction.html",
+      "icon": "menu-icon tf-icons ti ti-file-description",
+      "name": "Documentation",
+      "slug": "documentation",
+      "target": "_blank"
+    }
+  ]
+}
