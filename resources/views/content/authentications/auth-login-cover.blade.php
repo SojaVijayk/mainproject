@@ -34,6 +34,7 @@ $configData = Helper::appClasses();
     <!-- /Left Text -->
     <div class="d-none d-lg-flex col-lg-7 p-0">
       <div class="auth-cover-bg auth-cover-bg-color d-flex justify-content-center align-items-center">
+
         {{--  <div class="auth-cover-bg  d-flex justify-content-center align-items-center" style="background-image: url(/assets/img/backgrounds/bg2.jpg)">  --}}
         {{--  <img src="{{ asset('assets/img/illustrations/auth-login-illustration-'.$configData['style'].'.png') }}" alt="auth-login-cover" class="img-fluid my-5 auth-illustration" data-app-light-img="illustrations/auth-login-illustration-light.png" data-app-dark-img="illustrations/auth-login-illustration-dark.png">  --}}
        {{--  <img src="{{ asset('assets/img/illustrations/loginbg.jpg') }}" alt="auth-login-cover" class="img-fluid my-5 auth-illustration" data-app-light-img="illustrations/loginbg.jpg" data-app-dark-img="illustrations/auth-login-illustration-dark.png">  --}}
@@ -52,15 +53,33 @@ $configData = Helper::appClasses();
         <!-- Logo -->
         <div class="app-brand mb-4">
           <a href="{{url('/')}}" class="app-brand-link gap-2">
-            <span class="app-brand-logo demo">@include('_partials.macros',["height"=>20,"withbg"=>'fill: #fff;'])</span>
+            {{--  <span class="app-brand-logo demo">@include('_partials.macros',["height"=>20,"withbg"=>'fill: #fff;'])</span>  --}}
+            {{--  <span class="app-brand-logo demo">
+              <svg height="10" >
+                <img src="{{ asset('assets/img/branding/logo4.png') }}"></img>
+
+              </svg>
+            </span>  --}}
+            <img height="100" width="100" src="{{ asset('assets/img/branding/logo.png') }}"></img>
             {{--  <span class="app-brand-logo demo">  <img src="{{ asset('assets/img/illustrations/bg-shape-image-'.$configData['style'].'.png') }}" alt="auth-login-cover" class="platform-bg" data-app-light-img="illustrations/bg-shape-image-light.png" data-app-dark-img="illustrations/bg-shape-image-dark.png">
             </span>  --}}
 
           </a>
+          <h3 class=" mb-1 fw-bold">Welcome to {{config('variables.templateName')}}!
+
+
         </div>
         <!-- /Logo -->
-        <h3 class=" mb-1 fw-bold">Welcome to {{config('variables.templateName')}}! </h3>
+         </h3>
+        <h4 class=" pt-1 fw-bold text-primary">Streamline. Simplify. Succeed:
+          {{--  <span class="text-primary">Simplify,</span>
+          <span class="text-primary">Automate, </span>
+          <span class="text-primary">and Thrive</span>  --}}
+          </h4>
+
         <p class="mb-4">Please sign-in to your account to start </p>
+
+
         @if ($errors->has('email'))
         <div class="alert alert-danger flush">
                 <strong>{{ $errors->first('email') }}</strong>
@@ -125,8 +144,14 @@ $configData = Helper::appClasses();
             <i class="tf-icons fa-brands fa-google fs-5"></i>
           </a>
 
-          <a href="javascript:;" class="btn btn-icon btn-label-twitter">
+          {{--  <a href="javascript:;" class="btn btn-icon btn-label-twitter">
             <i class="tf-icons fa-brands fa-twitter fs-5"></i>
+          </a>  --}}
+          <a href="javascript:;" class="btn btn-icon btn-label-linkedin me-3">
+            <i class="tf-icons fa-brands fa-linkedin fs-5"></i>
+          </a>
+          <a href="javascript:;" class="btn btn-icon btn-label-instagram">
+            <i class="tf-icons fa-brands fa-instagram fs-5"></i>
           </a>
         </div>
       </div>

@@ -16,7 +16,7 @@ use App\Http\Controllers\laravel_example\UserManagement;
 
 $controller_path = 'App\Http\Controllers';
 
-// Main Page Route
+// Main Page Auth Route
 Route::get('/', $controller_path . '\authentications\LoginCover@index')->name('login');
 Route::get('/login', $controller_path . '\Auth\LoginController@index')->name('login');
 //AUTH
@@ -24,11 +24,121 @@ Route::post('/login', $controller_path . '\Auth\LoginController@login')->name('l
 
 Route::post('/logout', $controller_path . '\Auth\LoginController@logout')->name('logout');
 
+//middlewear start
+Route::group(['middleware' => 'auth'], function() {
+
+  $controller_path = 'App\Http\Controllers';
+//Dashboard
+Route::get('/dashboard', $controller_path . '\dashboard\Analytics@index')->name('dashboard-admin');
+Route::get('/user/dashboard', $controller_path . '\layouts\Horizontal@index')->name('dashboard-user');
+
+//ROLE & Permission
+Route::get('/app/roles', $controller_path . '\Configuration\RoleController@index')->name('app-roles');
+Route::post('/app/roles/store', $controller_path . '\Configuration\RoleController@store')->name('app-roles-store');
+Route::get('/app/roles/edit/{id}', $controller_path . '\Configuration\RoleController@editRole')->name('app-roles-edit');
+Route::post('/app/roles/edit/{id}', $controller_path . '\Configuration\RoleController@update')->name('app-roles-update');
+Route::get('/app/permission', $controller_path . '\Configuration\PermissionController@index')->name('app-permission');
+Route::get('/app/permission/list', $controller_path . '\Configuration\PermissionController@getAllPermissions')->name('app-permission-list');
+Route::post('/app/permission/store', $controller_path . '\Configuration\PermissionController@store')->name('app-permission-store');
+
+//clients
+Route::get('/client/list', $controller_path . '\Client\ClientController@index')->name('client-list');
+Route::post('/client/store', $controller_path . '\Client\ClientController@store')->name('client-store');
+Route::get('/client/edit/{id}', $controller_path . '\Client\ClientController@editClient')->name('client-edit');
+Route::post('/client/edit/{id}', $controller_path . '\Client\ClientController@update')->name('client-update');
+
+//Projects
+Route::get('/projects', $controller_path . '\Client\ProjectController@index')->name('client-projects');
+Route::get('/project/list', $controller_path . '\Client\ProjectController@getAllProjects')->name('client-project-list');
+Route::post('/project/store', $controller_path . '\Client\ProjectController@store')->name('app-permission-store');
+Route::get('/project/edit/{id}', $controller_path . '\Client\ProjectController@editProject')->name('project-edit');
+Route::post('/project/edit/{id}', $controller_path . '\Client\ProjectController@update')->name('project-update');
+
+//User Management admin
+
+Route::get('/user/employee' , $controller_path . '\Employee\EmployeeController@index')->name('user-employee');
+Route::get('/user/employee/list' , $controller_path . '\Employee\EmployeeController@employeeList')->name('user-employee-list');
+Route::get('/user/employee/view/account/{id}' , $controller_path . '\Employee\EmployeeController@employeeView')->name('user-employee-view');
+Route::post('/user/employee/store' , $controller_path . '\Employee\EmployeeController@store')->name('user-employee-store');
+//fetchEvents
+Route::get('/fetchEvents', $controller_path . '\Employee\EmployeeController@fetchEvents')->name('employee-event');
 
 
-Route::get('/dashboard', $controller_path . '\dashboard\Analytics@index')->name('dashboard-analytics');
+//Masters
+Route::get('/master/designation', $controller_path . '\Masters\DesignationController@index')->name('master-designation');
+Route::get('/master/designation/list', $controller_path . '\Masters\DesignationController@getAllDesignations')->name('master-designation-list');
+Route::post('/master/designation/store', $controller_path . '\Masters\DesignationController@store')->name('master-designation-store');
+Route::get('/master/designation/edit/{id}', $controller_path . '\Masters\DesignationController@edit')->name('master-designation-edit');
+Route::post('/master/designation/update/{id}', $controller_path . '\Masters\DesignationController@update')->name('master-designation-update');
 
-Route::get('/dashboard/analytics', $controller_path . '\dashboard\Analytics@index')->name('dashboard-analytics');
+Route::get('/master/employment-type', $controller_path . '\Masters\EmploymentTypeController@index')->name('master-designation');
+Route::get('/master/employment-type/list', $controller_path . '\Masters\EmploymentTypeController@getAllEmploymentTypes')->name('master-designation-list');
+Route::post('/master/employment-type/store', $controller_path . '\Masters\EmploymentTypeController@store')->name('master-designation-store');
+Route::get('/master/employment-type/edit/{id}', $controller_path . '\Masters\EmploymentTypeController@edit')->name('master-designation-edit');
+Route::post('/master/employment-type/update/{id}', $controller_path . '\Masters\EmploymentTypeController@update')->name('master-designation-update');
+
+
+//Leave Master
+Route::get('/leave', $controller_path . '\Leave\LeaveController@index')->name('leave');
+Route::get('/leave/list', $controller_path . '\Leave\LeaveController@getAllLeaves')->name('leave-list');
+Route::post('/leave/store', $controller_path . '\Leave\LeaveController@store')->name('leave-store');
+Route::get('/leave/edit/{id}', $controller_path . '\Leave\LeaveController@edit')->name('leave-edit');
+Route::post('/leave/update/{id}', $controller_path . '\Leave\LeaveController@update')->name('leave-update');
+
+Route::get('/leave-assign', $controller_path . '\Leave\LeaveAssignController@index')->name('leave-assign');
+Route::get('/leave-assign/list', $controller_path . '\Leave\LeaveAssignController@getAllAssignLeaves')->name('leave-assign-list');
+Route::post('/leave-assign/store', $controller_path . '\Leave\LeaveAssignController@store')->name('leave-assign-store');
+Route::get('/leave-assign/edit/{id}', $controller_path . '\Leave\LeaveAssignController@assignEdit')->name('leave-assign-edit');
+Route::post('/leave-assign/update/{id}', $controller_path . '\Leave\LeaveAssignController@assignUpdate')->name('leave-assign-update');
+
+Route::get('/attendance', $controller_path . '\Attendance\AttendanceController@index')->name('attendance-index');
+Route::get('/attendance-management', $controller_path . '\Attendance\AttendanceController@attendanceManagement')->name('attendance-hrView');
+Route::get('/download', $controller_path . '\Attendance\AttendanceController@download')->name('attendance-download');
+Route::get('/downloadBulk', $controller_path . '\Attendance\AttendanceController@downloadBulk')->name('attendance-download-bulk');
+Route::get('/movement', $controller_path . '\Attendance\MovementController@index')->name('attendance-movement');
+Route::post('/movement/store', $controller_path . '\Attendance\MovementController@store')->name('attendance-movement-store');
+Route::get('/movement/edit/{id}', $controller_path . '\Attendance\MovementController@edit')->name('attendance-movement-edit');
+Route::post('/movement/update/{id}', $controller_path . '\Attendance\MovementController@update')->name('attendance-movement-update');
+Route::get('/movement/delete/{id}', $controller_path . '\Attendance\MovementController@destroy')->name('attendance-movement-delete');
+
+
+Route::get('/movement/approve-list', $controller_path . '\Attendance\MovementController@approveList')->name('attendance-movement-approve-list');
+Route::get('/movement/request-list', $controller_path . '\Attendance\MovementController@requestList')->name('attendance-movement-request-list');
+Route::get('/movement/list', $controller_path . '\Attendance\MovementController@movementList')->name('attendance-movement-list');
+Route::post('/movement/action/{id}', $controller_path . '\Attendance\MovementController@action')->name('attendance-movement-action');
+
+Route::get('/leave/request', $controller_path . '\Leave\LeaveRequestController@index')->name('leave-request');
+
+Route::get('/leave/approve-list', $controller_path . '\Leave\LeaveRequestController@approveList')->name('attendance-leave-approve-list');
+Route::get('/leave/request-list', $controller_path . '\Leave\LeaveRequestController@requestList')->name('attendance-leave-list');
+Route::get('/leave/request/list', $controller_path . '\Leave\LeaveRequestController@leaveList')->name('attendance-leave-list');
+Route::post('/leave/request/store', $controller_path . '\Leave\LeaveRequestController@store')->name('attendance-leave-request-store');
+
+Route::get('/leave/request/edit/{id}', $controller_path . '\Leave\LeaveRequestController@edit')->name('attendance-leave-request-edit');
+Route::post('/leave/request/action/{id}', $controller_path . '\Leave\LeaveRequestController@action')->name('attendance-movement-action');
+
+
+
+//Employee login Routes
+//user view
+Route::get('/user/profile' , $controller_path . '\Employee\EmployeeController@profileView')->name('user-profile');
+Route::get('/user/project/list', $controller_path . '\Client\ProjectController@userProjectList')->name('user-project-list');
+//Project employee Mngmnt
+Route::get('/project/employee/{project_id}' , $controller_path . '\Project\ProjectEmployeeController@index')->name('project-employee');
+Route::get('/project/employees/detail/list' , $controller_path . '\Project\ProjectEmployeeController@employeeList')->name('project-employee-list');
+Route::get('/project/employee/view/account/{id}' , $controller_path . '\ProjectProjectEmployeeController@employeeView')->name('project-employee-view');
+Route::post('/project/employee/store' , $controller_path . '\Project\ProjectEmployeeController@store')->name('project-employee-store');
+
+
+//project Document
+
+Route::get('/project/docs/{project_id}' , $controller_path . '\Project\ProjectDocumentController@index')->name('project-employee');
+
+
+
+});//middlewear end
+
+// Route::get('/dashboard/analytics', $controller_path . '\dashboard\Analytics@index')->name('dashboard-analytics');
 Route::get('/dashboard/crm', $controller_path . '\dashboard\Crm@index')->name('dashboard-crm');
 Route::get('/dashboard/ecommerce', $controller_path . '\dashboard\Ecommerce@index')->name('dashboard-ecommerce');
 
@@ -41,8 +151,8 @@ Route::get('/layouts/content-navbar', $controller_path . '\layouts\ContentNavbar
 Route::get('/layouts/content-nav-sidebar', $controller_path . '\layouts\ContentNavSidebar@index')->name('layouts-content-nav-sidebar');
 Route::get('/layouts/navbar-full', $controller_path . '\layouts\NavbarFull@index')->name('layouts-navbar-full');
 Route::get('/layouts/navbar-full-sidebar', $controller_path . '\layouts\NavbarFullSidebar@index')->name('layouts-navbar-full-sidebar');
-Route::get('/layouts/horizontal', $controller_path . '\layouts\Horizontal@index')->name('dashboard-analytics');
-Route::get('/layouts/vertical', $controller_path . '\layouts\Vertical@index')->name('dashboard-analytics');
+// Route::get('/layouts/horizontal', $controller_path . '\layouts\Horizontal@index')->name('dashboard-analytics');
+// Route::get('/layouts/vertical', $controller_path . '\layouts\Vertical@index')->name('dashboard-analytics');
 Route::get('/layouts/without-menu', $controller_path . '\layouts\WithoutMenu@index')->name('layouts-without-menu');
 Route::get('/layouts/without-navbar', $controller_path . '\layouts\WithoutNavbar@index')->name('layouts-without-navbar');
 Route::get('/layouts/fluid', $controller_path . '\layouts\Fluid@index')->name('layouts-fluid');

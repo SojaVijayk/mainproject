@@ -2,10 +2,10 @@
 
 // Variables
 return [
-  "creatorName" => "Jasar",
+  "creatorName" => "Centre for Management Development",
   "creatorUrl" => "https://kcmd.in",
   "templateName" => "CMD Suite",
-  "templateSuffix" => "Bootstrap Admin Template",
+  "templateSuffix" => "Complete ERP Solution for CMD",
   "templateVersion" => "1.0.0",
   "templateFree" => false,
   "templateDescription" => "Start your development with a Dashboard for Bootstrap 5",
@@ -13,9 +13,12 @@ return [
   "licenseUrl" => "https://themeforest.net/licenses/standard",
   "livePreview" => "https://demos.pixinvent.com/vuexy-html-admin-template/landing/",
   "productPage" => "https://1.envato.market/vuexy_admin",
-  "support" => "https://pixinvent.ticksy.com/",
-  "moreThemes" => "https://1.envato.market/pixinvent_portfolio",
-  "documentation" => "https://demos.pixinvent.com/vuexy-html-admin-template/documentation/laravel-introduction.html",
+  // "support" => "https://pixinvent.ticksy.com/",
+  "support" => "",
+  // "moreThemes" => "https://1.envato.market/pixinvent_portfolio",
+  "moreThemes" => "",
+  // "documentation" => "https://demos.pixinvent.com/vuexy-html-admin-template/documentation/laravel-introduction.html",
+  "documentation" => "",
   "generator" => "",
   "changelog" => "https://demos.pixinvent.com/vuexy/changelog.html",
   "repository" => "https://github.com/pixinvent/vuexy-html-admin-template",

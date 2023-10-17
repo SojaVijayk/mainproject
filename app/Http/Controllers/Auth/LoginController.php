@@ -58,16 +58,30 @@ class LoginController extends Controller
 
         // Attempt to login
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+
             // Redirect to dashboard
             session()->flash('success', 'Successully Logged in !');
-            return redirect()->route('dashboard-analytics')->with('success', 'Successfully Logout!');;
-        } else {
-            // Search using username
-            if (Auth::attempt(['username' => $request->email, 'password' => $request->password], $request->remember)) {
-                session()->flash('success', 'Successully Logged in !');
-                return redirect()->route('dashboard-analytics')->with('success', 'Successfully Logout!');;
+
+            if( auth()->user()->user_role==1){
+              return redirect()->route('dashboard-admin')->with('success', 'Successfully Logged in!');
             }
-            // error
+            else if(auth()->user()->user_role==2){
+              return redirect()->route('dashboard-user')->with('success', 'Successfully Logged in!');;
+            }
+
+        }
+        else {
+        //     // Search using username
+        //     if (Auth::attempt(['username' => $request->email, 'password' => $request->password], $request->remember)) {
+        //         session()->flash('success', 'Successully Logged in !');
+        //         if( auth()->user()->user_role==1){
+        //         return redirect()->route('dashboard-admin')->with('success', 'Successfully Logged in!');
+        //         }
+        //         else if(auth()->user()->user_role==2){
+        //           return redirect()->route('dashboard-user')->with('success', 'Successfully Logged in!');;
+        //         }
+        //     }
+        //     // error
             session()->flash('error', 'Invalid email and password');
             return back()->with('error', 'Invalid User Information');;
         }
@@ -85,5 +99,80 @@ class LoginController extends Controller
         // Auth::guard('admin')->logout();
         auth()->logout();
         return redirect()->route('login');
+    }
+    public function menu(){
+
+
+ $jayParsedAry = [
+   "menu" => [
+         [
+            "name" => "Dashboards",
+            "icon" => "menu-icon tf-icons ti ti-smart-home",
+            "slug" => "dashboard"
+         ],
+         [
+               "name" => "Users",
+               "icon" => "menu-icon tf-icons ti ti-users",
+               "slug" => "laravel-example",
+               "submenu" => [
+                  [
+                     "url" => "laravel/user-management",
+                     "name" => "Employee Management",
+                     "slug" => "laravel-example-user-management"
+                  ]
+               ]
+            ],
+          [
+              "menuHeader" => "App Configurations"
+          ],
+
+         [
+              "name" => "Roles & Permissions",
+              "icon" => "menu-icon tf-icons ti ti-settings",
+              "slug" => "app",
+              "submenu" => [
+                [
+                    "url" => "app/roles",
+                    "name" => "Roles",
+                    "slug" => "app-roles"
+                ],
+                [
+                      "url" => "app/permission",
+                      "name" => "Permission",
+                      "slug" => "app-permission"
+                    ]
+              ]
+        ],
+         [
+            "menuHeader" => "Projects Management"
+         ],
+         [
+            "name" => "Clients",
+            "icon" => "menu-icon tf-icons ti ti-users",
+            "slug" => "client",
+            "submenu" => [
+              [
+                  "url" => "client/list",
+                  "name" => "Client List",
+                  "slug" => "client-list"
+              ]
+            ]
+       ],
+         [
+            "name" => "Projects",
+            "icon" => "menu-icon tf-icons ti ti-users",
+            "slug" => "client-project",
+            "submenu" => [
+              [
+                  "url" => "projects",
+                  "name" => "Project List",
+                  "slug" => "client-projects"
+              ]
+            ]
+        ],
+]
+];
+
+
     }
 }

@@ -7,10 +7,12 @@ $configData = Helper::appClasses();
   <!-- ! Hide app brand if navbar-full -->
   @if(!isset($navbarFull))
   <div class="app-brand demo">
-    <a href="{{url('/')}}" class="app-brand-link">
-      <span class="app-brand-logo demo">
+    <a href="{{url('/dashboard')}}" class="app-brand-link">
+      {{--  <span class="app-brand-logo demo">
         @include('_partials.macros',["height"=>20])
       </span>
+        --}}
+        <img height="50" width="50" src="{{ asset('assets/img/branding/logo.png') }}"></img>
       <span class="app-brand-text demo menu-text fw-bold">{{config('variables.templateName')}}</span>
     </a>
 

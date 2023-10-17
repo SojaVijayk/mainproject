@@ -2,7 +2,7 @@
 	<div class="alert alert-danger flush">
 		{{Session::get('error')}}
 	</div>
-@endif	
+@endif
 
 <!-- jQuery -->
 <script src="{{url('assets/js/core/jquery.min.js')}}"></script>

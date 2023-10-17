@@ -1,0 +1,606 @@
+@extends('layouts/layoutMaster')
+
+@section('title', 'Leave - Request')
+
+@section('vendor-style')
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/formvalidation/dist/css/formValidation.min.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
+
+
+@endsection
+
+@section('vendor-script')
+<script src="{{asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js')}}"></script>
+
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
+
+
+@endsection
+
+@section('page-script')
+<script>
+
+
+$(function () {
+  var dataTablePermissions = $('.datatables-designation'),
+    dt_permission,
+    dateArray = [],
+    date_leave_type=[],
+    permissionList = baseUrl + 'leave/request/list';
+
+
+    $(".datepicker").datepicker({
+      autoclose: true ,
+      });
+
+      function padTo2Digits(num) {
+        return num.toString().padStart(2, '0');
+      }
+      function formatDate(date) {
+        return [
+          date.getFullYear(),
+          padTo2Digits(date.getMonth() + 1),
+          padTo2Digits(date.getDate()),
+        ].join('-');
+      }
+      $("#toDate").change(function () {
+
+        var startDate = new Date($("#fromDate").val());
+        var endDate = new Date($("#toDate").val());
+        var dateList = [];
+
+        if (startDate <= endDate) {
+
+            var currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                dateList.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            console.log(dateList);
+            // Display the dates
+            $("#dateList").empty();
+            dateList.forEach(function (date) {
+              var formated_date=formatDate(date);
+              dateArray.push(formated_date);
+              var date_switch = '<label class="switch switch-primary"> <input value="1" type="radio" name="'+formated_date+'-radio"  class="switch-input '+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">Full Day</span></label><label class="switch switch-secondary"><input type="radio" value="2"  name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"> <i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">FN</span></label><label class="switch switch-info"><input value="3" type="radio" name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i></span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">AN</span></label>';
+                var date_set = '<div class="row row-bordered g-0"><div class="col-sm-12 p-4"><div class="text-light small fw-medium mb-3">Type</div><div class="switches-stacked"><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">Full Day</span></label><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">FN</span></label><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">AN</span></label></div></div>';
+                  $("#dateList").append("<li class='text-danger'>" + date.toDateString() +'<br><br>'+ date_switch+"</li><br>");
+
+
+            });
+        } else {
+            alert("End Date should be greater than or equal to Start Date.");
+        }
+    });
+
+
+  // ajax setup
+  $.ajaxSetup({
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+  });
+
+  // Users List datatable
+  if (dataTablePermissions.length) {
+    dt_permission = dataTablePermissions.DataTable({
+       ajax: {
+        url: permissionList
+       }, // JSON file to add data
+      //ajax: assetsPath + 'json/permissions-list1.json', // JSON file to add data
+      columns: [
+        // columns according to JSON
+        { data: '' },
+
+        { data: 'leave_type' },
+        { data: 'leave_request_details' },
+        { data: 'duration' },
+        { data: 'requested_at' },
+        { data: 'status' },
+        { data: 'action_by' },
+        { data: '' }
+      ],
+      columnDefs: [
+        {
+          // For Responsive
+          className: 'control',
+          orderable: false,
+          searchable: false,
+          responsivePriority: 2,
+          targets: 0,
+          render: function (data, type, full, meta) {
+            return '';
+          }
+        },
+
+
+        {
+          // Name
+          targets: 1,
+          render: function (data, type, full, meta) {
+            var $leave_type = full['leave_type'];
+            return '<span class="text-nowrap">' + $leave_type + '</span>';
+          }
+        },
+
+        {
+          targets: 2,
+          render: function (data, type, full, meta) {
+          var $leave_request_details = full['leave_request_details'],
+            $output = '';
+
+          for (var i = 0; i < $leave_request_details.length; i++) {
+            var val = $leave_request_details[i];
+
+            $output +=  '<span class="badge bg-label-dark m-1">'+$leave_request_details[i]['date']+'</span> <span class="badge  m-1 '+($leave_request_details[i]['leave_day_type'] == 1 ? 'bg-label-primary' : $leave_request_details[i]['leave_day_type'] == 2 ? 'bg-label-secondary' :  'bg-label-info')+'">'+($leave_request_details[i]['leave_day_type'] == 1 ? 'Full Day' : $leave_request_details[i]['leave_day_type'] == 2 ? 'FN' :  'AN')+'</span><br>';
+          }
+          return '<span class="text-nowrap">' + $output + '</span>';
+        }
+
+        },
+
+        {
+          // Name
+          targets: 3,
+          render: function (data, type, full, meta) {
+            var $duration = full['duration'];
+            return '<span class="text-nowrap">' + $duration + '</span>';
+          }
+        },
+
+        {
+          // Name
+          targets: 4,
+          render: function (data, type, full, meta) {
+            var $requested_at = full['requested_at'];
+            return '<span class="text-nowrap">' + $requested_at + '</span>';
+          }
+        },
+        {
+          // User Role
+          targets: 5,
+          render: function (data, type, full, meta) {
+            var $status = full['status'];
+            $out = ($status==1 ? '<a><span class="badge bg-label-dark m-1">Partially Completed</span></a>' : ($status==0 ? '<a><span class="badge bg-label-warning m-1">Pending</span></a>' :  '<a><span class="badge bg-label-success m-1">Completed</span></a>') )
+            return  $out;
+          }
+        },
+        {
+          // Name
+          targets: 6,
+          render: function (data, type, full, meta) {
+            var $name = full['action_by_name'];
+            var $action_at = full['action_at'];
+            return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'</span>';
+          }
+        },
+
+
+        {
+          // Actions
+          targets: -1,
+          searchable: false,
+          title: 'Actions',
+          orderable: false,
+          render: function (data, type, full, meta) {
+            if(full['status'] == 0){
+
+              return (
+                '<span class="text-nowrap">' +
+                '<button class="btn btn-sm btn-icon delete-record" data-id="'+full['id']+'"><i class="ti ti-trash"></i></button></span>'
+              );
+            }else{
+              return (
+              '<span class="text-nowrap"><button class="btn btn-sm btn-primary  me-2 edit-designation" data-id="'+full['id']+'" data-bs-target="#leaveActionModal" data-bs-toggle="modal" data-bs-dismiss="modal">View</button>' +
+              '</span>'
+            );
+            }
+
+          }
+        }
+      ],
+      order: [[1, 'asc']],
+      dom:
+        '<"row mx-1"' +
+        '<"col-sm-12 col-md-3" l>' +
+        '<"col-sm-12 col-md-9"<"dt-action-buttons text-xl-end text-lg-start text-md-end text-start d-flex align-items-center justify-content-md-end justify-content-center flex-wrap me-1"<"me-3"f>B>>' +
+        '>t' +
+        '<"row mx-2"' +
+        '<"col-sm-12 col-md-6"i>' +
+        '<"col-sm-12 col-md-6"p>' +
+        '>',
+      language: {
+        sLengthMenu: 'Show _MENU_',
+        search: 'Search',
+        searchPlaceholder: 'Search..'
+      },
+      // Buttons with Dropdown
+      buttons: [
+        {
+          text: 'Create Leave Request',
+          className: 'add-new btn btn-primary mb-3 mb-md-0 add-new-designation',
+          attr: {
+            'data-bs-toggle': 'modal',
+            'data-bs-target': '#DesignationModal'
+          },
+          init: function (api, node, config) {
+            $(node).removeClass('btn-secondary');
+          }
+        }
+      ],
+      // For responsive popup
+      responsive: {
+        details: {
+          display: $.fn.dataTable.Responsive.display.modal({
+            header: function (row) {
+              var data = row.data();
+              return 'Details of ' + data['name'];
+            }
+          }),
+          type: 'column',
+          renderer: function (api, rowIdx, columns) {
+            var data = $.map(columns, function (col, i) {
+              return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                ? '<tr data-dt-row="' +
+                    col.rowIndex +
+                    '" data-dt-column="' +
+                    col.columnIndex +
+                    '">' +
+                    '<td>' +
+                    col.title +
+                    ':' +
+                    '</td> ' +
+                    '<td>' +
+                    col.data +
+                    '</td>' +
+                    '</tr>'
+                : '';
+            }).join('');
+
+            return data ? $('<table class="table"/><tbody />').append(data) : false;
+          }
+        }
+      }
+
+    });
+  }
+
+
+
+
+// Add/Edit designation form validation
+document.addEventListener('DOMContentLoaded', function (e) {
+  (function () {
+    FormValidation.formValidation(document.getElementById('designationForm'), {
+      fields: {
+        employment_type: {
+          validators: {
+            notEmpty: {
+              message: 'Please select Employment Type'
+            }
+          }
+        },
+        modalDesignationName: {
+          validators: {
+            notEmpty: {
+              message: 'Please enter designation name'
+            }
+          }
+        }
+      },
+      plugins: {
+        trigger: new FormValidation.plugins.Trigger(),
+        bootstrap5: new FormValidation.plugins.Bootstrap5({
+          // Use this for enabling/changing valid/invalid class
+          // eleInvalidClass: '',
+          eleValidClass: '',
+          rowSelector: '.col-sm-9'
+        }),
+        submitButton: new FormValidation.plugins.SubmitButton(),
+        // Submit the form when all fields are valid
+        // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+        autoFocus: new FormValidation.plugins.AutoFocus()
+      }
+    });
+  })();
+});
+
+(function () {
+  // On edit permission click, update text
+  var designationEditList = document.querySelectorAll('.datatables-designation .edit-designation'),
+    permissionAdd = document.querySelector('.add-new-designation'),
+    designationSubmit = document.querySelector('.submit-designation'),
+    designationTitle = document.querySelector('.designation-title');
+
+    $('#DesignationModal').on('hidden.bs.modal', function (e) {
+      $(this)
+        .find("input,textarea,select")
+           .val('')
+           .end()
+        .find("input[type=checkbox], input[type=radio]")
+           .prop("checked", "")
+           .end();
+    })
+
+    designationSubmit.onclick = function () {
+
+
+      var  leaveType =  $("#leaveType").val();
+      var  start_date =  $("#fromDate").val();
+      var  end_date =  $("#toDate").val();
+      var  description =  $("#eventDescription").val();
+      var request_type =   $("#submit_designation").data('type');
+      var desig_id =   $("#submit_designation").data('id');
+      var duration = 0;
+      dateArray.forEach((item, index) => {
+        var date_leave_type_val = $('.'+item+'-radio:checked').val();
+        if(date_leave_type_val == 1 ){
+          duration++;
+        }
+        else{
+          duration=duration+0.5;
+        }
+        date_leave_type.push({'date':item,'leave_day_type':date_leave_type_val})
+
+     })
+     console.log(date_leave_type);
+      if(request_type=='new'){
+
+          $.ajax({
+            data:  {
+              leave_type_id:leaveType,
+              from:start_date,
+              to:end_date,
+              duration:duration,
+              date_list:date_leave_type,
+              description:description,
+              "_token": "{{ csrf_token() }}",
+          },
+            url: `${baseUrl}leave/request/store`,
+            type: 'POST',
+
+            success: function (status) {
+
+                $('#DesignationModal').modal('hide');
+              // sweetalert
+              Swal.fire({
+                icon: 'success',
+                title: `Successfully ${status}!`,
+                text: `Movement ${status} Successfully.`,
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+
+            },
+            error: function (err) {
+              $('#DesignationModal').modal('hide');
+              Swal.fire({
+                title: 'Oh Sorry!',
+                text: `${status}`,
+                icon: 'error',
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+            }
+          });
+        }
+        else{
+          $.ajax({
+            data:  {
+              title:title,
+              type:type,
+              start_date:start_date,
+              start_time:start_time,
+              end_date:end_date,
+              end_time:end_time,
+              location:location,
+              description:description,
+
+              "_token": "{{ csrf_token() }}",
+
+          },
+            url: `${baseUrl}movement/update/${desig_id}`,
+            type: 'POST',
+
+            success: function (status) {
+
+                $('#DesignationModal').modal('hide');
+              // sweetalert
+              Swal.fire({
+                icon: 'success',
+                title: `Successfully ${status}!`,
+                text: `Designation ${status} Successfully.`,
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+
+            },
+            error: function (err) {
+              $('#DesignationModal').modal('hide');
+              Swal.fire({
+                title: 'Oh Sorry!',
+                text: `${status}`,
+                icon: 'error',
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+            }
+          });
+        }
+    }
+
+
+  // Delete Record
+  $('.datatables-designation tbody').on('click', '.delete-record', function () {
+    var desig_id = $(this).data('id');
+    $.ajaxSetup({
+      headers: {
+          'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+      }
+  })
+  $.ajax({
+    type: "GET",
+
+    url: '/movement/delete/'+desig_id,
+    success: function (data) {
+      Swal.fire({
+        icon: 'success',
+        title: `Successfully deleted!`,
+        {{--  text: `Designation ${status} Successfully.`,  --}}
+        customClass: {
+          confirmButton: 'btn btn-success'
+        }
+      });
+
+    },
+    error: function(data){
+
+    }
+});
+
+    dt_permission.row($(this).parents('tr')).remove().draw();
+  });
+
+  $('.datatables-designation tbody').on('click', '.edit-designation', function () {
+
+
+    var desig_id = $(this).data('id');
+    $("#submit_designation").attr('data-id',desig_id);
+    $.ajaxSetup({
+      headers: {
+          'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+      }
+  })
+  $.ajax({
+  type: "GET",
+
+  url: '/leave/request/edit/'+desig_id,
+  success: function (data) {
+    console.log(data);
+      {{--  $("#modalDesignationName").val(data.designation.designation);
+      $("#submit_designation").data('id',data.designation.id);  --}}
+    var tbody='';
+    data.leave_list.leave_request_details.forEach((item, index) => {
+      tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
+        '<td>'+(item.status == 1 ? '<span class="badge bg-label-success">Approved</span>': '<span class="badge bg-label-danger">Rejected</span>');
+    })
+    $(".datatables-leave-list #dataList").html(tbody);
+    $(".leave-type-name").html(data.leave_list.leave_type);
+    $(".leave-total-credit").html(data.leave_balance.total_leaves_credit);
+    $(".leave-total-availed").html(data.leave_balance.availed_leave);
+    $(".leave-total-requested").html(data.leave_balance.pending_leave);
+    $(".leave-total-balance").html(data.leave_balance.balance_credit);
+
+
+
+  },
+  error: function(data){
+
+  }
+});
+
+  {{--  dt_permission.row($(this)).draw();  --}}
+});
+
+
+
+})();
+
+
+  // Filter form control to default size
+  // ? setTimeout used for multilingual table initialization
+  setTimeout(() => {
+    $('.dataTables_filter .form-control').removeClass('form-control-sm');
+    $('.dataTables_length .form-select').removeClass('form-select-sm');
+  }, 300);
+});
+</script>
+
+
+
+@endsection
+
+@section('content')
+<h4 class="fw-semibold mb-4">Leave Request List</h4>
+
+<div class="row g-4 mb-4">
+
+
+<div class="alert alert-warning alert-dismissible d-flex align-items-baseline" role="alert">
+  <span class="alert-icon alert-icon-lg text-primary me-2">
+    <i class="ti ti-calendar ti-sm"></i>
+  </span>
+  <div class="d-flex flex-column ps-1">
+
+    <p class="mb-0"> Leave Statistics for the period of {{$date_start}} TO {{$date_end}}</p>
+    <h5 class="alert-heading mb-2"></h5>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+    </button>
+  </div>
+</div>
+
+  @foreach ($leaves_total_credit_details as $leave)
+  <div class="col-sm-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-start justify-content-between">
+          <div class="content-left">
+            <span>{{$leave['leave_type']}}</span>
+            <div class="d-flex align-items-center my-1">
+              <small>Available - </small><h4 class="mb-0 me-2">{{$leave['balance_credit']}}</h4>
+
+            </div>
+            <span>Total - {{$leave['total_leaves_credit']}}</span>
+          </div>
+          <span class="badge bg-label-primary rounded p-2">
+            <i class="ti ti-user ti-sm"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endforeach
+
+</div>
+
+<!-- Permission Table -->
+<div class="card">
+  <div class="card-datatable table-responsive">
+    <table class="datatables-designation table border-top">
+      <thead>
+        <tr>
+          <th></th>
+          {{--  <th>User</th>  --}}
+          <th>Leave Type</th>
+          <th>Leave Days</th>
+          <th>Duration</th>
+          <th>Requested_at</th>
+          <th>Status</th>
+          <th>Action By</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+</div>
+<!--/ Permission Table -->
+
+
+<!-- Modal -->
+@include('_partials/_modals/modal-leave-request')
+@include('_partials/_modals/modal-leave-action')
+<!-- /Modal -->
+@endsection

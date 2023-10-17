@@ -15,7 +15,7 @@ let events = [
   {
     id: 1,
     url: '',
-    title: 'Design Review',
+    title: 'Absent',
     start: date,
     end: nextDay,
     allDay: false,
@@ -26,7 +26,7 @@ let events = [
   {
     id: 2,
     url: '',
-    title: 'Meeting With Client',
+    title: 'Casual Leave',
     start: new Date(date.getFullYear(), date.getMonth() + 1, -11),
     end: new Date(date.getFullYear(), date.getMonth() + 1, -10),
     allDay: true,
@@ -37,7 +37,7 @@ let events = [
   {
     id: 3,
     url: '',
-    title: 'Family Trip',
+    title: 'Meeting at KDISC',
     allDay: true,
     start: new Date(date.getFullYear(), date.getMonth() + 1, -9),
     end: new Date(date.getFullYear(), date.getMonth() + 1, -7),
@@ -48,7 +48,7 @@ let events = [
   {
     id: 4,
     url: '',
-    title: "Doctor's Appointment",
+    title: "Holiday",
     start: new Date(date.getFullYear(), date.getMonth() + 1, -11),
     end: new Date(date.getFullYear(), date.getMonth() + 1, -10),
     extendedProps: {
@@ -58,7 +58,7 @@ let events = [
   {
     id: 5,
     url: '',
-    title: 'Dart Game?',
+    title: 'Sick Leave',
     start: new Date(date.getFullYear(), date.getMonth() + 1, -13),
     end: new Date(date.getFullYear(), date.getMonth() + 1, -12),
     allDay: true,
@@ -69,7 +69,7 @@ let events = [
   {
     id: 6,
     url: '',
-    title: 'Meditation',
+    title: 'Absent',
     start: new Date(date.getFullYear(), date.getMonth() + 1, -13),
     end: new Date(date.getFullYear(), date.getMonth() + 1, -12),
     allDay: true,
@@ -80,17 +80,17 @@ let events = [
   {
     id: 7,
     url: '',
-    title: 'Dinner',
+    title: 'Meeting',
     start: new Date(date.getFullYear(), date.getMonth() + 1, -13),
     end: new Date(date.getFullYear(), date.getMonth() + 1, -12),
     extendedProps: {
-      calendar: 'Family'
+      calendar: 'Approved'
     }
   },
   {
     id: 8,
     url: '',
-    title: 'Product Review',
+    title: 'Absent',
     start: new Date(date.getFullYear(), date.getMonth() + 1, -13),
     end: new Date(date.getFullYear(), date.getMonth() + 1, -12),
     allDay: true,
@@ -106,13 +106,13 @@ let events = [
     end: nextMonth,
     allDay: true,
     extendedProps: {
-      calendar: 'Business'
+      calendar: 'Rejected'
     }
   },
   {
     id: 10,
     url: '',
-    title: 'Monthly Checkup',
+    title: 'Casual Leave',
     start: prevMonth,
     end: prevMonth,
     allDay: true,

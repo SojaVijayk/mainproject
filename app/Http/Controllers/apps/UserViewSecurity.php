@@ -9,6 +9,7 @@ class UserViewSecurity extends Controller
 {
   public function index()
   {
-    return view('content.apps.app-user-view-security');
+    $pageConfigs = ['myLayout' => 'horizontal'];
+    return view('content.apps.app-user-view-security',['pageConfigs'=> $pageConfigs]);
   }
 }

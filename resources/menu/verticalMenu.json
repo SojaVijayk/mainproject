@@ -3,80 +3,85 @@
     {
       "name": "Dashboards",
       "icon": "menu-icon tf-icons ti ti-smart-home",
-      "slug": "dashboard"
+      "slug": "dashboard",
+      "url": "dashboard"
     },
     {
-      "name": "Users",
-      "icon": "menu-icon tf-icons ti ti-users",
-      "slug": "laravel-example",
-      "submenu": [
-        {
-          "url": "laravel/user-management",
-          "name": "User Management",
-          "slug": "laravel-example-user-management"
-        }
-      ]
-    },
-    {
-      "menuHeader": "Masters"
-    },
-    {
-      "name": "Users",
-      "icon": "menu-icon tf-icons ti ti-users",
-      "slug": "app-user",
-      "submenu": [
-        {
-          "url": "app/user/list",
-          "name": "List",
-          "slug": "app-user-list"
-        },
-        {
-          "name": "View",
-          "slug": "app-user-view",
-          "submenu": [
-            {
-              "url": "app/user/view/account",
-              "name": "Account",
-              "slug": "app-user-view-account"
-            },
-            {
-              "url": "app/user/view/security",
-              "name": "Security",
-              "slug": "app-user-view-security"
-            },
-            {
-              "url": "app/user/view/billing",
-              "name": "Billing & Plans",
-              "slug": "app-user-view-billing"
-            },
-            {
-              "url": "app/user/view/notifications",
-              "name": "Notifications",
-              "slug": "app-user-view-notifications"
-            },
-            {
-              "url": "app/user/view/connections",
-              "name": "Connections",
-              "slug": "app-user-view-connections"
-            }
-          ]
-        }
-      ]
+      "menuHeader": "App Configurations"
     },
     {
       "name": "Roles & Permissions",
       "icon": "menu-icon tf-icons ti ti-settings",
-      "slug": "app-access",
+      "slug": "app",
       "submenu": [
         {
-          "url": "app/access-roles",
+          "url": "app/roles",
           "name": "Roles",
-          "slug": "app-access-roles"
+          "slug": "app-roles"
         },
         {
-          "url": "app/access-permission",
+          "url": "app/permission",
           "name": "Permission",
-          "slug": "app-access-permission"
+          "slug": "app-permission"
+        }
+      ]
+    },
+    {
+      "name": "Masters",
+      "icon": "menu-icon tf-icons ti ti-settings",
+      "slug": "master",
+      "submenu": [
+        {
+          "url": "master/employment-type",
+          "name": "Employment Type",
+          "slug": "master-employment-type"
+        },
+        {
+          "url": "master/designation",
+          "name": "Designation",
+          "slug": "master-designation"
+        }
+      ]
+    },
+    {
+      "menuHeader": "Employee"
+    },
+    {
+      "name": "Users",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "users-employee",
+      "submenu": [
+        {
+          "url": "user/employee",
+          "name": "Employee Management",
+          "slug": "users-employee-employee-management"
+        }
+      ]
+    },
+    {
+      "menuHeader": "Projects Management"
+    },
+    {
+      "name": "Clients",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "client",
+      "submenu": [
+        {
+          "url": "client/list",
+          "name": "Client List",
+          "slug": "client-list"
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "client-project",
+      "submenu": [
+        {
+          "url": "projects",
+          "name": "Project List",
+          "slug": "client-projects"
         }
       ]
     },

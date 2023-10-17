@@ -16,9 +16,10 @@ $navbarDetached = ($navbarDetached ?? '');
       @if(isset($navbarFull))
       <div class="navbar-brand app-brand demo d-none d-xl-flex py-0 me-4">
         <a href="{{url('/')}}" class="app-brand-link gap-2">
-          <span class="app-brand-logo demo">
+          {{--  <span class="app-brand-logo demo">
             @include('_partials.macros',["height"=>20])
-          </span>
+          </span>  --}}
+          <img height="50" width="50" src="{{ asset('assets/img/branding/logo.png') }}"></img>
           <span class="app-brand-text demo menu-text fw-bold">{{config('variables.templateName')}}</span>
         </a>
       </div>
@@ -60,24 +61,7 @@ $navbarDetached = ($navbarDetached ?? '');
                   <span class="align-middle">English</span>
                 </a>
               </li>
-              <li>
-                <a class="dropdown-item" href="{{url('lang/fr')}}" data-language="fr">
-                  <i class="fi fi-fr fis rounded-circle me-1 fs-3"></i>
-                  <span class="align-middle">French</span>
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" href="{{url('lang/de')}}" data-language="de">
-                  <i class="fi fi-de fis rounded-circle me-1 fs-3"></i>
-                  <span class="align-middle">German</span>
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" href="{{url('lang/pt')}}" data-language="pt">
-                  <i class="fi fi-pt fis rounded-circle me-1 fs-3"></i>
-                  <span class="align-middle">Portuguese</span>
-                </a>
-              </li>
+
             </ul>
           </li>
           <!--/ Language -->
@@ -374,7 +358,14 @@ $navbarDetached = ($navbarDetached ?? '');
           <li class="nav-item navbar-dropdown dropdown-user dropdown">
             <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
               <div class="avatar avatar-online">
-                <img src="{{ Auth::user() ? Auth::user()->profile_photo_url : asset('assets/img/avatars/1.png') }}" alt class="h-auto rounded-circle">
+                @php
+                $where = ['users.id' => Auth::user()->id];
+                $employee = DB::table('users')->join("employees","employees.user_id","=","users.id")
+                ->join("usertype_role","usertype_role.id","=","users.user_role")
+                ->leftjoin("designations","designations.id","=","employees.designation")->where($where)->first();
+
+                @endphp
+                <img src="{{ asset('assets/img/avatars/'.$employee->profile_pic)}}" alt class=" rounded-circle">
               </div>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
@@ -383,7 +374,10 @@ $navbarDetached = ($navbarDetached ?? '');
                   <div class="d-flex">
                     <div class="flex-shrink-0 me-3">
                       <div class="avatar avatar-online">
-                        <img src="{{ Auth::user() ? Auth::user()->profile_photo_url : asset('assets/img/avatars/1.png') }}" alt class="h-auto rounded-circle">
+
+                        <img height="50" width="50" src="{{ asset('assets/img/avatars/'.$employee->profile_pic)}}" alt class=" rounded-circle">
+
+                        {{--  <img src="{{ Auth::user() ? Auth::user()->profile_photo_url : asset('assets/img/avatars/1.png') }}" alt class="h-auto rounded-circle">  --}}
                       </div>
                     </div>
                     <div class="flex-grow-1">
@@ -391,10 +385,10 @@ $navbarDetached = ($navbarDetached ?? '');
                         @if (Auth::check())
                         {{ Auth::user()->name }}
                         @else
-                        John Doe
+                        Name
                         @endif
                       </span>
-                      <small class="text-muted">Admin</small>
+                      <small class="text-muted"> {{$employee->designation}}</small>
                     </div>
                   </div>
                 </a>
@@ -403,7 +397,7 @@ $navbarDetached = ($navbarDetached ?? '');
                 <div class="dropdown-divider"></div>
               </li>
               <li>
-                <a class="dropdown-item" href="{{ Route::has('profile.show') ? route('profile.show') : url('pages/profile-user') }}">
+                <a class="dropdown-item" href="{{ Route::has('profile.show') ? route('profile.show') : url('user/profile') }}">
                   <i class="ti ti-user-check me-2 ti-sm"></i>
                   <span class="align-middle">My Profile</span>
                 </a>
@@ -416,14 +410,14 @@ $navbarDetached = ($navbarDetached ?? '');
                 </a>
               </li>
               @endif  --}}
-              <li>
+              {{--  <li>
                 <a class="dropdown-item" href="{{url('app/invoice/list')}}">
                   <span class="d-flex align-items-center align-middle">
                     <i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
                     <span class="flex-grow-1 align-middle">Billing</span>
                     <span class="flex-shrink-0 badge badge-center rounded-pill bg-label-danger w-px-20 h-px-20">2</span>
                   </span> </a>
-              </li>
+              </li>  --}}
               {{--  @if (Auth::User() && Laravel\Jetstream\Jetstream::hasTeamFeatures())
               <li>
                 <div class="dropdown-divider"></div>
@@ -459,7 +453,7 @@ $navbarDetached = ($navbarDetached ?? '');
               </li>
               @if (Auth::user())
               @foreach (Auth::user()->allTeams() as $team)
-            
+
               @endforeach
               @endif
               @endif  --}}

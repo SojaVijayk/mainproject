@@ -33,6 +33,7 @@ $configData = Helper::appClasses();
       @endphp
 
       {{-- main menu --}}
+      @if( auth()->user()->user_role == 1 ||  (auth()->user()->can($menu->permission)) || ($menu->permission == 1) || !(isset($menu->permission)) )
       <li class="menu-item {{$activeClass}}">
         <a href="{{ isset($menu->url) ? url($menu->url) : 'javascript:void(0);' }}" class="{{ isset($menu->submenu) ? 'menu-link menu-toggle' : 'menu-link' }}" @if (isset($menu->target) and !empty($menu->target)) target="_blank" @endif>
           @isset($menu->icon)
@@ -46,6 +47,7 @@ $configData = Helper::appClasses();
           @include('layouts.sections.menu.submenu',['menu' => $menu->submenu])
         @endisset
       </li>
+      @endif
       @endforeach
     </ul>
   </div>

@@ -9,6 +9,7 @@ class UserViewBilling extends Controller
 {
   public function index()
   {
-    return view('content.apps.app-user-view-billing');
+    $pageConfigs = ['myLayout' => 'horizontal'];
+    return view('content.apps.app-user-view-billing',['pageConfigs'=> $pageConfigs]);
   }
 }

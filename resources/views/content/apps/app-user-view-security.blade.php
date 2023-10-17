@@ -142,11 +142,11 @@
   <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
     <!-- User Pills -->
     <ul class="nav nav-pills flex-column flex-md-row mb-4">
-      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/account')}}"><i class="ti ti-user-check me-1 ti-xs"></i>Account</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{url('user/profile')}}"><i class="ti ti-user-check me-1 ti-xs"></i>Account</a></li>
       <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><i class="ti ti-lock me-1 ti-xs"></i>Security</a></li>
-      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/billing')}}"><i class="ti ti-currency-dollar me-1 ti-xs"></i>Billing & Plans</a></li>
-      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/notifications')}}"><i class="ti ti-bell me-1 ti-xs"></i>Notifications</a></li>
-      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/connections')}}"><i class="ti ti-link me-1 ti-xs"></i>Connections</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/billing')}}"><i class="ti ti-currency-dollar me-1 ti-xs"></i>Payroll</a></li>
+      {{--  <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/notifications')}}"><i class="ti ti-bell me-1 ti-xs"></i>Notifications</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/connections')}}"><i class="ti ti-link me-1 ti-xs"></i>Connections</a></li>  --}}
     </ul>
     <!--/ User Pills -->
 

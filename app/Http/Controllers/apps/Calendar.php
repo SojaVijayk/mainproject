@@ -9,6 +9,7 @@ class Calendar extends Controller
 {
   public function index()
   {
-    return view('content.apps.app-calendar');
+    $pageConfigs = ['myLayout' => 'horizontal'];
+    return view('content.apps.app-calendar',['pageConfigs'=> $pageConfigs]);
   }
 }

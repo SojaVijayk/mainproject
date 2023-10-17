@@ -32,6 +32,42 @@
 @section('content')
 <div class="card app-calendar-wrapper">
   <div class="row g-0">
+    <div class="col-4 mb-3">
+    <div class="border-bottom p-4 my-sm-0 mb-3">
+      <div class="d-grid">
+        <button class="btn btn-primary btn-toggle-sidebar" data-bs-toggle="offcanvas" data-bs-target="#addEventSidebar" aria-controls="addEventSidebar">
+          <i class="ti ti-plus me-1"></i>
+          <span class="align-middle">Attendance Report</span>
+        </button>
+      </div>
+
+    </div>
+    </div>
+    <div class="col-4 mb-3">
+      <div class="border-bottom p-4 my-sm-0 mb-3">
+        <div class="d-grid">
+          <button class="btn btn-dark btn-toggle-sidebar" data-bs-toggle="offcanvas" data-bs-target="#addEventSidebar" aria-controls="addEventSidebar">
+            <i class="ti ti-plus me-1"></i>
+            <span class="align-middle">Movement Report</span>
+          </button>
+        </div>
+
+      </div>
+      </div>
+      <div class="col-4 mb-3">
+        <div class="border-bottom p-4 my-sm-0 mb-3">
+          <div class="d-grid">
+            <button class="btn btn-success btn-toggle-sidebar" data-bs-toggle="offcanvas" data-bs-target="#addEventSidebar" aria-controls="addEventSidebar">
+              <i class="ti ti-plus me-1"></i>
+              <span class="align-middle">Leave Report</span>
+            </button>
+          </div>
+
+        </div>
+        </div>
+
+  </div>
+  <div class="row g-0">
     <!-- Calendar Sidebar -->
     <div class="col app-calendar-sidebar" id="app-calendar-sidebar">
       <div class="border-bottom p-4 my-sm-0 mb-3">
@@ -61,15 +97,15 @@
         <div class="app-calendar-events-filter ms-3">
           <div class="form-check form-check-danger mb-2">
             <input class="form-check-input input-filter" type="checkbox" id="select-personal" data-value="personal" checked>
-            <label class="form-check-label" for="select-personal">Personal</label>
+            <label class="form-check-label" for="select-personal">Movement</label>
           </div>
           <div class="form-check mb-2">
             <input class="form-check-input input-filter" type="checkbox" id="select-business" data-value="business" checked>
-            <label class="form-check-label" for="select-business">Business</label>
+            <label class="form-check-label" for="select-business">Attendance</label>
           </div>
           <div class="form-check form-check-warning mb-2">
             <input class="form-check-input input-filter" type="checkbox" id="select-family" data-value="family" checked>
-            <label class="form-check-label" for="select-family">Family</label>
+            <label class="form-check-label" for="select-family">Leave</label>
           </div>
           <div class="form-check form-check-success mb-2">
             <input class="form-check-input input-filter" type="checkbox" id="select-holiday" data-value="holiday" checked>
@@ -77,7 +113,7 @@
           </div>
           <div class="form-check form-check-info">
             <input class="form-check-input input-filter" type="checkbox" id="select-etc" data-value="etc" checked>
-            <label class="form-check-label" for="select-etc">ETC</label>
+            <label class="form-check-label" for="select-etc">Event</label>
           </div>
         </div>
       </div>

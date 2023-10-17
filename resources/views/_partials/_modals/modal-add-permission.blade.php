@@ -8,6 +8,10 @@
           <h3 class="mb-2">Add New Permission</h3>
           <p class="text-muted">Permissions you may use and assign to your users.</p>
         </div>
+        <div class="alert alert-warning" role="alert">
+          <h6 class="alert-heading mb-2">Warning</h6>
+          <p class="mb-0">Added permission name can't be delete or edit, you might break the system permissions functionality. Please ensure you're absolutely certain before proceeding.</p>
+        </div>
         <form id="addPermissionForm" class="row" onsubmit="return false">
           <div class="col-12 mb-3">
             <label class="form-label" for="modalPermissionName">Permission Name</label>
@@ -22,7 +26,7 @@
             </div>
           </div>
           <div class="col-12 text-center demo-vertical-spacing">
-            <button type="submit" class="btn btn-primary me-sm-3 me-1">Create Permission</button>
+            <button type="submit" id="submit_permission" class="btn btn-primary me-sm-3 me-1 submit-permission">Create Permission</button>
             <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">Discard</button>
           </div>
         </form>
