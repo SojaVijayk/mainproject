@@ -11,22 +11,67 @@
         <!-- Add role form -->
         <form id="addClientForm" class="row g-3" onsubmit="return false">
           {{--  {{ csrf_field() }}  --}}
+          <div class="divider">
+            <div class="divider-text">
+               Client Details
+            </div>
+          </div>
           <div class="col-12 mb-4">
             <label class="form-label" for="modalClientName">Client Name</label>
             <input type="text" id="modalClientName" name="modalClientName" class="form-control" placeholder="Enter a client name" tabindex="-1" />
           </div>
-          <div class="col-12 mb-4">
+          <div class="col-6 mb-4">
             <label class="form-label" for="modalClientEmail">Client Email</label>
             <input type="text" id="modalClientEmail" name="modalClientEmail" class="form-control" placeholder="Enter a client Email" tabindex="-1" />
           </div>
-          <div class="col-12 mb-4">
-            <label class="form-label" for="modalClientAddress">Client Address</label>
-            <input type="text" id="modalClientAddress" name="modalClientAddress" class="form-control" placeholder="Enter a client Address" tabindex="-1" />
-          </div>
-          <div class="col-12 mb-4">
+          <div class="col-6 mb-4">
             <label class="form-label" for="modalClientPhone">Client Phone</label>
             <input type="text" id="modalClientPhone" name="modalClientPhone" class="form-control" placeholder="Enter a client Phone" tabindex="-1" />
           </div>
+          <div class="col-12 mb-4">
+            <label class="form-label" for="modalClientAddress">Client Address</label>
+            {{--  <input type="text" id="modalClientAddress" name="modalClientAddress" class="form-control" placeholder="Enter a client Address" tabindex="-1" />  --}}
+            <textarea class="form-control" id="modalClientAddress" name="modalClientAddress" rows="3"></textarea>
+          </div>
+
+
+
+          <div class="divider contactperson">
+            <div class="divider-text">
+               Contact Person Details
+            </div>
+          </div>
+            <div data-repeater-list="group-a">
+              <div data-repeater-item>
+                <div class="row contactperson">
+                  <div class="mb-3 col-lg-6 col-xl-3 col-12 mb-0">
+                    <label class="form-label" for="form-repeater-1-1">Name</label>
+                    <input type="text" id="contactName" name="contactName" class="form-control" placeholder="john.doe" />
+                  </div>
+                  <div class="mb-3 col-lg-6 col-xl-3 col-12 mb-0">
+                    <label class="form-label" for="form-repeater-1-2">Designation</label>
+                    <input type="text" id="contactName" name="contactName" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                  </div>
+
+                  <div class="mb-3 col-lg-6 col-xl-3 col-12 mb-0">
+                    <label class="form-label" for="form-repeater-1-1">Email</label>
+                    <input type="text" id="contactName" name="contactName" class="form-control" placeholder="john.doe" />
+                  </div>
+                  <div class="mb-3 col-lg-6 col-xl-3 col-12 mb-0">
+                    <label class="form-label" for="form-repeater-1-1">Mobile</label>
+                    <input type="text" id="contactName" name="contactName" class="form-control" placeholder="john.doe" />
+                  </div>
+                  <div class="mb-12 col-lg-12 col-xl-12 col-12 mb-0">
+                    <label class="form-label" for="form-repeater-1-1">Address</label>
+                    <textarea class="form-control" id="contactName" name="contactName" rows="3"></textarea>
+                  </div>
+
+                </div>
+                <hr>
+              </div>
+            </div>
+
+
 
 
           <div class="col-12 text-center mt-4">

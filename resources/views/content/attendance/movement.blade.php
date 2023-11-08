@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/jquery-timepicker/jquery-timepicker.css')}}" />
 
 
+
 @endsection
 
 @section('vendor-script')
@@ -25,6 +26,7 @@
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}" ></script>
 <script src="{{asset('assets/vendor/libs/moment/moment.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/jquery-timepicker/jquery-timepicker.js')}}"></script>
+
 
 @endsection
 
@@ -69,8 +71,8 @@ $(function () {
         { data: 'designation' },
         { data: 'title' },
         { data: 'type' },
-        { data: 'start_date' },
-        { data: 'end_date' },
+        {{--  { data: 'start_date' },
+        { data: 'end_date' },  --}}
         { data: 'requested_at' },
         { data: 'status' },
         { data: 'action_by' },
@@ -103,9 +105,17 @@ $(function () {
           targets: 2,
           render: function (data, type, full, meta) {
             var $name = full['title'];
+            var $startDate = full['start_date'];
+            var $startTime = full['start_time'];
+            var $endDate = full['end_date'];
+            var $endTime = full['end_time'];
             var $location = full['location'];
             var $description = full['description'];
-            return '<span class="fw-semibold text-gray"> Title :</span> <span class="text-nowrap">' + $name + '</span><br><span class=" text-gray fw-semibold"> Location :</span><span class="text-nowrap"> ' + $location + '</span><br><span class="fw-semibold text-gray"> Des :</span><span class=""> ' + $description + '</span>';
+            return '<span class="fw-semibold text-gray"> Title :</span> <span class="text-nowrap">' + $name + '</span><br>'+
+            '<span class="fw-semibold text-gray"> From :</span> <span class="text-nowrap">' + $startDate + ' '+$startTime+'</span><br>'+
+            '<span class="fw-semibold text-gray"> To :</span> <span class="text-nowrap">' + $endDate + ' '+$endTime+'</span><br>'+
+            '<span class=" text-gray fw-semibold"> Location :</span><span class="text-nowrap"> ' + $location + '</span><br>'+
+            '<span class="fw-semibold text-gray"> Des :</span><span class=""> ' + $description + '</span>';
           }
         },
         {
@@ -116,7 +126,7 @@ $(function () {
             return '<span class="text-nowrap">' + $name + '</span>';
           }
         },
-        {
+        {{--  {
           // Name
           targets: 4,
           render: function (data, type, full, meta) {
@@ -133,12 +143,12 @@ $(function () {
             var $time = full['end_time'];
             return '<span class="text-nowrap">' + $name + '-'+$time+'</span>';
           }
-        },
+        },  --}}
 
 
         {
           // Name
-          targets: 6,
+          targets: 4,
           render: function (data, type, full, meta) {
             var $name = full['requested_at'];
             return '<span class="text-nowrap">' + $name + '</span>';
@@ -146,7 +156,7 @@ $(function () {
         },
         {
           // User Role
-          targets: 7,
+          targets: 5,
           render: function (data, type, full, meta) {
             var $status = full['status'];
             $out = ($status==1 ? '<a><span class="badge bg-label-success m-1">Approved</span></a>' : ($status==2 ? '<a><span class="badge bg-label-danger m-1">Rejected</span></a>' : '<a><span class="badge bg-label-warning m-1">Pending</span></a>')  )
@@ -155,11 +165,13 @@ $(function () {
         },
         {
           // Name
-          targets: 8,
+          targets: 6,
           render: function (data, type, full, meta) {
             var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
             var $action_at = (full['action_at'] == null ? '' :full['action_at']);
-            return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'</span>';
+            var $remark = (full['remark'] == null ? '' :full['remark']);
+            return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'<br>'+$remark+'</span>';
+
           }
         },
 
@@ -186,7 +198,7 @@ $(function () {
           }
         }
       ],
-      order: [[1, 'asc']],
+      {{--  order: [[1, 'asc']],  --}}
       dom:
         '<"row mx-1"' +
         '<"col-sm-12 col-md-3" l>' +
@@ -309,7 +321,29 @@ document.addEventListener('DOMContentLoaded', function (e) {
            .end();
     })
 
+
+    $("#toDate").change(function () {
+      var startDate = new Date($("#fromDate").val());
+      var endDate = new Date($("#toDate").val());
+      if (startDate <= endDate) {
+        //
+      }
+      else{
+        $("#toDate").val('');
+        Swal.fire({
+          title: 'End Date should be greater than or equal to Start Date.',
+          customClass: {
+            confirmButton: 'btn btn-warning'
+          },
+          buttonsStyling: false
+        });
+      }
+    });
+
+
     designationSubmit.onclick = function () {
+
+
 
       var  title =  $("#eventTitle").val();
       var  type =  $("#eventLabel").val();
@@ -321,6 +355,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
       var  description =  $("#eventDescription").val();
       var request_type =   $("#submit_designation").data('type');
       var desig_id =   $("#submit_designation").data('id');
+
+
+
       if(request_type=='new'){
 
           $.ajax({
@@ -341,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
             success: function (status) {
 
                 $('#DesignationModal').modal('hide');
+
               // sweetalert
               Swal.fire({
                 icon: 'success',
@@ -349,6 +387,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 customClass: {
                   confirmButton: 'btn btn-success'
                 }
+              }).then((result) => {
+                window.location.reload();
               });
 
             },
@@ -394,6 +434,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 customClass: {
                   confirmButton: 'btn btn-success'
                 }
+              }).then((result) => {
+               window.location.reload();
               });
 
             },
@@ -519,8 +561,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
           <th>Movement Details</th>
           <th>Type</th>
-          <th>From</th>
-          <th>To</th>
+          {{--  <th>From</th>
+          <th>To</th>  --}}
           <th>Requested_at</th>
           <th>Status</th>
           <th>Action By</th>

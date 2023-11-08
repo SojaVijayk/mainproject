@@ -107,7 +107,7 @@ $(function () {
           render: function (data, type, full, meta) {
             return (
               '<span class="text-nowrap"><button class="btn btn-sm btn-icon me-2 edit-leave" data-id="'+full['id']+'" data-bs-target="#LeaveModal" data-bs-toggle="modal" data-bs-dismiss="modal"><i class="ti ti-edit"></i></button>' +
-              '<button class="btn btn-sm btn-icon delete-record"><i class="ti ti-trash"></i></button></span>'
+              '<button class="btn btn-sm btn-icon delete-record" disabled><i class="ti ti-trash"></i></button></span>'
             );
           }
         }
@@ -278,10 +278,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       $.ajax({
         data:  {
           leave_type:modalLeaveName,
-
-
           "_token": "{{ csrf_token() }}",
-
       },
         url: `${baseUrl}leave/update/${desig_id}`,
         type: 'POST',
@@ -297,7 +294,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
             customClass: {
               confirmButton: 'btn btn-success'
             }
+            
+          }).then((result) => {
+            location.reload();
           });
+        
 
         },
         error: function (err) {
@@ -309,6 +310,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
             customClass: {
               confirmButton: 'btn btn-success'
             }
+          }).then((result) => {
+            location.reload();
           });
         }
       });
@@ -344,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       url: '/leave/edit/'+desig_id,
       success: function (data) {
         console.log(data);
-          $("#modalLeaveName").val(data.leaves.leave);
+          $("#modalLeaveName").val(data.leaves.leave_type);
           $("#submit_leave").data('id',data.leaves.id);
 
 

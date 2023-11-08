@@ -13,4 +13,8 @@ class Client extends Model
     {
         return $this->belongsToMany(Project::class, 'clients_projects', 'client_id','project_id');
     }
+    public function contactPersons()
+    {
+        return $this->hasMany(ClientContactPerson::class,'client_id');
+    }
 }

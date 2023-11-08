@@ -23,8 +23,20 @@
 @section('page-script')
 <script>
 
-
 $(function () {
+
+  $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+  $('#DesignationModal').on('hidden.bs.modal', function (e) {
+    $(this)
+      .find("input,textarea,select")
+         .val('')
+         .end()
+      .find("input[type=checkbox], input[type=radio]")
+         .prop("checked", "")
+         .end();
+  })
+
+
   var dataTablePermissions = $('.datatables-designation'),
     dt_permission,
     statusObj = {
@@ -53,7 +65,6 @@ $(function () {
         { data: 'designation' },
         { data: 'leave_type' },
         { data: 'leave_request_details' },
-
         { data: 'requested_at' },
         { data: 'status' },
         { data: 'action_by' },
@@ -78,7 +89,39 @@ $(function () {
           render: function (data, type, full, meta) {
             var $name = full['name'];
             var $designation = full['designation'];
-            return '<span class="text-nowrap">' + $name + '<br>' + $designation + '</span>';
+            $image = full['profile_pic'];
+            if ($image) {
+              // For Avatar image
+              var $output =
+                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
+            } else {
+              // For Avatar badge
+              var stateNum = Math.floor(Math.random() * 6);
+              var states = ['success', 'danger', 'warning', 'info', 'primary', 'secondary'];
+              var $state = states[stateNum],
+                $name = full['name'],
+                $initials = $name.match(/\b\w/g) || [];
+              $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
+              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+            }
+            var $row_output =
+            '<div class="d-flex justify-content-start align-items-center user-name">' +
+            '<div class="avatar-wrapper">' +
+            '<div class="avatar avatar-sm me-3">' +
+            $output +
+            '</div>' +
+            '</div>' +
+            '<div class="d-flex flex-column">' +
+            '<span class="fw-semibold">' +
+            $name +
+            '</span></a>' +
+            '<small class="text-muted">' +
+            $designation +
+            '</small>' +
+            '</div>' +
+            '</div>';
+          return $row_output;
+            {{--  return '<span class="text-nowrap">' + $name + '<br>' + $designation + '</span>';  --}}
           }
         },
         {
@@ -129,8 +172,9 @@ $(function () {
           // Name
           targets: 6,
           render: function (data, type, full, meta) {
-            var $name = full['action_by_name'];
-            var $action_at = full['action_at'];
+            var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
+            var $action_at = (full['action_at'] == null ? '' :full['action_at']);
+            {{--  var $remark = (full['remark'] == null ? '' :full['remark']);  --}}
             return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'</span>';
           }
         },
@@ -164,7 +208,7 @@ $(function () {
           }
         }
       ],
-      order: [[1, 'asc']],
+      {{--  order: [[1, 'asc']],  --}}
       dom:
         '<"row mx-1"' +
         '<"col-sm-12 col-md-3" l>' +
@@ -273,6 +317,64 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
     buttonsStyling: false
   }).then(function(result) {
     if (result.value) {
+
+      if(status==1){
+        $.ajaxSetup({
+          headers: {
+              'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+          }
+      })
+      $.ajax({
+      type: "POST",
+
+      url: '/leave/request/action/'+desig_id,
+      data:  {
+        status:status,
+        remark:'Nill',
+        "_token": "{{ csrf_token() }}",
+    },
+
+      success: function (data) {
+        var tbody='';
+        data.leave_list.leave_request_details.forEach((item, index) => {
+          tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
+            '<td>'+(item.status == 0 ? '<span class="text-nowrap"><button class="btn btn-sm btn-success  me-2 confirm-action" data-status="1" data-id="'+item['id']+'"  >Approve</button><button class="btn btn-sm btn-danger  me-2 confirm-action" data-status="2" data-id="'+item['id']+'"  >Reject</button></span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ ''));
+          })
+        $(".datatables-leave-list #dataList").html(tbody);
+        $(".leave-type-name").html(data.leave_list.leave_type);
+        $(".leave-total-credit").html(data.leave_balance.total_leaves_credit);
+        $(".leave-total-availed").html(data.leave_balance.availed_leave);
+        $(".leave-total-requested").html(data.leave_balance.pending_leave);
+        $(".leave-total-balance").html(data.leave_balance.balance_credit);
+        Swal.fire({
+          icon: 'success',
+          title: 'Updated!',
+          text: 'Leave Request Action Updated.',
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        });
+
+      },
+      error: function(data){
+
+      }
+  });
+}
+else if(status== 2){
+
+  $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+  const { value: text } = Swal.fire({
+    input: 'textarea',
+    inputLabel: 'Remark',
+    inputPlaceholder: 'Type your Remark here...',
+    {{--  inputAttributes: {
+      'aria-label': 'Type your Remark here'
+    },  --}}
+  }).then((reply) => {
+    if(reply.isConfirmed){
+      console.log(reply.value);
+
       $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
@@ -284,6 +386,7 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
     url: '/leave/request/action/'+desig_id,
     data:  {
       status:status,
+      remark:reply.value,
       "_token": "{{ csrf_token() }}",
   },
 
@@ -291,8 +394,8 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
       var tbody='';
       data.leave_list.leave_request_details.forEach((item, index) => {
         tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
-          '<td>'+(item.status == 0 ? '<span class="text-nowrap"><button class="btn btn-sm btn-success  me-2 confirm-action" data-status="1" data-id="'+item['id']+'"  >Approve</button><button class="btn btn-sm btn-danger  me-2 confirm-action" data-status="2" data-id="'+item['id']+'"  >Reject</button></span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span>': '<span class="badge bg-label-danger">Rejected</span>'));
-      })
+          '<td>'+(item.status == 0 ? '<span class="text-nowrap"><button class="btn btn-sm btn-success  me-2 confirm-action" data-status="1" data-id="'+item['id']+'"  >Approve</button><button class="btn btn-sm btn-danger  me-2 confirm-action" data-status="2" data-id="'+item['id']+'"  >Reject</button></span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ ''));
+       })
       $(".datatables-leave-list #dataList").html(tbody);
       $(".leave-type-name").html(data.leave_list.leave_type);
       $(".leave-total-credit").html(data.leave_balance.total_leaves_credit);
@@ -302,7 +405,7 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
       Swal.fire({
         icon: 'success',
         title: 'Updated!',
-        text: 'Movement Request Updated.',
+        text: 'Leave Request Action Updated.',
         customClass: {
           confirmButton: 'btn btn-success'
         }
@@ -313,11 +416,20 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
 
     }
 });
+    }
 
+
+  });
+
+}
 
 
     }
   });
+
+
+
+
 
 
 
@@ -352,8 +464,8 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
         var tbody='';
         data.leave_list.leave_request_details.forEach((item, index) => {
           tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
-            '<td>'+(item.status == 0 ? '<span class="text-nowrap"><button class="btn btn-sm btn-success  me-2 confirm-action" data-status="1" data-id="'+item['id']+'"  >Approve</button><button class="btn btn-sm btn-danger  me-2 confirm-action" data-status="2" data-id="'+item['id']+'"  >Reject</button></span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span>': '<span class="badge bg-label-danger">Rejected</span>'));
-        })
+            '<td>'+(item.status == 0 ? '<span class="text-nowrap"><button class="btn btn-sm btn-success  me-2 confirm-action" data-status="1" data-id="'+item['id']+'"  >Approve</button><button class="btn btn-sm btn-danger  me-2 confirm-action" data-status="2" data-id="'+item['id']+'"  >Reject</button></span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ '</span>'));
+           })
         $(".datatables-leave-list #dataList").html(tbody);
         $(".leave-type-name").html(data.leave_list.leave_type);
         $(".leave-total-credit").html(data.leave_balance.total_leaves_credit);
@@ -382,6 +494,17 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
     $('.dataTables_filter .form-control').removeClass('form-control-sm');
     $('.dataTables_length .form-select').removeClass('form-select-sm');
   }, 300);
+
+
+
+  $('#leaveActionModal').on('shown.bs.modal', function (e) {
+    $(document).off('focusin.modal');
+
+
+    })
+
+
+
 });
 </script>
 
@@ -481,7 +604,6 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
           <th>User</th>
           <th>Leave Type</th>
           <th>Leave Days</th>
-
           <th>Requested_at</th>
           <th>Status</th>
           <th>Action By</th>

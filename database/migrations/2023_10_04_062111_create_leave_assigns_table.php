@@ -16,7 +16,7 @@ return new class extends Migration
           $table->unsignedBiginteger('leave_type')->unsigned();
           $table->foreign('leave_type')->references('id')
           ->on('leaves')->onDelete('cascade');
-          $table->integer('total_credit');
+          $table->double('total_credit');
           $table->smallInteger('employment_type');
           $table->smallInteger('status');
           $table->timestamps();

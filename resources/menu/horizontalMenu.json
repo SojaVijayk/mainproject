@@ -23,6 +23,40 @@
       ]
     },
     {
+      "name": "Masters",
+      "icon": "menu-icon tf-icons ti ti-settings",
+      "slug": "master",
+      "permission": "master-data-management",
+      "submenu": [
+        {
+          "url": "master/employment-type",
+          "name": "Employment Type",
+          "slug": "master-employment-type",
+          "permission": "employment-type"
+        },
+        {
+          "url": "master/designation",
+          "name": "Designation",
+          "slug": "master-designation",
+          "permission": "designation"
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "user-employee",
+      "permission": "user-management",
+      "submenu": [
+        {
+          "url": "user/employee",
+          "name": "Employee Management",
+          "slug": "user-employee",
+          "permission": "employee-management"
+        }
+      ]
+    },
+    {
       "name": "Projects Management",
       "icon": "menu-icon tf-icons ti ti-smart-home",
       "slug": "user-project",
@@ -97,21 +131,21 @@
           "url": "/leave/request",
           "icon": "menu-icon tf-icons ti ti-chart-pie-2",
           "name": "Leave",
-          "slug": "attendance-leave",
+          "slug": "attendance-leave-request",
           "permission": "leave-individual-request"
         },
         {
           "url": "/attendance-management",
           "icon": "menu-icon tf-icons ti ti-chart-pie-2",
           "name": "Attendance Management",
-          "slug": "payroll-analytics",
+          "slug": "attendance-hrView",
           "permission": "attendance-management"
         },
         {
           "url": "/",
           "icon": "menu-icon tf-icons ti ti-chart-pie-2",
           "name": "Attendance Mark",
-          "slug": "payroll-analytics",
+          "slug": "attendance-mark",
           "permission": "movement-management"
         }
       ]
@@ -126,7 +160,7 @@
           "url": "/leave",
           "icon": "menu-icon tf-icons ti ti-chart-pie-2",
           "name": "Leave Master",
-          "slug": "leave-index",
+          "slug": "leave-master-index",
           "permission": "leave-master"
         },
         {
@@ -140,14 +174,14 @@
           "url": "/movement/approve-list",
           "icon": "menu-icon tf-icons ti ti-chart-pie-2",
           "name": "Movement Request Approval",
-          "slug": "payroll-analytics",
+          "slug": "leave-movement-approve-list",
           "permission": "leave-request-approve"
         },
         {
           "url": "/leave/approve-list",
           "icon": "menu-icon tf-icons ti ti-chart-pie-2",
           "name": "Leave Request Approval",
-          "slug": "payroll-analytics",
+          "slug": "leave-approve-list",
           "permission": "leave-request-approve"
         }
       ]

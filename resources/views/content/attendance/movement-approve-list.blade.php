@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/formvalidation/dist/css/formValidation.min.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
 @endsection
 
 @section('vendor-script')
@@ -18,6 +19,7 @@
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
 @endsection
 
 @section('page-script')
@@ -56,7 +58,7 @@ $(function () {
         { data: 'start_date' },
         { data: 'end_date' },
         { data: 'status' },
-        { data: 'action_by' },
+        {{--  { data: 'action_by' },  --}}
         { data: '' }
       ],
       columnDefs: [
@@ -78,7 +80,39 @@ $(function () {
           render: function (data, type, full, meta) {
             var $name = full['name'];
             var $designation = full['designation'];
-            return '<span class="text-nowrap">' + $name + '<br>' + $designation + '</span>';
+            $image = full['profile_pic'];
+            if ($image) {
+              // For Avatar image
+              var $output =
+                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
+            } else {
+              // For Avatar badge
+              var stateNum = Math.floor(Math.random() * 6);
+              var states = ['success', 'danger', 'warning', 'info', 'primary', 'secondary'];
+              var $state = states[stateNum],
+                $name = full['name'],
+                $initials = $name.match(/\b\w/g) || [];
+              $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
+              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+            }
+            var $row_output =
+            '<div class="d-flex justify-content-start align-items-center user-name">' +
+            '<div class="avatar-wrapper">' +
+            '<div class="avatar avatar-sm me-3">' +
+            $output +
+            '</div>' +
+            '</div>' +
+            '<div class="d-flex flex-column">' +
+            '<span class="fw-semibold">' +
+            $name +
+            '</span></a>' +
+            '<small class="text-muted">' +
+            $designation +
+            '</small>' +
+            '</div>' +
+            '</div>';
+          return $row_output;
+            {{--  return '<span class="text-nowrap">' + $name + '<br>' + $designation + '</span>';  --}}
           }
         },
         {
@@ -125,15 +159,16 @@ $(function () {
             return  $out;
           }
         },
-        {
+        {{--  {
           // Name
           targets: 6,
           render: function (data, type, full, meta) {
             var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
             var $action_at = (full['action_at'] == null ? '' :full['action_at']);
-            return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'</span>';
+            var $remark = (full['remark'] == null ? '' :full['remark']);
+            return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'<br>Remark : '+$remark+'</span>';
           }
-        },
+        },  --}}
 
         {
           // Actions
@@ -148,16 +183,16 @@ $(function () {
               '<button class="btn btn-sm btn-danger  confirm-approve" data-id="'+full['id']+'" data-status="2">Reject</button></span>'
             );
             }else{
-              return (
-              '<span class="text-nowrap">' +
-              '</span>'
-            );
+              var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
+            var $action_at = (full['action_at'] == null ? '' :full['action_at']);
+            var $remark = (full['remark'] == null ? '' :full['remark']);
+            return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'<br>Remark : '+$remark+'</span>';
             }
 
           }
         }
       ],
-      order: [[1, 'asc']],
+      {{--  order: [[1, 'asc']],  --}}
       dom:
         '<"row mx-1"' +
         '<"col-sm-12 col-md-3" l>' +
@@ -241,6 +276,80 @@ $(function () {
           buttonsStyling: false
         }).then(function(result) {
           if (result.value) {
+            if(status== 2){
+
+              const { value: text } = Swal.fire({
+                input: 'textarea',
+                inputLabel: 'Remark',
+                inputPlaceholder: 'Type your Remark here...',
+                inputAttributes: {
+                  'aria-label': 'Type your Remark here'
+                },
+              }).then((reply) => {
+
+                if(reply.isConfirmed){
+
+
+                  $(".datatables-designation").block({
+                    message:
+                      '<div class="sk-wave sk-primary mx-auto"><div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div></div>',
+                    timeout: 8000,
+                    css: {
+                      backgroundColor: "transparent",
+                      border: "0"
+                    },
+                    overlayCSS: {
+                      backgroundColor: "#fff",
+                      opacity: 0.8
+                    }
+                  })
+
+
+
+                  console.log(reply.value);
+                  $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+                    }
+                })
+                $.ajax({
+                type: "POST",
+
+                url: '/movement/action/'+desig_id,
+                data:  {
+                  status:status,
+                  remark:reply.value,
+                  "_token": "{{ csrf_token() }}",
+              },
+
+                success: function (data) {
+
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: 'Movement Request Updated.',
+                    customClass: {
+                      confirmButton: 'btn btn-success'
+                    }
+                  }).then((result) => {
+                    location.reload();
+                  });
+
+                },
+                error: function(data){
+
+                }
+            });
+                }
+
+
+              });
+
+
+
+            }else{
+
+
             $.ajaxSetup({
               headers: {
                   'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
@@ -252,6 +361,7 @@ $(function () {
           url: '/movement/action/'+desig_id,
           data:  {
             status:status,
+            remark:'Nill',
             "_token": "{{ csrf_token() }}",
         },
 
@@ -264,6 +374,8 @@ $(function () {
               customClass: {
                 confirmButton: 'btn btn-success'
               }
+            }).then((result) => {
+              location.reload();
             });
 
           },
@@ -272,7 +384,7 @@ $(function () {
           }
       });
 
-
+    }
 
           }
         });
@@ -306,10 +418,10 @@ $(function () {
           <div class="content-left">
             <span>Total Request</span>
             <div class="d-flex align-items-center my-1">
-              <h4 class="mb-0 me-2">21,459</h4>
-              <span class="text-success">(+29%)</span>
+              <h4 class="mb-0 me-2">{{$totalCount}}</h4>
+              <span class="text-success"></span>
             </div>
-            <span>Last Week</span>
+            <span>Just Updated</span>
           </div>
           <span class="badge bg-label-primary rounded p-2">
             <i class="ti ti-user ti-sm"></i>
@@ -325,10 +437,10 @@ $(function () {
           <div class="content-left">
             <span>Approved Request</span>
             <div class="d-flex align-items-center my-1">
-              <h4 class="mb-0 me-2">4,567</h4>
-              <span class="text-success">(+18%)</span>
+              <h4 class="mb-0 me-2">{{$approved}}</h4>
+              <span class="text-success"></span>
             </div>
-            <span>Last week analytics </span>
+            <span>Just Updated </span>
           </div>
           <span class="badge bg-label-danger rounded p-2">
             <i class="ti ti-user-plus ti-sm"></i>
@@ -344,10 +456,10 @@ $(function () {
           <div class="content-left">
             <span>Rejected Request</span>
             <div class="d-flex align-items-center my-1">
-              <h4 class="mb-0 me-2">19,860</h4>
-              <span class="text-danger">(-14%)</span>
+              <h4 class="mb-0 me-2">{{$rejected}}</h4>
+              <span class="text-danger"></span>
             </div>
-            <span>Last week analytics</span>
+            <span>just Updated</span>
           </div>
           <span class="badge bg-label-success rounded p-2">
             <i class="ti ti-user-check ti-sm"></i>
@@ -363,10 +475,10 @@ $(function () {
           <div class="content-left">
             <span>Pending Request</span>
             <div class="d-flex align-items-center my-1">
-              <h4 class="mb-0 me-2">237</h4>
-              <span class="text-success">(+42%)</span>
+              <h4 class="mb-0 me-2">{{$pending}}</h4>
+              <span class="text-success"></span>
             </div>
-            <span>Last week analytics</span>
+            <span>Just Updated</span>
           </div>
           <span class="badge bg-label-warning rounded p-2">
             <i class="ti ti-user-exclamation ti-sm"></i>
@@ -390,7 +502,7 @@ $(function () {
           <th>From</th>
           <th>To</th>
           <th>Status</th>
-          <th>Action By</th>
+          {{--  <th>Action By</th>  --}}
           <th>Actions</th>
         </tr>
       </thead>

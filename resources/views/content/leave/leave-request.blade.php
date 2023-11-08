@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
 
 
 @endsection
@@ -22,6 +23,7 @@
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
 
 
 @endsection
@@ -40,7 +42,37 @@ $(function () {
 
     $(".datepicker").datepicker({
       autoclose: true ,
+      calendarWeeks: true,
+      clearBtn: true,
+      todayHighlight: true,
+      orientation: "auto right"
       });
+      $('.availability').hide();
+      $('.message').hide();
+
+
+      {{--  $("#bs-datepicker-multidate").datepicker({ multidate: true,
+        calendarWeeks: true,
+        clearBtn: true,
+        todayHighlight: true,
+        orientation: "auto right" });  --}}
+
+        leaveType
+        $('#fromDate').change(function(){
+          $("#dateList").empty();
+          $("#toDate").val('');
+            var sDate = $(this).datepicker("getDate");
+            var minDate = $(this).datepicker("getDate");
+            sDate.setDate(sDate.getDate()+7);
+
+            $('#toDate').datepicker({
+                maxDate : sDate,
+                minDate : minDate,
+            });
+        })
+
+
+
 
       function padTo2Digits(num) {
         return num.toString().padStart(2, '0');
@@ -52,6 +84,8 @@ $(function () {
           padTo2Digits(date.getDate()),
         ].join('-');
       }
+
+
       $("#toDate").change(function () {
 
         var startDate = new Date($("#fromDate").val());
@@ -66,21 +100,66 @@ $(function () {
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             console.log(dateList);
+
+            var requested = dateList.length;
+
+            $("#dateListCount").val(requested);
+
             // Display the dates
             $("#dateList").empty();
+
             dateList.forEach(function (date) {
               var formated_date=formatDate(date);
               dateArray.push(formated_date);
-              var date_switch = '<label class="switch switch-primary"> <input value="1" type="radio" name="'+formated_date+'-radio"  class="switch-input '+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">Full Day</span></label><label class="switch switch-secondary"><input type="radio" value="2"  name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"> <i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">FN</span></label><label class="switch switch-info"><input value="3" type="radio" name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i></span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">AN</span></label>';
+              var date_switch = '<label class="switch switch-danger"> <input value="1" type="radio" name="'+formated_date+'-radio"  class="switch-input '+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">Full Day</span></label><label class="switch switch-warning"><input type="radio" value="2"  name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"> <i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">FN</span></label><label class="switch switch-warning"><input value="3" type="radio" name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i></span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">AN</span></label>';
                 var date_set = '<div class="row row-bordered g-0"><div class="col-sm-12 p-4"><div class="text-light small fw-medium mb-3">Type</div><div class="switches-stacked"><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">Full Day</span></label><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">FN</span></label><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">AN</span></label></div></div>';
-                  $("#dateList").append("<li class='text-danger'>" + date.toDateString() +'<br><br>'+ date_switch+"</li><br>");
+                  $("#dateList").append("<li class='text-primary'>" + date.toDateString() +'<br><br>'+ date_switch+"</li><br>");
 
 
             });
         } else {
-            alert("End Date should be greater than or equal to Start Date.");
+          $("#toDate").val('');
+          Swal.fire({
+            title: 'End Date should be greater than or equal to Start Date.',
+            customClass: {
+              confirmButton: 'btn btn-warning'
+            },
+            buttonsStyling: false
+          });
+            {{--  alert("End Date should be greater than or equal to Start Date.");  --}}
         }
     });
+
+
+
+    $('#leaveType').change(function(){
+      var id= $(this).val();
+      if(id > 0){
+        $('.availability').show();
+
+
+        $('.total-leave').html($('#typeTotal'+id).val());
+        $('.balance-leave').html($('#typeBalance'+id).val());
+        $('.requested-leave').html($('#typeRequested'+id).val());
+        $('.availed-leave').html($('#typeAvailed'+id).val());
+        if($('#typeBalance'+id).val() == 0){
+          $('.message').show();
+
+
+
+          $('.leaveTypeName').html($( "#leaveType option:selected" ).text());
+          $("#leaveType").val("");
+        }
+        else{
+          $('.message').hide();
+        }
+      }
+      else{
+        {{--  $('.availability').hide();  --}}
+
+      }
+    })
+
 
 
   // ajax setup
@@ -178,8 +257,8 @@ $(function () {
           // Name
           targets: 6,
           render: function (data, type, full, meta) {
-            var $name = full['action_by_name'];
-            var $action_at = full['action_at'];
+            var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
+            var $action_at = (full['action_at'] == null ? '' :full['action_at']);
             return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'</span>';
           }
         },
@@ -208,7 +287,7 @@ $(function () {
           }
         }
       ],
-      order: [[1, 'asc']],
+      {{--  order: [[1, 'asc']],  --}}
       dom:
         '<"row mx-1"' +
         '<"col-sm-12 col-md-3" l>' +
@@ -333,6 +412,21 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
     designationSubmit.onclick = function () {
 
+      $("#DesignationModal .modal-body").block({
+        message:
+          '<div class="sk-wave sk-primary mx-auto"><div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div></div>',
+        timeout: 8000,
+        css: {
+          backgroundColor: "transparent",
+          border: "0"
+        },
+        overlayCSS: {
+          backgroundColor: "#fff",
+          opacity: 0.8
+        }
+      })
+
+
 
       var  leaveType =  $("#leaveType").val();
       var  start_date =  $("#fromDate").val();
@@ -355,6 +449,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
      console.log(date_leave_type);
       if(request_type=='new'){
 
+
+
           $.ajax({
             data:  {
               leave_type_id:leaveType,
@@ -368,22 +464,54 @@ document.addEventListener('DOMContentLoaded', function (e) {
             url: `${baseUrl}leave/request/store`,
             type: 'POST',
 
-            success: function (status) {
+            success: function (response) {
+              dateArray = [],
+              $("#dateList").empty();
+              $("#toDate").val('');
+              $("#fromDate").val('');
+              $("#leaveType").val('');
+              $("#availability").hide();
+              $('#DesignationModal').modal('hide');
+              if(response.status == true){
 
-                $('#DesignationModal').modal('hide');
+                Swal.fire({
+                  icon: 'success',
+                  title: `Successfully Created!`,
+                  text: `Leave Requested Successfully.`,
+                  customClass: {
+                    confirmButton: 'btn btn-success'
+                  }
+                }).then((result) => {
+                  location.reload();
+                });
+              }
+              else{
+                Swal.fire({
+                  icon: 'warning',
+                  title: `Can't Save Request!`,
+                  text: response.message,
+                  customClass: {
+                    confirmButton: 'btn btn-success'
+                  }
+                }).then((result) => {
+                  location.reload();
+                });
+
+              }
+
+
               // sweetalert
-              Swal.fire({
-                icon: 'success',
-                title: `Successfully ${status}!`,
-                text: `Movement ${status} Successfully.`,
-                customClass: {
-                  confirmButton: 'btn btn-success'
-                }
-              });
+
 
             },
             error: function (err) {
               $('#DesignationModal').modal('hide');
+              dateArray = [],
+              $("#dateList").empty();
+              $("#toDate").val('');
+              $("#fromDate").val('');
+              $("#leaveType").val('');
+              $("#availability").hide();
               Swal.fire({
                 title: 'Oh Sorry!',
                 text: `${status}`,
@@ -419,11 +547,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
               // sweetalert
               Swal.fire({
                 icon: 'success',
-                title: `Successfully ${status}!`,
-                text: `Designation ${status} Successfully.`,
+                title: `Successfully Updated!`,
+                text: `Leave Updated Successfully.`,
                 customClass: {
                   confirmButton: 'btn btn-success'
                 }
+              }).then((result) => {
+                location.reload();
               });
 
             },
@@ -454,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
   $.ajax({
     type: "GET",
 
-    url: '/movement/delete/'+desig_id,
+    url: '/leave/request/delete/'+desig_id,
     success: function (data) {
       Swal.fire({
         icon: 'success',
@@ -495,8 +625,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
     var tbody='';
     data.leave_list.leave_request_details.forEach((item, index) => {
       tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
-        '<td>'+(item.status == 1 ? '<span class="badge bg-label-success">Approved</span>': '<span class="badge bg-label-danger">Rejected</span>');
-    })
+        '<td>'+(item.status == 0 ? '<span class="text-nowrap badge bg-label-secondary">Pending</span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ ''));
+     })
     $(".datatables-leave-list #dataList").html(tbody);
     $(".leave-type-name").html(data.leave_list.leave_type);
     $(".leave-total-credit").html(data.leave_balance.total_leaves_credit);
@@ -561,7 +691,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
             <span>{{$leave['leave_type']}}</span>
             <div class="d-flex align-items-center my-1">
               <small>Available - </small><h4 class="mb-0 me-2">{{$leave['balance_credit']}}</h4>
-
+              <input type="hidden"  id="typeBalance{{$leave['leave_type_id']}}" value={{$leave['balance_credit']}} />
+              <input type="hidden"  id="typeTotal{{$leave['leave_type_id']}}" value={{$leave['total_leaves_credit']}} />
+              <input type="hidden"  id="typeRequested{{$leave['leave_type_id']}}" value={{$leave['pending_leave']}} />
+              <input type="hidden"  id="typeAvailed{{$leave['leave_type_id']}}" value={{$leave['pending_leave']}} />
             </div>
             <span>Total - {{$leave['total_leaves_credit']}}</span>
           </div>

@@ -131,7 +131,7 @@ $(function () {
           render: function (data, type, full, meta) {
             return (
               '<span class="text-nowrap"><button class="btn btn-sm btn-icon me-2 edit-leave" data-id="'+full['id']+'" data-bs-target="#LeaveModal" data-bs-toggle="modal" data-bs-dismiss="modal"><i class="ti ti-edit"></i></button>' +
-              '<button class="btn btn-sm btn-icon delete-record"><i class="ti ti-trash"></i></button></span>'
+              '<button class="btn btn-sm btn-icon delete-record" disabled><i class="ti ti-trash"></i></button></span>'
             );
           }
         }
@@ -301,6 +301,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
             customClass: {
               confirmButton: 'btn btn-success'
             }
+          }).then((result) => {
+            location.reload();
           });
 
         },
@@ -313,6 +315,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
             customClass: {
               confirmButton: 'btn btn-success'
             }
+          }).then((result) => {
+            location.reload();
           });
         }
       });
@@ -320,13 +324,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
     else{
       $.ajax({
         data:  {
-          leave_type:modalLeaveName,
+          leave_type:leave_type,
           total_credit:total_credit,
+          employment_type:employment_type,
 
           "_token": "{{ csrf_token() }}",
 
       },
-        url: `${baseUrl}leave/update/${desig_id}`,
+        url: `${baseUrl}leave-assign/update/${leave_asign_id}`,
         type: 'POST',
 
         success: function (status) {
@@ -340,6 +345,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
             customClass: {
               confirmButton: 'btn btn-success'
             }
+          }).then((result) => {
+            location.reload();
           });
 
         },
@@ -384,11 +391,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
       $.ajax({
       type: "GET",
 
-      url: '/leave/edit/'+desig_id,
+      url: '/leave-assign/edit/'+desig_id,
       success: function (data) {
         console.log(data);
-          $("#modalLeaveName").val(data.leaves.leave);
+          $("#leave_type").val(data.leaves.leave_type);
+          $("#employment_type").val(data.leaves.employment_type);
+          $("#total_credit").val(data.leaves.total_credit);
           $("#submit_leave").data('id',data.leaves.id);
+          $(".select2").select2();
 
 
       },

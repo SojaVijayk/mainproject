@@ -110,77 +110,298 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 (function () {
   // On edit permission click, update text
-  var designationSubmit = document.querySelector('#report');
+
+    $("body").on("click","#import", function (e) {
+      e.preventDefault();
+
+      var fd = new FormData();
+      var files = $('input[type=file]')[0].files[0];
+      fd.append('file',files);
+      $.ajaxSetup({
+              headers: {
+                  'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+              }
+          })
+          $.ajax({
+              type: "POST",
+              url: '/attendance/import',
+              data: fd,
+              contentType: false,
+              processData: false,
+              // dataType: 'json',
+              success: function (data) {
+
+              },
+              error: function(data){
+
+              }
+          });
+  });
+
+  $("body").on("click","#report", function (e) {
+    e.preventDefault();
+
+      var  fromDate =  $("#fromDate").val();
+      var  toDate =  $("#toDate").val();
+      var  employeeList =  $("#employeeList").val();
+      {{--  var  view_type =  $("#viewTypeOptinon").val();  --}}
+      var  view_type = $('input[name="viewTypeOptinon"]:checked').val();
+      var  reportType =  $("#reportType").val();
 
 
-    $('#DesignationModal').on('hidden.bs.modal', function (e) {
-      $(this)
-        .find("input,textarea,select")
-           .val('')
-           .end()
-        .find("input[type=checkbox], input[type=radio]")
-           .prop("checked", "")
-           .end();
+
+      $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+        }
     })
 
-    designationSubmit.onclick = function () {
+    if(reportType ==1){
 
-      var  title =  $("#eventTitle").val();
-      var  type =  $("#eventLabel").val();
-      var  start_date =  $("#fromDate").val();
-      var  start_time =  $("#fromTime").val();
-      var  end_date =  $("#toDate").val();
-      var  end_time =  $("#toTime").val();
-      var  location =  $("#eventLocation").val();
-      var  description =  $("#eventDescription").val();
-      var request_type =   $("#submit_designation").data('type');
-      var desig_id =   $("#submit_designation").data('id');
+      if(view_type == 'excel' || view_type == 'pdf'){
+
+        $.ajax({
+             data:  {
+              fromDate:fromDate,
+                toDate:toDate,
+                type:'2',
+                view_type:view_type,
+                employeeList:employeeList,
+                "_token": "{{ csrf_token() }}",
+            },
+              url: `${baseUrl}downloadBulk`,
+              type: 'POST',
+              xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                //
+            },
+            success: function(data) {
+                var url = window.URL || window.webkitURL;
+                var objectUrl = url.createObjectURL(data);
+                window.open(objectUrl);
+            },
+            error: function(data) {
+                //
+            }
+        });
+        }
+        else{
+
 
 
           $.ajax({
             data:  {
-              title:title,
-              type:type,
-              start_date:start_date,
-              start_time:start_time,
-              end_date:end_date,
-              end_time:end_time,
-              location:location,
-              description:description,
-              "_token": "{{ csrf_token() }}",
-          },
-            url: `${baseUrl}movement/store`,
-            type: 'POST',
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'2',
+               view_type:view_type,
+               employeeList:employeeList,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: `${baseUrl}downloadBulk`,
+             type: 'POST',
 
-            success: function (status) {
+           success: function(data) {
+            var tbody='';
+            data.list.forEach((item, index) => {
+              tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td>'+
+               ' <td> <span class="text-'+(item.in_time <= '09:30'  ? "success" : 'warning')+'">'+(item.in_time != null ? item.in_time : '')+'</span></td>'+
+               '<td><span class="text-'+(item.out_time >= '17:30'  ? "success" : 'warning')+'">'+(item.out_time != null ? item.out_time : '')+'</span></td>'+
+               '';
+                var leave= '';
+                var leave_status= '';
+                var leave_day= '';
 
-                $('#DesignationModal').modal('hide');
-              // sweetalert
-              Swal.fire({
-                icon: 'success',
-                title: `Successfully ${status}!`,
-                text: `Movement ${status} Successfully.`,
-                customClass: {
-                  confirmButton: 'btn btn-success'
+                var mov_title= '';
+                var mov_loc= '';
+                var mov_date= '';
+                var mov_type= '';
+                var mov_status= '';
+
+
+                if((item.leave_type != '') && (item.leave_type != null)){
+                  leave = item.leave_type;
+                  leave_status=(item.leave_status == 1 ? 'Approved' : (item.leave_status == 2 ? 'Rejected' : 'Pending'));
+                  leave_day= (item.leave_day_type == 1 ? 'Full Day' : (item.leave_day_type == 2 ? 'AN' : 'FN'));
+
+                  tbody=tbody+'<td> Leave Details (Leave Type : '+leave+' - Day Type :'+leave_day+ ' - Status:' + leave_status+ ')</td>';
                 }
-              });
 
-            },
-            error: function (err) {
-              $('#DesignationModal').modal('hide');
-              Swal.fire({
-                title: 'Oh Sorry!',
-                text: `${status}`,
-                icon: 'error',
-                customClass: {
-                  confirmButton: 'btn btn-success'
+
+
+                if((item.movement_status != '') && (item.movement_status != null)){
+                  mov_type = item.type;
+                  mov_title= item.title;
+                  mov_loc= item.location;
+                  mov_date = item.start_date+' - '+item.start_time+' to '+item.end_date+' - '+item.end_time;
+                  mov_status=(item.mov_status == 1 ? 'Approved' : (item.mov_status == 2 ? 'Rejected' : 'Pending'));
+                  tbody=tbody+'<td> Movement Details ( '+mov_type+' -  '+mov_title+ ' Duraton : '+move_date+' - Status:' + mov_status+ ')</td>';
+
                 }
+
+                tbody=tbody+'</tr>';
+
               });
-            }
-          });
+              $('#DesignationModal').modal('show');
+            $(".datatables-leave-list #dataList").html(tbody);
 
+           },
+           error: function(data) {
+               //
+           }
+       });
 
+        }
     }
+    else if(reportType ==2){
+      if(view_type == 'excel' || view_type == 'pdf'){
+
+        $.ajax({
+             data:  {
+              fromDate:fromDate,
+                toDate:toDate,
+                type:'2',
+                view_type:view_type,
+                employeeList:employeeList,
+                "_token": "{{ csrf_token() }}",
+            },
+              url: `${baseUrl}movement/downloadBulk`,
+              type: 'POST',
+              xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                //
+            },
+            success: function(data) {
+                var url = window.URL || window.webkitURL;
+                var objectUrl = url.createObjectURL(data);
+                window.open(objectUrl);
+            },
+            error: function(data) {
+                //
+            }
+        });
+        }
+        else{
+
+
+
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'2',
+               view_type:view_type,
+               employeeList:employeeList,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: `${baseUrl}movement/downloadBulk`,
+             type: 'POST',
+
+           success: function(data) {
+            var tbody='';
+            data.list.forEach((item, index) => {
+              tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.start_date+'</td><td>'+item.start_time+'</td><td>'+item.end_date+'</td><td>'+item.end_time+
+                '<td>'+item.title+'</td><td>'+item.type+'</td><td>'+item.location+'</td><td>'+item.description+'</td><td>'+item.requested_at+'</td>'+
+                '<td>'+(item.status == 0 ? '<span class="badge bg-secondary">Pending</span>' : (item.status == 1 ? '<span class="badge bg-success">Aproved</span>' : '<span class="badge bg-danger">Rejected</span>' ))+'</td>'+
+                '<td>'+item.action_by_name+'</td><td>'+item.action_at+'</td>';
+              });
+              $('#MovementModal').modal('show');
+            $(".datatables-leave-list #dataList").html(tbody);
+
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+    }
+   else if(reportType ==3){
+      if(view_type == 'excel' || view_type == 'pdf'){
+
+        $.ajax({
+             data:  {
+              fromDate:fromDate,
+                toDate:toDate,
+                type:'2',
+                view_type:view_type,
+                employeeList:employeeList,
+                "_token": "{{ csrf_token() }}",
+            },
+              url: `${baseUrl}leave/downloadBulk`,
+              type: 'POST',
+              xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                //
+            },
+            success: function(data) {
+                var url = window.URL || window.webkitURL;
+                var objectUrl = url.createObjectURL(data);
+                window.open(objectUrl);
+            },
+            error: function(data) {
+                //
+            }
+        });
+        }
+        else{
+
+
+
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'2',
+               view_type:view_type,
+               employeeList:employeeList,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: `${baseUrl}leave/downloadBulk`,
+             type: 'POST',
+
+           success: function(data) {
+            var tbody='';
+            var tbody_sub='';
+            data.list.forEach((item, index) => {
+              {{--  tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.from+'</td><td>'+item.to+'</td><td>'+item.duration+'</td><td>'+item.requested_at+'</td><td>'+item.status+'</td>';  --}}
+
+
+
+                  tbody_sub=tbody_sub+'<tr><td>'+item.name+'</td><td>'+item.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
+                    '<td>'+item.requested_at+'</td><td>'+(item.status == 0 ? '<span class="text-nowrap badge bg-label-secondary">Pending</span></td>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ '</td>'))+'<td>'+item.action_by_name+'</td><td>'+item.action_at+'</td></tr>';
+
+
+
+              });
+              $('#LeaveModal').modal('show');
+            $(".datatables-leave-list #dataList").html(tbody_sub);
+
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+    }
+
+
+
+});
+
+
+
+
+
+
+
 
 
 
@@ -212,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" role="tablist">
           <li class="nav-item  ">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-personal" role="tab" aria-selected="true">Generate Report</button>
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-personal" role="tab" aria-selected="true">Generate Attendance / Leave / Movement Report</button>
           </li>
           <li class="nav-item">
             <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-account" role="tab" aria-selected="false">Attendance Update</button>
@@ -225,17 +446,28 @@ document.addEventListener('DOMContentLoaded', function (e) {
         <div class="tab-pane fade active show" id="form-tabs-personal" role="tabpanel">
           {{--  <form>  --}}
             <div class="row g-3">
-              <div class="col-md-6">
+              <div class="col-md-4 select2-primary">
+                <label class="form-label" for="reportType">Report Type</label>
+                <select id="reportType" class="select2 form-select" >
+                  <option value="">Select All</option>
+
+                  <option value='1' selected>Attendance</option>
+                  <option value='2' >Movement</option>
+                  <option value='3' >Leave</option>
+
+                </select>
+              </div>
+              <div class="col-md-4">
                 <label for="fromDate" class="form-label">From</label>
             <input type="text" class="form-control datepicker" id="fromDate" name="fromDate" placeholder="MM/DD/YYYY" class="form-control" />
 
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <label for="toDate" class="form-label">To</label>
             <input type="text" class="form-control datepicker" id="toDate" name="toDate" placeholder="MM/DD/YYYY" class="form-control" />
 
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <label class="form-label" for="formtabs-country">Employment Type</label>
                 <select id="formtabs-country" class="select2 form-select" multiple data-allow-clear="true">
                   <option value="">Select All</option>
@@ -246,48 +478,71 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
                 </select>
               </div>
-              <div class="col-md-6 select2-primary">
-                <label class="form-label" for="formtabs-language">Employee</label>
-                <select id="formtabs-language" class="select2 form-select" multiple>
+              <div class="col-md-4 select2-primary">
+                <label class="form-label" for="employeeList">Employee</label>
+                <select id="employeeList" class="select2 form-select" multiple>
                   <option value="">Select All</option>
                   @foreach ($employees as $item)
-                  <option value={{$item->id}}>{{$item->name}}</option>
+                  <option value={{$item->user_id}}>{{$item->name}}</option>
                   @endforeach
                 </select>
               </div>
 
+              <div class="col-md">
+                <small class="text-light fw-medium d-block">View Type</small>
+                <div class="form-check form-check-inline mt-3">
+                  <input class="form-check-input" type="radio" checked name="viewTypeOptinon" id="viewTypeOptinon" value="html" />
+                  <label class="form-check-label" for="inlineRadio1"><i class="ti ti-list ti-xs"></i> View</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="viewTypeOptinon" id="viewTypeOptinon" value="pdf" />
+                  <label class="form-check-label" for="inlineRadio2"><i class="ti ti-file-text"></i> PDF</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="viewTypeOptinon" id="viewTypeOptinon" value="excel"  />
+                  <label class="form-check-label" for="inlineRadio3"><i class="ti ti-file-spreadsheet ti-xs"></i> Excel</label>
+                </div>
+              </div>
+
             </div>
             <div class="pt-4">
-              <a type="submit" href="/downloadBulk"  class="btn btn-primary me-sm-3 me-1">Generate</a>
+              <button type="submit" id="report"   class="btn btn-primary me-sm-3 me-1">Generate</button>
               <button type="reset" class="btn btn-label-secondary">Cancel</button>
             </div>
           {{--  </form>  --}}
         </div>
         <div class="tab-pane fade" id="form-tabs-account" role="tabpanel">
-          <form>
+
             <div class="row">
               <!-- Basic  -->
               <div class="col-12">
                 <div class="card mb-4">
                   <h5 class="card-header">Attendance Import</h5>
                   <div class="card-body">
-                    <form action="/upload" class="dropzone needsclick" id="dropzone-basic">
+                    {{--  <form action="upload"   enctype="multipart/form-data" class="dropzone needsclick" id="dropzone-basic">
+                    @csrf
                       <div class="dz-message needsclick">
                         Drop files here or click to upload
-                        <span class="note needsclick">(This is just a demo dropzone. Selected files are <strong>not</strong> actually uploaded.)</span>
+                        <span class="note needsclick">(This is just a demo dropzone. Selected files are <span class="fw-medium">not</span> actually uploaded.)</span>
                       </div>
                       <div class="fallback">
-                        <input name="file" type="file" />
+                        <input name="file" id="file" type="file" />
                       </div>
-                    </form>
+
+                    </form>--}}
+                      <form id="attendanceImport" enctype="multipart/form-data">
+                    <input type="file" name="file"
+                    class="form-control">
+                      </form>
                   </div>
                 </div>
               </div>
             <div class="pt-4">
-              <button type="submit" class="btn btn-primary me-sm-3 me-1">Import</button>
+              <button type="submit" id="import" class="btn btn-primary me-sm-3 me-1">Import</button>
               <button type="reset" class="btn btn-label-secondary">Cancel</button>
+
             </div>
-          </form>
+
         </div>
 
       </div>
@@ -298,6 +553,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 
 <!-- Modal -->
-
+@include('_partials/_modals/modal-attendance')
+@include('_partials/_modals/modal-movement-report-view')
+@include('_partials/_modals/modal-leave-report-view')
 <!-- /Modal -->
 @endsection

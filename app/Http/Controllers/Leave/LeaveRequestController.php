@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Leave;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
-use App\Models\Movement;
+use App\Models\User;
 use App\Models\Leave;
 use App\Models\LeaveRequest;
 use App\Models\LeaveRequestDetails;
@@ -13,7 +13,14 @@ use App\Models\LeaveAssign;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
+use App\Mail\LeaveRequestMail;
+use App\Mail\LeaveRequestActionMail;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Exports\LeaveExport;
+use Maatwebsite\Excel\Facades\Excel;
+use PDF;
 
 class LeaveRequestController extends Controller
 {
@@ -42,10 +49,11 @@ class LeaveRequestController extends Controller
 
        $leave_balance = [
          "leave_type"=>$leave_detail->leave_type,
+         "leave_type_id"=>$leave_detail->leave_type_id,
          "total_leaves_credit"=>$leave_detail->total_credit,
          "availed_leave"=>$availed_leave,
          "pending_leave"=>$pending_leave,
-         "balance_credit"=>($leave_detail->total_credit-$availed_leave)
+         "balance_credit"=>($leave_detail->total_credit-($availed_leave + $pending_leave))
 
        ];
        array_push($leaves_total_credit_details,$leave_balance);
@@ -54,8 +62,8 @@ class LeaveRequestController extends Controller
 
      $subscriptionDate = $employee_details->doj;
      $dateArray = (explode("-",$subscriptionDate));
-
-// Convert the subscription date to a Carbon instance
+     if(date("Y") ==  $dateArray[0] ){
+        // Convert the subscription date to a Carbon instance
 $subscriptionDateTime = Carbon::parse($subscriptionDate);
 
 // Calculate the expiration date by adding one year to the subscription date
@@ -64,6 +72,23 @@ $expirationDateTime = $subscriptionDateTime->addYear();
 // Format the expiration date as YYYY-MM-DD
 $date_end = $expirationDateTime->format("Y-m-d");
 $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
+     }
+     else{
+      $doj = $employee_details->doj;
+      $dateArray = (explode("-",$doj));
+      $subscriptionDate = date("Y").'-'. $dateArray[1].'-'.$dateArray[2];
+      // Convert the subscription date to a Carbon instance
+$subscriptionDateTime = Carbon::parse($subscriptionDate);
+
+// Calculate the expiration date by adding one year to the subscription date
+$expirationDateTime = $subscriptionDateTime->addYear();
+
+// Format the expiration date as YYYY-MM-DD
+$date_end = $expirationDateTime->format("Y-m-d");
+$date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
+     }
+
+
 
 
     return view('content.leave.leave-request',compact('leave_types','leaves_total_credit_details','date_start','date_end'),['pageConfigs'=> $pageConfigs]);
@@ -80,7 +105,8 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
     ->leftjoin("designations","designations.id","=","employees.designation")
     ->leftjoin("leaves","leaves.id","=","leave_requests.leave_type_id")
     ->leftjoin("employees as emp","emp.user_id","=","leave_requests.action_by")
-    ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('leave_requests.user_id',$id)->get();
+    ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('leave_requests.user_id',$id)
+    ->orderBy('leave_requests.status')->get();
       //  $queries = DB::getQueryLog();
       //   $last_query = end($queries);
 
@@ -97,7 +123,7 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
         'to' => 'required|',
         'date_list' => 'required|',
         'duration' => 'required|',
-        'description' => 'required|',
+
 
     ]);
     $id= Auth::user()->id;
@@ -105,31 +131,58 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
     $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('from'))));
     $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('to'))));
     $date_list = json_encode($request->input('date_list'));
+    $from = date('2023-04-01');
+    $to = date('2024-03-31');
+    $employee = Employee::where('employees.user_id',Auth::user()->id)->first();
+    $total_leaves_credit = LeaveAssign::where('employment_type', $employee->employment_type)->where('leave_type', $request->input('leave_type_id'))->first();
+    $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$from, $to])->sum('leave_duration');
+    $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$from, $to])->sum('leave_duration');
+    $balance = $total_leaves_credit->total_credit - ( $availed_leave + $pending_leave);
+    if($request->input('duration') <=  $balance){
 
-    $permission = LeaveRequest::create(['leave_type_id' => $request->input('leave_type_id'),
-    'duration' => $request->input('duration'),
-      'from' => $from,
-      'to' => $to,
-      'date_list' => $date_list,'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date
-  ]);
+      $permission = LeaveRequest::create(['leave_type_id' => $request->input('leave_type_id'),
+      'duration' => $request->input('duration'),
+        'from' => $from,
+        'to' => $to,
+        'date_list' => $date_list,'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date
+    ]);
 
-    if ($permission) {
-      foreach($request->input('date_list') as $data){
+      if ($permission) {
+        foreach($request->input('date_list') as $data){
 
-         LeaveRequestDetails::create(['leave_type_id' => $permission->leave_type_id,
-        'request_id' => $permission->id,
-        'leave_day_type' => $data['leave_day_type'],
-        'leave_duration' => ($data['leave_day_type'] == 1 ? 1 : 0.5),
-          'date' => $data['date'],
-         'user_id' => $id,'status' => 0,'requested_at' => $date
-      ]);
+           LeaveRequestDetails::create(['leave_type_id' => $permission->leave_type_id,
+          'request_id' => $permission->id,
+          'leave_day_type' => $data['leave_day_type'],
+          'leave_duration' => ($data['leave_day_type'] == 1 ? 1 : 0.5),
+            'date' => $data['date'],
+           'user_id' => $id,'status' => 0,'requested_at' => $date
+        ]);
+        }
+
+        $mailData = [
+          'title' => 'Leave Request',
+          'button' => 'Take Action',
+          'url' => 'http://localhost:8000/leave/approve-list',
+          'body' => Auth::user()->name." created a new leave request for the period of ".$request->input('from')." to ".$request->input('to').".  Please login to your account for take action.",
+        ];
+
+        $reporting = Employee::where('employees.user_id',Auth::user()->id)
+        ->leftjoin("employees as emp","emp.user_id","=","employees.reporting_officer")
+        ->select('emp.email')->first();
+
+        // Mail::to($reporting->email)->send(new LeaveRequestMail($mailData));
+
+
+        return response()->json( ["status"=>true, "data"=>$permission]);
+      } else {
+        return response()->json(["status"=>false,'message' => "Internal Server Error"], 500);
+
       }
-
-      return response()->json(  $permission);
-    } else {
-      return response()->json(['message' => "Internal Server Error"], 500);
-
     }
+    else{
+      return response()->json(["status"=>false,'message' => "You have no credit and cannot request ".$request->input('duration')." Leave" ], 200);
+    }
+
   }
 
 
@@ -163,7 +216,8 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("leaves","leaves.id","=","leave_requests.leave_type_id")
       ->leftjoin("employees as emp","emp.user_id","=","leave_requests.action_by")
-      ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('employees.reporting_officer',$id)->get();
+      ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('employees.reporting_officer',$id)
+      ->orderBy('leave_requests.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
         //   dd($queries);
@@ -190,7 +244,7 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
       "total_leaves_credit"=>$total_leaves_credit->total_credit,
       "availed_leave"=>$availed_leave,
       "pending_leave"=>$pending_leave,
-      "balance_credit"=>($total_leaves_credit->total_credit-$availed_leave),
+      "balance_credit"=>($total_leaves_credit->total_credit-($availed_leave + $pending_leave)),
 
     ];
 
@@ -217,6 +271,7 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
         //
         $this->validate($request, [
           'status' => 'required',
+          'remark' => 'required',
 
       ]);
 
@@ -225,6 +280,7 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
       $designation = LeaveRequestDetails::find($id);
       $designation->status = $request->input('status');
       $designation->action_at = $date;
+      $designation->remark = $request->input('remark');
       $designation->action_by = Auth::user()->id;
       $designation->save();
 
@@ -253,15 +309,77 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
           "total_leaves_credit"=>$total_leaves_credit->total_credit,
           "availed_leave"=>$availed_leave,
           "pending_leave"=>$pending_leave,
-          "balance_credit"=>($total_leaves_credit->total_credit-$availed_leave),
+          "balance_credit"=>($total_leaves_credit->total_credit-($availed_leave + $pending_leave)),
 
         ];
+        if($count == 0){
+          $leaveDetails =LeaveRequest::find($designation->request_id);
+
+        $mailData = [
+          'title' => 'Leave Request Action ',
+          'button' => 'View',
+          'url' => 'http://localhost:8000/leave/request',
+          'body' => Auth::user()->name." procecced your leave request for the period of ".$leaveDetails->from." to ".$leaveDetails->to." . Please login to your account for detailed view.",
+        ];
+
+        $user =  User::find($data->user_id);
+        // Mail::to($user->email)->send(new LeaveRequestActionMail($mailData));
+        }
+
 
               return response()->json(['leave_list'=> $list,"leave_balance"=>$leave_balance]);
       } else {
         return response()->json(['message' => "Internal Server Error"], 500);
 
       }
+    }
+
+    public function destroy($id)
+    {
+        //
+        $movement=LeaveRequest::find($id);
+          $movement->delete(); //returns true/false
+    }
+
+
+    public function downloadBulk(Request $request){
+
+      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
+      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
+
+      if($request->input('type') == 1){
+        $employees = [Auth::user()->id];
+      }
+      else{
+        $employees = $request->input('employeeList');
+      }
+
+      $list = LeaveRequestDetails::join("employees","employees.user_id","=","leave_request_details.user_id")
+      ->leftjoin("designations","designations.id","=","employees.designation")
+      ->leftjoin("leaves","leaves.id","=","leave_request_details.leave_type_id")
+      ->leftjoin("employees as emp","emp.user_id","=","leave_request_details.action_by")
+      ->select('leave_request_details.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')
+
+      ->whereIn('leave_request_details.user_id',$employees)
+    ->whereBetween('leave_request_details.date', [$from, $to])
+    ->orderBy('leave_request_details.user_id','DESC')->get();
+
+
+
+    if($request->input('view_type') == 'html'){
+      return response()->json(["list"=>$list]);
+    }
+    else if($request->input('view_type') == 'pdf'){
+      $pdf = PDF::loadView('exports.leave-export-pdf', compact('list'));
+      return $pdf->download('leave.pdf');
+
+    }
+    else if($request->input('view_type') == 'excel'){
+
+      return Excel::download(new LeaveExport($list), 'leave.xlsx');
+
+    }
+      // return response()->download(public_path('storage/AttendanceRepot01-09-2023To30-09-2023Bulk.pdf'));
     }
 
 }

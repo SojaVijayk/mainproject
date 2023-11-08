@@ -144,116 +144,73 @@
 
   <!-- User Content -->
   <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
-    <!-- User Pills -->
-    <ul class="nav nav-pills flex-column flex-md-row mb-4">
-      <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><i class="ti ti-user-check ti-xs me-1"></i>Account</a></li>
-      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/security')}}"><i class="ti ti-lock ti-xs me-1"></i>Security</a></li>
-      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/billing')}}"><i class="ti ti-currency-dollar ti-xs me-1"></i>Payroll</a></li>
-      {{--  <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/notifications')}}"><i class="ti ti-bell ti-xs me-1"></i>Notifications</a></li>
-      <li class="nav-item"><a class="nav-link" href="{{url('app/user/view/connections')}}"><i class="ti ti-link ti-xs me-1"></i>Connections</a></li>  --}}
-    </ul>
-    <!--/ User Pills -->
 
-    <!-- Project table -->
+
+    <!-- Change Password -->
     <div class="card mb-4">
-      <h5 class="card-header">User's Projects List</h5>
-      <div class="table-responsive mb-3">
-        <table class="table datatable-project border-top">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Project</th>
-              <th class="text-nowrap">Total Task</th>
-              <th>Progress</th>
-              <th>Hours</th>
-            </tr>
-          </thead>
-        </table>
+      <h5 class="card-header">Change Password</h5>
+      <div class="card-body">
+        <form id="formChangePassword" method="POST" onsubmit="return false">
+          <div class="alert alert-warning" role="alert">
+            <h5 class="alert-heading mb-2">Ensure that these requirements are met</h5>
+            <span>Minimum 8 characters long, uppercase & symbol</span>
+          </div>
+          <div class="row">
+            <div class="mb-3 col-12 col-sm-6 form-password-toggle">
+              <label class="form-label" for="newPassword">New Password</label>
+              <div class="input-group input-group-merge">
+                <input class="form-control" type="password" id="newPassword" name="newPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
+              </div>
+            </div>
+
+            <div class="mb-3 col-12 col-sm-6 form-password-toggle">
+              <label class="form-label" for="confirmPassword">Confirm New Password</label>
+              <div class="input-group input-group-merge">
+                <input class="form-control" type="password" name="confirmPassword" id="confirmPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
+              </div>
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary me-2">Change Password</button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
-    <!-- /Project table -->
+    <!--/ Change Password -->
 
-    <!-- Activity Timeline -->
-    <div class="card mb-4">
-      <h5 class="card-header">User Activity Timeline</h5>
-      <div class="card-body pb-0">
-        <ul class="timeline mb-0">
-          <li class="timeline-item timeline-item-transparent">
-            <span class="timeline-point timeline-point-primary"></span>
-            <div class="timeline-event">
-              <div class="timeline-header mb-1">
-                <h6 class="mb-0">12 Invoices have been paid</h6>
-                <small class="text-muted">12 min ago</small>
+    <!-- Payment Methods -->
+    <div class="card card-action mb-4">
+      <div class="card-header align-items-center">
+        <h5 class="card-action-title mb-0">Bank Account</h5>
+        <div class="card-action-element">
+          <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#addNewCCModal"><i class="ti ti-plus ti-xs me-1"></i>Add Account</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="added-cards">
+          <div class="cardMaster border p-3 rounded mb-3">
+            <div class="d-flex justify-content-between flex-sm-row flex-column">
+              <div class="card-information">
+                <img class="mb-3 img-fluid" src="{{asset('assets/img/icons/payments/mastercard.png')}}" alt="Master Card">
+                <h6 class="mb-2 pt-1">{{$employee->name}}</h6>
+                <span class="card-number">&#8727;&#8727;&#8727;&#8727; &#8727;&#8727;&#8727;&#8727; &#8727;&#8727;&#8727;&#8727; 9856</span>
               </div>
-              <p class="mb-2">Invoices have been paid to the company</p>
-              <div class="d-flex">
-                <a href="javascript:void(0)" class="me-3">
-                  <img src="{{asset('assets/img/icons/misc/pdf.png')}}" alt="PDF image" width="15" class="me-2">
-                  <span class="fw-semibold text-heading">invoices.pdf</span>
-                </a>
-              </div>
-            </div>
-          </li>
-          <li class="timeline-item timeline-item-transparent">
-            <span class="timeline-point timeline-point-warning"></span>
-            <div class="timeline-event">
-              <div class="timeline-header mb-1">
-                <h6 class="mb-0">Client Meeting</h6>
-                <small class="text-muted">45 min ago</small>
-              </div>
-              <p class="mb-2">Project meeting with john @10:15am</p>
-              <div class="d-flex flex-wrap">
-                <div class="avatar me-3">
-                  <img src="{{ asset('assets/img/avatars/3.png') }}" alt="Avatar" class="rounded-circle" />
+              <div class="d-flex flex-column text-start text-lg-end">
+                <div class="d-flex order-sm-0 order-1 mt-3">
+                  <button class="btn btn-label-primary me-3" data-bs-toggle="modal" data-bs-target="#editCCModal">Edit</button>
+                  <button class="btn btn-label-secondary">Delete</button>
                 </div>
-                <div>
-                  <h6 class="mb-0">Lester McCarthy (Client)</h6>
-                  <small>CEO of {{ config('variables.creatorName') }}</small>
-                </div>
+                <small class="mt-sm-auto mt-2 order-sm-1 order-0"></small>
               </div>
             </div>
-          </li>
-          <li class=" timeline-item timeline-item-transparent">
-            <span class="timeline-point timeline-point-info"></span>
-            <div class="timeline-event">
-              <div class="timeline-header mb-1">
-                <h6 class="mb-0">Create a new project for client</h6>
-                <small class="text-muted">2 Day Ago</small>
-              </div>
-              <p class="mb-2">5 team members in a project</p>
-              <div class="d-flex align-items-center avatar-group">
-                <div class="avatar pull-up" data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top" title="Vinnie Mostowy">
-                  <img src="{{ asset('assets/img/avatars/5.png') }}" alt="Avatar" class="rounded-circle">
-                </div>
-                <div class="avatar pull-up" data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top" title="Marrie Patty">
-                  <img src="{{ asset('assets/img/avatars/12.png') }}" alt="Avatar" class="rounded-circle">
-                </div>
-                <div class="avatar pull-up" data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top" title="Jimmy Jackson">
-                  <img src="{{ asset('assets/img/avatars/9.png') }}" alt="Avatar" class="rounded-circle">
-                </div>
-                <div class="avatar pull-up" data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top" title="Kristine Gill">
-                  <img src="{{ asset('assets/img/avatars/6.png') }}" alt="Avatar" class="rounded-circle">
-                </div>
-                <div class="avatar pull-up" data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top" title="Nelson Wilson">
-                  <img src="{{ asset('assets/img/avatars/4.png') }}" alt="Avatar" class="rounded-circle">
-                </div>
-              </div>
-            </div>
-          </li>
-          <li class="timeline-item timeline-item-transparent border-0">
-            <span class="timeline-point timeline-point-success"></span>
-            <div class="timeline-event">
-              <div class="timeline-header mb-1">
-                <h6 class="mb-0">Design Review</h6>
-                <small class="text-muted">5 days Ago</small>
-              </div>
-              <p class="mb-0">Weekly review of freshly prepared design for our new app.</p>
-            </div>
-          </li>
-        </ul>
+          </div>
+
+        </div>
       </div>
     </div>
-    <!-- /Activity Timeline -->
+    <!--/ Payment Methods -->
 
 
   </div>

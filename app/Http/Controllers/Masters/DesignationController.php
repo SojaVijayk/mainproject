@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Designation;
 use App\Models\EmploymentType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DesignationController extends Controller
 {
@@ -22,7 +23,17 @@ class DesignationController extends Controller
         //
         $designation = Designation::orderBy('id','DESC')->get();
         $employment_types = EmploymentType::orderBy('id','DESC')->get();
-        return view('content.masters.designation',compact('designation','employment_types'));
+
+        $pageConfigs = ['myLayout' => 'horizontal'];
+        if(Auth::user()->user_role ==1){
+          return view('content.masters.designation',compact('designation','employment_types'));
+
+        }
+        else{
+          return view('content.masters.designation',compact('designation','employment_types'),['pageConfigs'=> $pageConfigs]);
+
+
+        }
     }
     public function getAllDesignations(Request $request)
     {

@@ -1,12 +1,17 @@
 <!-- Add Project Modal -->
 <div class="modal addProjectModal fade" id="addProjectModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-add-new-project">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-add-new-project">
     <div class="modal-content p-3 p-md-5">
       <button type="button" class="btn-close btn-pinned" data-bs-dismiss="modal" aria-label="Close"></button>
       <div class="modal-body">
         <div class="text-center mb-4">
           <h3 class="project-title mb-2">Add New Project</h3>
-          <p class="text-muted">Set project Clients</p>
+
+          <div class="divider contactperson">
+            <div class="divider-text">
+               Project Basic Information
+            </div>
+          </div>
         </div>
         <!-- Add project form -->
         <form id="addProjectForm" class="row g-3" onsubmit="return false">
@@ -15,12 +20,7 @@
             <label class="form-label" for="modalProjectName">Project Name</label>
             <input type="text" id="modalProjectName" name="modalProjectName" class="form-control" placeholder="Enter a project name" tabindex="-1" />
           </div>
-          <div class="col-12 mb-4">
-            <label class="form-label" for="modalProjectDescription">Project Description</label>
-            {{--  <input type="text" id="modalProjectDescription" name="modalProjectDescription" class="form-control" placeholder="Enter a project description" tabindex="-1" />  --}}
-            <textarea class="form-control" id="modalProjectDescription" name="modalProjectDescription" rows="3"></textarea>
-          </div>
-          <div class="col-12 mb-4">
+          <div class="col-6 mb-4">
             <label class="form-label" for="modalProjectType">Project Type</label>
             {{--  <input type="text" id="modalProjectType" name="modalProjectType" class="form-control" placeholder="Enter a project type" tabindex="-1" />  --}}
 
@@ -32,41 +32,26 @@
               </select>
 
           </div>
-          <div class="col-12 mb-4">
-            <label class="form-label" for="leads">Project Leads</label>
-              <select  id="leads" name="leads" class="select2 form-select" multiple>
-                @foreach ($leads as $lead)
-                  <option value={{$lead->id}} >{{$lead->name}}</option>
-                  @endforeach
-              </select>
-
+          <div class="col-6 mb-4">
+            <label class="form-label" for="modalProjectName">Project Cost</label>
+            <input type="text" id="modalProjectName" name="modalProjectName" class="form-control" placeholder="Enter a project name" tabindex="-1" />
           </div>
-          <div class="col-12 mb-4">
-            <label class="form-label" for="members">Team Members</label>
-              <select  id="members" name="members" class="select2 form-select" multiple>
-                @foreach ($members as $member)
-                  <option value={{$member->id}} >{{$member->name}}</option>
-                  @endforeach
-              </select>
+          <div class="col-8">
+            {{--  <h5>Project Clients </h5>  --}}
+            <div class="col-md">
+              <small class="text-light fw-medium d-block">Project Clients/Sponsering Agency</small>
+              @foreach ($clients as $client)
+              <div class="form-check form-check-inline mt-3">
+                <input class="form-check-input client-checkbox" type="checkbox" data-id={{$client->id}} value={{$client->id}} type="checkbox" id={{$client->id}} />
+                <label class="form-check-label" for="inlineCheckbox1">{{$client->client_name}}</label>
+              </div>
+              @endforeach
 
-          </div>
-          <div class="col-12">
-            <h5>Project Clients</h5>
-            <!-- Client table -->
-            <div class="table-responsive">
+            </div>
+         {{--  <div class="table-responsive">
               <table class="table table-flush-spacing">
                 <tbody>
-                  {{--  <tr>
-                    <td class="text-nowrap fw-semibold">Administrator Access <i class="ti ti-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Allows a full access to the system"></i></td>
-                    <td>
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="selectAll" />
-                        <label class="form-check-label" for="selectAll">
-                          Select All
-                        </label>
-                      </div>
-                    </td>
-                  </tr>  --}}
+
                   @foreach ($clients as $client)
                   <tr>
                     <td class="text-nowrap  fw-semibold">{{$client->client_name}}</td>
@@ -84,16 +69,112 @@
                     </td>
                   </tr>
                   @endforeach
-
-
-
-
-
                 </tbody>
               </table>
-            </div>
-            <!-- clients table -->
+            </div>  --}}
+
           </div>
+
+          <div class="col-4 mb-4">
+            <label class="form-label" for="initiatedBy">Client Contact Person</label>
+              <select  id="contactperson" name="initiatedBy" class="select2 form-select" multiple>
+                @foreach ($members as $member)
+                  <option value={{$member->id}} >{{$member->name}}</option>
+                  @endforeach
+              </select>
+
+          </div>
+
+
+          <div class="col-12 mb-4">
+            <label class="form-label" for="modalProjectDescription">Project Description</label>
+            {{--  <input type="text" id="modalProjectDescription" name="modalProjectDescription" class="form-control" placeholder="Enter a project description" tabindex="-1" />  --}}
+            <textarea class="form-control" id="modalProjectDescription" name="modalProjectDescription" rows="3"></textarea>
+          </div>
+
+          <div class="divider contactperson">
+            <div class="divider-text">
+              Project Team Details
+            </div>
+          </div>
+          <div class="col-4 mb-4">
+            <label class="form-label" for="leads">Project Leads</label>
+              <select  id="leads" name="leads" class="select2 form-select" multiple>
+                @foreach ($leads as $lead)
+                  <option value={{$lead->id}} >{{$lead->name}}</option>
+                  @endforeach
+              </select>
+
+          </div>
+          <div class="col-4 mb-4">
+            <label class="form-label" for="members">Team Members</label>
+              <select  id="members" name="members" class="select2 form-select" multiple>
+                @foreach ($members as $member)
+                  <option value={{$member->id}} >{{$member->name}}</option>
+                  @endforeach
+              </select>
+
+          </div>
+
+          <div class="col-4 mb-4">
+            <label class="form-label" for="initiatedBy">Project Initiated By</label>
+              <select  id="initiatedBy" name="initiatedBy" class="select2 form-select" multiple>
+                @foreach ($members as $member)
+                  <option value={{$member->id}} >{{$member->name}}</option>
+                  @endforeach
+              </select>
+
+          </div>
+          {{--  <h5>Project Staff Strength </h5>  --}}
+          <small class="text-light fw-medium d-block">Project Staff Strenght</small>
+          <div class="col-4 mb-4">
+            <label class="form-label" for="contaractStaff">Contract Staff</label>
+            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+          </div>
+          <div class="col-4 mb-4">
+            <label class="form-label" for="contaractStaff">Field Staff</label>
+            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+          </div>
+          <div class="col-4 mb-4">
+            <label class="form-label" for="contaractStaff">Project Staff</label>
+            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+          </div>
+
+          <div class="divider contactperson">
+            <div class="divider-text">
+              Project Duration Details
+            </div>
+          </div>
+          {{--  <h5>Tenure Project</h5>  --}}
+          <small class="text-light fw-medium d-block">Project Tenure</small>
+          <div class="col-4 mb-4">
+            <label class="form-label" for="contaractStaff">Year</label>
+            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+          </div>
+          <div class="col-4 mb-4">
+            <label class="form-label" for="contaractStaff">Month</label>
+            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+          </div>
+          <div class="col-4 mb-4">
+            <label class="form-label" for="contaractStaff">Days</label>
+            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+          </div>
+
+          <div class="col-6 mb-4">
+            <label class="form-label" for="contaractStaff">Expected Start Date</label>
+            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+          </div>
+          <div class="col-6 mb-4">
+            <label class="form-label" for="contaractStaff">Expected End Date</label>
+            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+          </div>
+
+
+          <div class="col-12 mb-4">
+            <label class="form-label" for="modalProjectDescription">Additonal Support </label>
+             <textarea class="form-control" id="support" name="support" rows="3"></textarea>
+          </div>
+
           <div class="col-12 text-center mt-4">
             <button type="submit" id="submit_project" data-id="0" data-type="new" class="btn submit-project btn-primary me-sm-3 me-1">Submit</button>
             <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>

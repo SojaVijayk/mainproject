@@ -182,6 +182,8 @@ return [
     Illuminate\Validation\ValidationServiceProvider::class,
     Illuminate\View\ViewServiceProvider::class,
     Spatie\Permission\PermissionServiceProvider::class,
+    Maatwebsite\Excel\ExcelServiceProvider::class,
+    Barryvdh\DomPDF\ServiceProvider::class,
     /*
          * Package Service Providers...
          */
@@ -211,7 +213,9 @@ return [
 
   'aliases' => Facade::defaultAliases()->merge([
     // 'ExampleClass' => App\Example\ExampleClass::class,
-    'Helper' => App\Helpers\Helpers::class
+    'Helper' => App\Helpers\Helpers::class,
+    'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+    'PDF' => Barryvdh\DomPDF\Facade::class,
   ])->toArray(),
 
 ];

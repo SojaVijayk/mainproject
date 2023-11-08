@@ -18,7 +18,7 @@ return new class extends Migration
                  ->on('users')->onDelete('cascade');
             $table->string('title');
             $table->string('type');
-            $table->date('start_datet');
+            $table->date('start_date');
             $table->string('start_time');
             $table->date('end_date');
             $table->string('end_time');

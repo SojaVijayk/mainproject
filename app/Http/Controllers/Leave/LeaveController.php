@@ -99,7 +99,7 @@ class LeaveController extends Controller
       ]);
 
       $leaves = Leave::find($id);
-      $leaves->leave = $request->input('leave_type');
+      $leaves->leave_type = $request->input('leave_type');
 
       $leaves->save();
 

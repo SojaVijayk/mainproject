@@ -32,7 +32,7 @@ class ClientController extends Controller
       $pageConfigs = ['myLayout' => 'horizontal'];
       $permissions = Permission::get();
 
-        $clients = Client::with('projects')->withCount('projects')->get();
+        $clients = Client::with('projects')->with('contactPersons')->withCount('projects')->get();
         if(Auth::user()->user_role ==1){
           return view('content.clients.clients',compact('clients','permissions'));
         }else{
@@ -112,12 +112,15 @@ class ClientController extends Controller
     {
         //
         $this->validate($request, [
-          'name' => 'required',
+          'client_name' => 'required',
 
       ]);
 
       $client = Client::find($id);
-      $client->name = $request->input('name');
+      $client->client_name = $request->input('client_name');
+      $client->address = $request->input('address');
+      $client->email = $request->input('email');
+      $client->email = $request->input('email');
       $client->save();
 
 

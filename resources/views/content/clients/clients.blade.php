@@ -59,6 +59,7 @@ $configData = Helper::appClasses();
   });
 
 (function () {
+  $('.contactperson').show();
   // On edit role click, update text
   var clientEditList = document.querySelectorAll('.client-edit-modal'),
     clientAdd = document.querySelector('.add-new-client'),
@@ -66,6 +67,7 @@ $configData = Helper::appClasses();
     clientSubmit = document.querySelector('.submit-client');
 
     $('#addClientModal').on('hidden.bs.modal', function (e) {
+      $("#submit_client").data('type','new');
       $(this)
         .find("input,textarea,select")
            .val('')
@@ -75,12 +77,25 @@ $configData = Helper::appClasses();
            .end();
     })
 
+    $('#addClientModal').on('shown.bs.modal', function (e) {
+    var type= $("#submit_client").data('type');
+
+      if(type == 'new'){
+        $('.contactperson').show();
+      }
+      else if(type == 'edit'){
+        $('.contactperson').hide();
+      }
+
+    })
+
     clientAdd.onclick = function () {
       clientTitle.innerHTML = 'Add New Client'; // reset text
   };
   clientSubmit.onclick = function () {
     var type =   $("#submit_client").data('type');
-    var cliengt_id = $(this).data('id');
+    var client_id =   $("#submit_client").data('id');
+
    var  modalClientName =  $("#modalClientName").val();
    var  modalClientEmail =  $("#modalClientEmail").val();
    var  modalClientAddress =  $("#modalClientAddress").val();
@@ -140,6 +155,7 @@ $configData = Helper::appClasses();
 
         success: function (status) {
 
+
             $('#addClientModal').modal('hide');
           // sweetalert
           Swal.fire({
@@ -164,6 +180,49 @@ $configData = Helper::appClasses();
         }
       });
       }
+      else{
+
+
+        $.ajax({
+          data:  {
+            client_name:modalClientName,
+            email:modalClientEmail,
+            address:modalClientAddress,
+            phone:modalClientPhone,
+            "_token": "{{ csrf_token() }}",
+
+        },
+          url: `${baseUrl}client/update${cliengt_id}`,
+          type: 'POST',
+
+          success: function (status) {
+
+
+              $('#addClientModal').modal('hide');
+            // sweetalert
+            Swal.fire({
+              icon: 'success',
+              title: `Successfully ${status}!`,
+              text: `Client ${status} Successfully.`,
+              customClass: {
+                confirmButton: 'btn btn-success'
+              }
+            });
+          },
+          error: function (err) {
+            offCanvasForm.offcanvas('hide');
+            Swal.fire({
+              title: 'Oh Sorry!',
+              text: `${status}`,
+              icon: 'error',
+              customClass: {
+                confirmButton: 'btn btn-success'
+              }
+            });
+          }
+        });
+
+      }
 
   };
   if (clientEditList) {
@@ -172,9 +231,10 @@ $configData = Helper::appClasses();
 
         clientTitle.innerHTML = 'Edit Client'; // reset text
         $("#submit_client").data('type','edit');
-
-
         var client_id = $(this).data('id');
+        $("#submit_client").attr('data-id',client_id);
+
+
         $.ajaxSetup({
           headers: {
               'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
@@ -187,7 +247,11 @@ $configData = Helper::appClasses();
       success: function (data) {
         console.log(data);
           $("#modalClientName").val(data.client.client_name);
+          $("#modalClientEmail").val(data.client.email);
+          $("#modalClientAddress").val(data.client.address);
+          $("#modalClientPhone").val(data.client.phone);
           $("#submit_client").data('id',data.client.id);
+
 
 
       },
@@ -301,6 +365,28 @@ $configData = Helper::appClasses();
                     <p class="text-muted mb-0">{{$client->phone}}</p>
                   </div>
                 </li>
+                <div class="divider">
+                  <div class="divider-text">
+                     Contact Persons
+                  </div>
+                </div>
+                @foreach ( $client->contactPersons as $person )
+                <li class="timeline-item ps-4 border-left-dashed">
+                  <span class="timeline-indicator timeline-indicator-success">
+                    <i class="ti ti-circle-check"></i>
+                  </span>
+                  <div class="timeline-event ps-0 pb-0">
+                    <div class="timeline-header">
+                      <small class="text-success text-uppercase fw-semibold">{{$person->name}} - ({{$person->designation}})</small>
+
+
+                    </div>
+                    <h6 class="mb-0">{{$client->email}}</h6>
+                    <p class="text-muted mb-0">{{$client->phone}}</p>
+                  </div>
+                </li>
+
+                @endforeach
 
               </ul>
 

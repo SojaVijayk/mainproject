@@ -11,6 +11,9 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/bs-stepper/bs-stepper.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-select/bootstrap-select.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/dropzone/dropzone.css')}}" />
 
 @endsection
 
@@ -25,9 +28,15 @@
 <script src="{{asset('assets/vendor/libs/cleavejs/cleave-phone.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/bs-stepper/bs-stepper.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/bootstrap-select/bootstrap-select.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/dropzone/dropzone.js')}}" ></script>
+
 @endsection
 
 @section('page-script')
+<script src="{{asset('assets/js/form-wizard-icons.js')}}"></script>
+<script src="{{asset('assets/js/forms-file-upload.js')}}"></script>
 <script>
   /**
  * Page User List
@@ -76,13 +85,13 @@ $(function () {
 
 
 
-  if (select2.length) {
+  {{--  if (select2.length) {
     var $this = select2;
     $this.wrap('<div class="position-relative"></div>').select2({
       placeholder: 'Select Privilege',
       dropdownParent: $this.parent()
     });
-  }
+  }  --}}
 
   // Users datatable
   if (dt_user_table.length) {
@@ -199,7 +208,7 @@ $(function () {
 
             $output +=  '<a><span class="badge bg-label-primary m-1">'+$assignedTo[i]['name']+'</span></a>';
           }
-          return '<span class="text-nowrap">' + $output + '</span>';
+          return '<span class="">' + $output + '</span>';
           }
         },
         {
@@ -235,14 +244,14 @@ $(function () {
           render: function (data, type, full, meta) {
             return (
               '<div class="d-flex align-items-center">' +
-              '<a href="javascript:;" class="text-body"><i class="ti ti-edit ti-sm me-2"></i></a>' +
+              '<a href="javascript:;" data-id="'+full['id']+'" class="text-body edit-record"  data-bs-toggle="offcanvas"  data-bs-target= "#offcanvasAddUser" ><i class="ti ti-edit ti-sm me-2"></i></a>' +
               '<a href="javascript:;" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
               '<a href="javascript:;" class="text-body dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical ti-sm mx-1"></i></a>' +
               '<div class="dropdown-menu dropdown-menu-end m-0">' +
               '<a href="' +
               userView +
               '" class="dropdown-item">View</a>' +
-              '<a href="javascript:;" class="dropdown-item">Suspend</a>' +
+              '<a data-bs-target="#fullscreenModal" data-bs-toggle="modal" data-bs-dismiss="modal" class="dropdown-item">More Data</a>' +
               '</div>' +
               '</div>'
             );
@@ -649,8 +658,8 @@ $(function () {
       url: `${baseUrl}user/employee/store`,
       type: 'POST',
       success: function (status) {
-        dt_user.draw();
-        offCanvasForm.offcanvas('hide');
+        {{--  dt_user.draw();  --}}
+        {{--  offCanvasForm.offcanvas('hide');  --}}
 
         // sweetalert
         Swal.fire({
@@ -660,10 +669,12 @@ $(function () {
           customClass: {
             confirmButton: 'btn btn-success'
           }
+        }).then((result) => {
+          window.location.reload();
         });
       },
       error: function (err) {
-        offCanvasForm.offcanvas('hide');
+        {{--  offCanvasForm.offcanvas('hide');  --}}
         Swal.fire({
           title: 'Duplicate Entry!',
           text: 'Your email should be unique.',
@@ -671,10 +682,78 @@ $(function () {
           customClass: {
             confirmButton: 'btn btn-success'
           }
+        }).then((result) => {
+          window.location.reload();
         });
       }
     });
   });
+
+
+
+
+  $(document).on('click', '.edit-record', function () {
+    var user_id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // changing the title of offcanvas
+    $('#offcanvasAddUserLabel').html('Edit User');
+
+
+
+    $(".data-submit").data('type','edit');
+    $(".data-submit").attr('data-id',user_id);
+
+
+    $.ajaxSetup({
+      headers: {
+          'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+      }
+  })
+  $.ajax({
+  type: "GET",
+
+  url: '/user/employee/edit/'+user_id,
+  success: function (data) {
+    console.log(data);
+    $('#user_id').val(data.id);
+    $('#name').val(data.name);
+    $('#email').val(data.email);
+    $('#mobile').val(data.mobile);
+    $('#empId').val(data.empId);
+    $('#employment_type').val(data.employment_type);
+    $('#designation').val(data.desig_id);
+    $('#doj').val(data.doj);
+    $('#usertype_role').val(data.user_role);
+    $('#reporting_officer').val(data.reporting_officer);
+    let roles =    data.roles.map(a => a.id);
+    console.log(roles);
+    $('#roles').val(roles);
+    $('#roles').select2();
+    {{--  data.roles.forEach((item, index) => {
+
+    });  --}}
+
+
+
+
+
+
+  },
+  error: function(data){
+
+  }
+});
+
+
+
+  });
+
 
 
 })();
@@ -798,23 +877,23 @@ $(function () {
       <form class="add-new-user pt-0" id="addNewUserForm" onsubmit="return false">
         <div class="mb-3">
           <label class="form-label" for="name">Full Name</label>
-          <input type="text" class="form-control" id="name" placeholder="John Doe" name="name" aria-label="John Doe" />
+          <input type="text" class="form-control" id="name" placeholder="" name="name" aria-label="" />
         </div>
         <div class="mb-3">
           <label class="form-label" for="email">Email</label>
-          <input type="text" id="email" class="form-control" placeholder="john.doe@example.com" aria-label="john.doe@example.com" name="email" />
+          <input type="text" id="email" class="form-control" placeholder="" aria-label="" name="email" />
         </div>
         <div class="mb-3">
           <label class="form-label" for="mobile">Contact</label>
-          <input type="text" id="mobile" class="form-control phone-mask" placeholder="609 988 44 11" aria-label="john.doe@example.com" name="mobile" />
+          <input type="text" id="mobile" class="form-control phone-mask" placeholder="609 988 44 11" aria-label="" name="mobile" />
         </div>
         <div class="mb-3">
           <label class="form-label" for="empId">Employee ID</label>
-          <input type="text" id="empId" class="form-control " placeholder="XXX" aria-label="john.doe@example.com" name="empId" />
+          <input type="text" id="empId" class="form-control " placeholder="XXX" aria-label="" name="empId" />
         </div>
         <div class="mb-3">
           <label class="form-label" for="employment_type">Employment Type</label>
-          <select id="employment_type" name="employment_type" class=" form-select">
+          <select id="employment_type" name="employment_type" class=" form-select select2">
             <option disabled value="">Select</option>
             @foreach ($employment_types as $employment_type)
             <option value={{$employment_type->id}}> {{$employment_type->employment_type}}</option>
@@ -825,7 +904,7 @@ $(function () {
         </div>
         <div class="mb-3">
           <label class="form-label" for="designation">Designation</label>
-          <select id="designation" name="designation" class=" form-select">
+          <select id="designation" name="designation" class=" form-select select2">
             <option disabled value="">Select</option>
             @foreach ($designations as $designation)
             <option value={{$designation->id}}> {{$designation->designation}}</option>
@@ -841,7 +920,7 @@ $(function () {
         </div>
         <div class="mb-3">
           <label class="form-label" for="usertype_role">User Role</label>
-          <select id="usertype_role" name="usertype_role" class="form-select">
+          <select id="usertype_role" name="usertype_role" class="form-select select2">
             @foreach ($usertype_roles as $usertype_role)
             <option value={{$usertype_role->id}}> {{$usertype_role->usertype_role}}</option>
             @endforeach
@@ -849,7 +928,7 @@ $(function () {
         </div>
         <div class="mb-3">
           <label class="form-label" for="reporting_officer">Reporting Officer</label>
-          <select id="reporting_officer" name="reporting_officer" class="form-select">
+          <select id="reporting_officer" name="reporting_officer" class="form-select select2">
             @foreach ($reporting_officers as $reporting_officer)
             <option value={{$reporting_officer->user_id}}> {{$reporting_officer->name}}</option>
             @endforeach
@@ -859,14 +938,356 @@ $(function () {
           <label class="form-label" for="roles">Select Privileges</label>
           <select id="roles" name="roles" class="form-select select2" multiple>
             @foreach ($roles as $role)
-            <option value={{$role->id}}> {{$role->name}}</option>
+            <option @if($role->id == 2 || $role->id == 7) selected  @endif value={{$role->id}}> {{$role->name}}</option>
             @endforeach
           </select>
         </div>
-        <button type="submit" class="btn btn-primary me-sm-3 me-1 data-submit">Submit</button>
+        <button type="submit" data-type="new" class="btn btn-primary me-sm-3 me-1 data-submit">Submit</button>
         <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
       </form>
     </div>
   </div>
+
+
+
+
+  //Modal
+  <div class="modal fade" id="fullscreenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalFullTitle">Add New User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Vertical Icons Wizard -->
+          <div class="col-12 mb-4">
+            <small class="text-light fw-semibold">Vertical Icons</small>
+            <div class="bs-stepper vertical wizard-vertical-icons-example mt-2">
+              <div class="bs-stepper-header">
+                <div class="step" data-target="#personal-info-vertical">
+                  <button type="button" class="step-trigger">
+                    <span class="bs-stepper-circle">
+                      <i class="ti ti-file-description"></i>
+                    </span>
+                    <span class="bs-stepper-label">
+                      <span class="bs-stepper-title">Personal Info</span>
+                      <span class="bs-stepper-subtitle">Add personal info</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#contact-details-vertical">
+                  <button type="button" class="step-trigger">
+                    <span class="bs-stepper-circle">
+                      <i class="ti ti-user"></i>
+                    </span>
+                    <span class="bs-stepper-label">
+                      <span class="bs-stepper-title">Contact Details</span>
+                      <span class="bs-stepper-subtitle">Add Contact Details</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#account-details-vertical">
+                  <button type="button" class="step-trigger">
+                    <span class="bs-stepper-circle">
+                      <i class="ti ti-user"></i>
+                    </span>
+                    <span class="bs-stepper-label">
+                      <span class="bs-stepper-title">Employment Details</span>
+                      <span class="bs-stepper-subtitle">Add Employment Details</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#social-links-vertical">
+                  <button type="button" class="step-trigger">
+                    <span class="bs-stepper-circle"><i class="ti ti-brand-instagram"></i>
+                    </span>
+                    <span class="bs-stepper-label">
+                      <span class="bs-stepper-title">Account Details</span>
+                      <span class="bs-stepper-subtitle">Add Account Details</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#documents">
+                  <button type="button" class="step-trigger">
+                    <span class="bs-stepper-circle"><i class="ti ti-brand-instagram"></i>
+                    </span>
+                    <span class="bs-stepper-label">
+                      <span class="bs-stepper-title">Documents</span>
+                      <span class="bs-stepper-subtitle">Add Documents</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div class="bs-stepper-content">
+                <form onSubmit="return false">
+
+                  <!-- Personal Info -->
+                  <div id="personal-info-vertical" class="content">
+                    <div class="content-header mb-3">
+                      <h6 class="mb-0">Personal Info</h6>
+                      <small>Enter Your Personal Info.</small>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-sm-6">
+                        <label class="form-label" for="prefix">Prefix</label>
+                        <select class="select2" id="prefix">
+                          <option label=" "></option>
+
+                        </select>
+                      </div>
+
+                      <div class="col-sm-6">
+                        <label class="form-label" for="country1">Gender</label>
+                        <select class="select2" id="gender">
+                          <option label=" "></option>
+                          <option>UK</option>
+                          <option>USA</option>
+                          <option>Spain</option>
+                          <option>France</option>
+                          <option>Italy</option>
+                          <option>Australia</option>
+                        </select>
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="first-name1">DOB</label>
+                        <input type="text" id="first-name1" class="form-control" placeholder="" />
+                      </div>
+
+                      <div class="col-sm-6">
+                        <label class="form-label" for="country1">Country</label>
+                        <select class="select2" id="country1">
+                          <option label=" "></option>
+                          <option>UK</option>
+                          <option>USA</option>
+                          <option>Spain</option>
+                          <option>France</option>
+                          <option>Italy</option>
+                          <option>Australia</option>
+                        </select>
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="country1">State</label>
+                        <select class="select2" id="state">
+                          <option label=" "></option>
+                          <option>UK</option>
+                          <option>USA</option>
+                          <option>Spain</option>
+                          <option>France</option>
+                          <option>Italy</option>
+                          <option>Australia</option>
+                        </select>
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="country1">District</label>
+                        <select class="select2" id="District">
+                          <option label=" "></option>
+                          <option>UK</option>
+                          <option>USA</option>
+                          <option>Spain</option>
+                          <option>France</option>
+                          <option>Italy</option>
+                          <option>Australia</option>
+                        </select>
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="first-name1">Address</label>
+                        <input type="text" id="first-name1" class="form-control" placeholder="" />
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="first-name1">Pincode</label>
+                        <input type="text" id="first-name1" class="form-control" placeholder="" />
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="language1">Language</label>
+                        <select class="selectpicker w-auto" id="language1" data-style="btn-default" data-icon-base="ti" data-tick-icon="ti-check text-white" multiple>
+                          <option>English</option>
+                          <option>French</option>
+                          <option>Spanish</option>
+                        </select>
+                      </div>
+                      <div class="col-12 d-flex justify-content-between">
+                        {{--  <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
+                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
+                        </button>  --}}
+                        <button class="btn btn-primary btn-next"> <span class="align-middle d-sm-inline-block d-none me-sm-1">Next</span> <i class="ti ti-arrow-right"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="contact-details-vertical" class="content">
+                    <div class="content-header mb-3">
+                      <h6 class="mb-0">Contact Details</h6>
+                      <small>Enter Your Contact Details.</small>
+                    </div>
+                    <div class="row g-3">
+
+                      <div class="col-sm-6">
+                        <label class="form-label" for="username1">Secondary Mobile</label>
+                        <input type="text" id="username1" class="form-control" placeholder="" />
+                      </div>
+
+                      <div class="col-sm-6">
+                        <label class="form-label" for="email1">Secondary Email</label>
+                        <input type="text" id="email1" class="form-control" placeholder="" aria-label="john.doe" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="formtabs-twitter">Twitter</label>
+                        <input type="text" id="formtabs-twitter" class="form-control" placeholder="https://twitter.com/abc" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="formtabs-facebook">Facebook</label>
+                        <input type="text" id="formtabs-facebook" class="form-control" placeholder="https://facebook.com/abc" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="formtabs-google">Google+</label>
+                        <input type="text" id="formtabs-google" class="form-control" placeholder="https://plus.google.com/abc" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="formtabs-linkedin">Linkedin</label>
+                        <input type="text" id="formtabs-linkedin" class="form-control" placeholder="https://linkedin.com/abc" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="formtabs-instagram">Instagram</label>
+                        <input type="text" id="formtabs-instagram" class="form-control" placeholder="https://instagram.com/abc" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="formtabs-quora">Whatsapp</label>
+                        <input type="text" id="formtabs-quora" class="form-control" placeholder="https://quora.com/abc" />
+                      </div>
+
+                      <div class="col-12 d-flex justify-content-between">
+                        <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
+                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
+                        </button>
+                        <button class="btn btn-primary btn-next"> <span class="align-middle d-sm-inline-block d-none me-sm-1">Next</span> <i class="ti ti-arrow-right"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Account Details -->
+                  <div id="account-details-vertical" class="content">
+                    <div class="content-header mb-3">
+                      <h6 class="mb-0">Employment Details</h6>
+                      <small>Enter Your Employment Details.</small>
+                    </div>
+                    <div class="row g-3">
+
+                      <div class="col-sm-6">
+                        <label class="form-label" for="language1">Highest Educational Qualification</label>
+                        <select class="selectpicker w-auto" id="language1" data-style="btn-default" data-icon-base="ti" data-tick-icon="ti-check text-white" multiple>
+                          <option>English</option>
+                          <option>French</option>
+                          <option>Spanish</option>
+                        </select>
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="first-name1">Contract Start Date</label>
+                        <input type="text" id="first-name1" class="form-control" placeholder="" />
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="first-name1">Contract End Date</label>
+                        <input type="text" id="first-name1" class="form-control" placeholder="" />
+                      </div>
+
+                      <div class="col-12 d-flex justify-content-between">
+                        <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
+                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
+                        </button>
+                        <button class="btn btn-primary btn-next"> <span class="align-middle d-sm-inline-block d-none me-sm-1">Next</span> <i class="ti ti-arrow-right"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Social Links -->
+                  <div id="social-links-vertical" class="content">
+                    <div class="content-header mb-3">
+                      <h6 class="mb-0">Bank Account Details</h6>
+                      <small>Enter Your Bank Account Details.</small>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-sm-6 form-password-toggle">
+                        <label class="form-label" for="password">Account Number</label>
+                        <div class="input-group input-group-merge">
+                          <input type="password" id="password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password2" />
+                          <span class="input-group-text cursor-pointer" id="password2"><i class="ti ti-eye-off"></i></span>
+                        </div>
+                      </div>
+                      <div class="col-sm-6 form-password-toggle">
+                        <label class="form-label" for="confirm-password">Confirm Account Number</label>
+                        <div class="input-group input-group-merge">
+                          <input type="password" id="confirm-password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="confirm-password2" />
+                          <span class="input-group-text cursor-pointer" id="confirm-password2"><i class="ti ti-eye-off"></i></span>
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="facebook1">IFSC</label>
+                        <input type="text" id="facebook1" class="form-control" placeholder="" />
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="google1">Bank Name</label>
+                        <input type="text" id="google1" class="form-control" placeholder="" />
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="linkedin1">Branch</label>
+                        <input type="text" id="linkedin1" class="form-control" placeholder="c" />
+                      </div>
+                      <div class="col-12 d-flex justify-content-between">
+                        <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
+                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
+                        </button>
+                        <button class="btn btn-primary btn-next"> <span class="align-middle d-sm-inline-block d-none me-sm-1">Next</span> <i class="ti ti-arrow-right"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="documents" class="content">
+                    <div class="content-header mb-3">
+                      <h6 class="mb-0">Documents</h6>
+                      <small>Upload Documents.</small>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-sm-6">
+                        <label class="form-label" for="twitter1">Document Name</label>
+                        <input type="text" id="twitter1" class="form-control" placeholder="" />
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="facebook1">Document Number</label>
+                        <input type="text" id="facebook1" class="form-control" placeholder="" />
+                      </div>
+                      <div class="card-body">
+                        <form action="/upload" class="dropzone needsclick" id="dropzone-basic">
+                          <div class="dz-message needsclick">
+                            Drop files here or click to upload
+                            <span class="note needsclick">(This is just a demo dropzone. Selected files are <strong>not</strong> actually uploaded.)</span>
+                          </div>
+                          <div class="fallback">
+                            <input name="file" type="file" />
+                          </div>
+                        </form>
+                      </div>
+                      <div class="col-12 d-flex justify-content-between">
+                        <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
+                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
+                        </button>
+                        <button class="btn btn-success btn-submit">Submit</button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- /Vertical Icons Wizard -->
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+          {{--  <button type="button" class="btn btn-primary">Save changes</button>  --}}
+        </div>
+      </div>
+    </div>
+  </div>
+  //Modal end
 </div>
 @endsection

@@ -9,7 +9,7 @@ use App\Models\LeaveRequest;
 class LeaveRequestDetails extends Model
 {
     use HasFactory;
-    protected $fillable = ['leave_type_id','request_id','date','leave_day_type','leave_duration','status','user_id','requested_at'];
+    protected $fillable = ['leave_type_id','request_id','date','leave_day_type','leave_duration','status','remark','user_id','requested_at'];
 
     public function leaveRequest()
     {

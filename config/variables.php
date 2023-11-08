@@ -3,7 +3,7 @@
 // Variables
 return [
   "creatorName" => "Centre for Management Development",
-  "creatorUrl" => "https://kcmd.in",
+  "creatorUrl" => "https://cmd.kerala.gov.in",
   "templateName" => "CMD Suite",
   "templateSuffix" => "Complete ERP Solution for CMD",
   "templateVersion" => "1.0.0",
@@ -26,10 +26,10 @@ return [
   "gitRepoAccess" => "vuexy-html-admin-template",
   "githubFreeUrl" => "https://tools.pixinvent.com/github/github-access",
   "facebookUrl" => "https://www.facebook.com/cmdkerala/",
-  "twitterUrl" => "https://twitter.com/pixinvents",
-  "githubUrl" => "https://github.com/pixinvent",
-  "dribbbleUrl" => "https://dribbble.com/pixinvent",
-  "instagramUrl" => "https://www.instagram.com/pixinvents/",
+  "twitterUrl" => "https://twitter.com/",
+  "githubUrl" => "https://github.com/",
+  "dribbbleUrl" => "https://dribbble.com/",
+  "instagramUrl" => "https://www.instagram.com/cmdkerala/",
   "login1"=>"https://assets1.lottiefiles.com/packages/lf20_xlmz9xwm.json",
   "login2"=>"https://assets1.lottiefiles.com/packages/lf20_xlmz9xwm.json",
   "login3"=>"https://assets5.lottiefiles.com/packages/lf20_Xx30GI58E1.json"

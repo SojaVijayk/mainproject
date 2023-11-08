@@ -88,7 +88,7 @@ class LeaveAssignController extends Controller
    /**
     * Show the form for editing the specified resource.
     */
-   public function edit($id)
+   public function assignEdit($id)
    {
        //
        $leaves = LeaveAssign::find($id);
@@ -99,7 +99,7 @@ class LeaveAssignController extends Controller
    /**
     * Update the specified resource in storage.
     */
-   public function update(Request $request,  $id)
+   public function assignUpdate(Request $request,  $id)
    {
        //
        $this->validate($request, [

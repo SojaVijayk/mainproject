@@ -10,12 +10,16 @@ use App\Models\Designation;
 use App\Models\EmploymentType;
 use App\Models\LeaveRequest;
 use App\Models\Movement;
+use App\Models\Attendance;
 use App\Models\LeaveRequestDetails;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use DateTime;
+use DatePeriod;
+use DateInterval;
 
 
 class EmployeeController extends Controller
@@ -40,19 +44,38 @@ class EmployeeController extends Controller
     $roles = Role::where('name','!=',"Admin")->get();
     $usertype_roles = DB::table("usertype_role")->where('status',1)->get();
 
+    if(Auth::user()->user_role ==1){
+      return view('content.employee.employee-management', [
+        'totalUser' => $userCount,
+        'verified' => $verified,
+        'notVerified' => $notVerified,
+        'userDuplicates' => $userDuplicates,
+        'designations' => $designations,
+        'roles' => $roles,
+        'usertype_roles' => $usertype_roles,
+        'reporting_officers'=>$reporting_officers,
+        'employment_types'=>$employment_types
 
-    return view('content.employee.employee-management', [
-      'totalUser' => $userCount,
-      'verified' => $verified,
-      'notVerified' => $notVerified,
-      'userDuplicates' => $userDuplicates,
-      'designations' => $designations,
-      'roles' => $roles,
-      'usertype_roles' => $usertype_roles,
-      'reporting_officers'=>$reporting_officers,
-      'employment_types'=>$employment_types
+      ]);
+    }
+    else{
+      $pageConfigs = ['myLayout' => 'horizontal'];
+      return view('content.employee.employee-management', [
+        'totalUser' => $userCount,
+        'verified' => $verified,
+        'notVerified' => $notVerified,
+        'userDuplicates' => $userDuplicates,
+        'designations' => $designations,
+        'roles' => $roles,
+        'usertype_roles' => $usertype_roles,
+        'reporting_officers'=>$reporting_officers,
+        'employment_types'=>$employment_types,
+        'pageConfigs'=> $pageConfigs
 
-    ]);
+      ]);
+
+    }
+
   }
 
   public function employeeList()
@@ -243,9 +266,14 @@ class EmployeeController extends Controller
    */
   public function edit($id)
   {
-    $where = ['id' => $id];
+    $where = ['users.id' => $id];
 
-    $users = User::where($where)->first();
+    // $users = User::where($where)->first();
+    $users = User::with("roles")
+    ->select('users.*','employees.status','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','employees.employment_type','employees.designation as desig_id','employees.doj','employees.reporting_officer','designations.designation','usertype_role.usertype_role')
+    ->join("employees","employees.user_id","=","users.id")
+    ->join("usertype_role","usertype_role.id","=","users.user_role")
+    ->leftjoin("designations","designations.id","=","employees.designation")->where($where)->first();
 
     return response()->json($users);
   }
@@ -275,31 +303,100 @@ class EmployeeController extends Controller
   public function fetchEvents(Request $request){
     $id= Auth::user()->id;
     $employee_details=Employee::where('user_id',$id)->first();
+    $leave_details = LeaveRequestDetails::where('leave_request_details.user_id',$id)
+    ->leftjoin("leaves","leaves.id","=","leave_request_details.leave_type_id")
+    ->leftjoin("employees as emp","emp.user_id","=","leave_request_details.action_by")
+    ->select('leave_request_details.*','leaves.leave_type','emp.name as action_by_name')
+    ->get();
 
-    $list = LeaveRequest::with('leaveRequestDetails')->join("employees","employees.user_id","=","leave_requests.user_id")
-    ->leftjoin("designations","designations.id","=","employees.designation")
-    ->leftjoin("leaves","leaves.id","=","leave_requests.leave_type_id")
-    ->leftjoin("employees as emp","emp.user_id","=","leave_requests.action_by")
-    ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('leave_requests.user_id',$id)->get();
-    // $list=
+    $movement_details = Movement::where('movements.user_id',$id)
+    ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
+    ->select('movements.*','emp.name as action_by_name')
+    ->get();
+
+
+    $attendance = Attendance::select('attendances.*','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation')
+  ->join("employees","employees.user_id","=","attendances.user_id")
+  ->leftjoin("designations","designations.id","=","employees.designation")
+  ->where('attendances.user_id',$id)
+  ->orderBy('attendances.user_id','DESC')->get();
+
+
     $j=0;
     $leaves=[];
 
-    foreach( $list as $leave){
-      $prop=["calendar"=>'jasar'];
+
+    foreach( $leave_details as $leave){
+      $date_from = strtotime($leave->date);
+     $from= date('Y-m-d H:i:s', $date_from);
+
+      $prop=["calendar"=>($leave->status == 1 ? "Approved" :  ($leave->status == 2 ? "Rejected" :  "Requested"))];
       $obj = [
         'id'=>$j,
         'url'=>'',
-        'title'=>'casual',
-        'start'=>'2023-10-05',
-        'end'=>'2023-10-06',
-        'allDay'=>'false',
+        'title'=>$leave->leave_type.' '.($leave->status == 1 ? 'Approved (Action By :'.$leave->action_by_name.')' : ($leave->status == 2 ? 'Rejected (Action By :'.$leave->action_by_name.')' : "Pending")),
+        'start'=>$from,
+        'end'=>$from,
+        'allDay'=>($leave->leave_day_type == 1 ? true : false),
         'extendedProps'=>$prop
 
       ];
       array_push($leaves,$obj);
+      $j++;
+
 
     }
+
+    foreach( $movement_details as $movement){
+      $date_from = strtotime($movement->start_date.' '.$movement->start_time);
+      $from= date('Y-m-d H:i:s', $date_from);
+
+      $date_to = strtotime($movement->end_date.' '.$movement->end_time);
+      $to= date('Y-m-d H:i:s', $date_to);
+
+      $prop=["calendar"=>($movement->status == 1 ? "Approved" :  ($movement->status == 2 ? "Rejected" :  "Requested"))];
+      $obj = [
+        'id'=>$j,
+        'url'=>'',
+        'title'=>$movement->title.' '.($leave->status == 1 ? 'Approved (Action By :'.$leave->action_by_name.')' : ($leave->status == 2 ? 'Rejected (Action By :'.$leave->action_by_name.')' : "Pending")),
+        'start'=>$from,
+        'end'=>$to,
+        'allDay'=>true,
+        'extendedProps'=>$prop
+
+      ];
+      array_push($leaves,$obj);
+      $j++;
+
+
+    }
+
+    foreach( $attendance as $item){
+      $date_from = strtotime($item->date);
+     $from= date('Y-m-d H:i:s', $date_from);
+      if(($item->in_time == null && $item->out_time == null) || ($item->in_time == '' && $item->out_time == '')){
+        $prop=["calendar"=>"Absent"];
+      }
+      else{
+        $prop=["calendar"=>"Present"];
+      }
+
+      $obj = [
+        'id'=>$j,
+        'url'=>'',
+        // 'title'=>'IN '.($item->in_time != null && $item->in_time != '' ? $item->in_time : 'No Record' ).' OUT '.$item->out_time,
+        'title'=>(($item->in_time != null && $item->in_time != '') && ($item->out_time != null && $item->out_time != '')  ? 'Present (IN '.$item->in_time.' OUT '.$item->in_time.')' : (($item->in_time != null && $item->in_time != '') && ($item->out_time == null || $item->out_time !== '') ? 'IN '.$item->in_time: 'Absent') ),
+        'start'=>$from,
+        'end'=>$from,
+        'allDay'=>true,
+        'extendedProps'=>$prop
+
+      ];
+      array_push($leaves,$obj);
+      $j++;
+
+    }
+
 
     return response()->json(['events'=> $leaves]);
      }

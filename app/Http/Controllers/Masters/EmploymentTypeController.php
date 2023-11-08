@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Masters;
 use App\Http\Controllers\Controller;
 use App\Models\EmploymentType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EmploymentTypeController extends Controller
 {
@@ -19,8 +20,16 @@ class EmploymentTypeController extends Controller
     public function index()
     {
         //
+        $pageConfigs = ['myLayout' => 'horizontal'];
+
+
         $employment_types = EmploymentType::orderBy('id','DESC')->get();
-        return view('content.masters.employment_types',compact('employment_types'));
+        if(Auth::user()->user_role ==1){
+          return view('content.masters.employment_types',compact('employment_types'));
+        }
+        else{
+          return view('content.masters.employment_types',compact('employment_types'),['pageConfigs'=> $pageConfigs]);
+        }
     }
     public function getAllEmploymentTypes(Request $request)
     {

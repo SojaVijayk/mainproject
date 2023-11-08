@@ -60,6 +60,7 @@ Route::get('/user/employee' , $controller_path . '\Employee\EmployeeController@i
 Route::get('/user/employee/list' , $controller_path . '\Employee\EmployeeController@employeeList')->name('user-employee-list');
 Route::get('/user/employee/view/account/{id}' , $controller_path . '\Employee\EmployeeController@employeeView')->name('user-employee-view');
 Route::post('/user/employee/store' , $controller_path . '\Employee\EmployeeController@store')->name('user-employee-store');
+Route::get('/user/employee/edit/{id}', $controller_path . '\Employee\EmployeeController@edit')->name('user-employee-edit');
 //fetchEvents
 Route::get('/fetchEvents', $controller_path . '\Employee\EmployeeController@fetchEvents')->name('employee-event');
 
@@ -71,7 +72,7 @@ Route::post('/master/designation/store', $controller_path . '\Masters\Designatio
 Route::get('/master/designation/edit/{id}', $controller_path . '\Masters\DesignationController@edit')->name('master-designation-edit');
 Route::post('/master/designation/update/{id}', $controller_path . '\Masters\DesignationController@update')->name('master-designation-update');
 
-Route::get('/master/employment-type', $controller_path . '\Masters\EmploymentTypeController@index')->name('master-designation');
+Route::get('/master/employment-type', $controller_path . '\Masters\EmploymentTypeController@index')->name('master-employment-type');
 Route::get('/master/employment-type/list', $controller_path . '\Masters\EmploymentTypeController@getAllEmploymentTypes')->name('master-designation-list');
 Route::post('/master/employment-type/store', $controller_path . '\Masters\EmploymentTypeController@store')->name('master-designation-store');
 Route::get('/master/employment-type/edit/{id}', $controller_path . '\Masters\EmploymentTypeController@edit')->name('master-designation-edit');
@@ -79,7 +80,7 @@ Route::post('/master/employment-type/update/{id}', $controller_path . '\Masters\
 
 
 //Leave Master
-Route::get('/leave', $controller_path . '\Leave\LeaveController@index')->name('leave');
+Route::get('/leave', $controller_path . '\Leave\LeaveController@index')->name('leave-master-index');
 Route::get('/leave/list', $controller_path . '\Leave\LeaveController@getAllLeaves')->name('leave-list');
 Route::post('/leave/store', $controller_path . '\Leave\LeaveController@store')->name('leave-store');
 Route::get('/leave/edit/{id}', $controller_path . '\Leave\LeaveController@edit')->name('leave-edit');
@@ -92,9 +93,10 @@ Route::get('/leave-assign/edit/{id}', $controller_path . '\Leave\LeaveAssignCont
 Route::post('/leave-assign/update/{id}', $controller_path . '\Leave\LeaveAssignController@assignUpdate')->name('leave-assign-update');
 
 Route::get('/attendance', $controller_path . '\Attendance\AttendanceController@index')->name('attendance-index');
+Route::post('/attendance/import', $controller_path . '\Attendance\AttendanceController@import')->name('attendance-import');
 Route::get('/attendance-management', $controller_path . '\Attendance\AttendanceController@attendanceManagement')->name('attendance-hrView');
 Route::get('/download', $controller_path . '\Attendance\AttendanceController@download')->name('attendance-download');
-Route::get('/downloadBulk', $controller_path . '\Attendance\AttendanceController@downloadBulk')->name('attendance-download-bulk');
+Route::POST('/downloadBulk', $controller_path . '\Attendance\AttendanceController@downloadBulk')->name('attendance-download-bulk');
 Route::get('/movement', $controller_path . '\Attendance\MovementController@index')->name('attendance-movement');
 Route::post('/movement/store', $controller_path . '\Attendance\MovementController@store')->name('attendance-movement-store');
 Route::get('/movement/edit/{id}', $controller_path . '\Attendance\MovementController@edit')->name('attendance-movement-edit');
@@ -102,14 +104,15 @@ Route::post('/movement/update/{id}', $controller_path . '\Attendance\MovementCon
 Route::get('/movement/delete/{id}', $controller_path . '\Attendance\MovementController@destroy')->name('attendance-movement-delete');
 
 
-Route::get('/movement/approve-list', $controller_path . '\Attendance\MovementController@approveList')->name('attendance-movement-approve-list');
+Route::get('/movement/approve-list', $controller_path . '\Attendance\MovementController@approveList')->name('leave-movement-approve-list');
 Route::get('/movement/request-list', $controller_path . '\Attendance\MovementController@requestList')->name('attendance-movement-request-list');
 Route::get('/movement/list', $controller_path . '\Attendance\MovementController@movementList')->name('attendance-movement-list');
 Route::post('/movement/action/{id}', $controller_path . '\Attendance\MovementController@action')->name('attendance-movement-action');
+Route::POST('/movement/downloadBulk', $controller_path . '\Attendance\MovementController@downloadBulk')->name('attendance-download-bulk');
 
-Route::get('/leave/request', $controller_path . '\Leave\LeaveRequestController@index')->name('leave-request');
+Route::get('/leave/request', $controller_path . '\Leave\LeaveRequestController@index')->name('attendance-leave-request');
 
-Route::get('/leave/approve-list', $controller_path . '\Leave\LeaveRequestController@approveList')->name('attendance-leave-approve-list');
+Route::get('/leave/approve-list', $controller_path . '\Leave\LeaveRequestController@approveList')->name('leave-approve-list');
 Route::get('/leave/request-list', $controller_path . '\Leave\LeaveRequestController@requestList')->name('attendance-leave-list');
 Route::get('/leave/request/list', $controller_path . '\Leave\LeaveRequestController@leaveList')->name('attendance-leave-list');
 Route::post('/leave/request/store', $controller_path . '\Leave\LeaveRequestController@store')->name('attendance-leave-request-store');
@@ -117,7 +120,9 @@ Route::post('/leave/request/store', $controller_path . '\Leave\LeaveRequestContr
 Route::get('/leave/request/edit/{id}', $controller_path . '\Leave\LeaveRequestController@edit')->name('attendance-leave-request-edit');
 Route::post('/leave/request/action/{id}', $controller_path . '\Leave\LeaveRequestController@action')->name('attendance-movement-action');
 
+Route::get('/leave/request/delete/{id}', $controller_path . '\Leave\LeaveRequestController@destroy')->name('attendance-leave-delete');
 
+Route::POST('/leave/downloadBulk', $controller_path . '\Leave\LeaveRequestController@downloadBulk')->name('attendance-download-bulk');
 
 //Employee login Routes
 //user view
