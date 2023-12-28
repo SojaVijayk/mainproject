@@ -1,6 +1,6 @@
 <!-- Add Project Modal -->
 <div class="modal addProjectModal fade" id="addProjectModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered modal-add-new-project">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-add-new-project">
     <div class="modal-content p-3 p-md-5">
       <button type="button" class="btn-close btn-pinned" data-bs-dismiss="modal" aria-label="Close"></button>
       <div class="modal-body">
@@ -33,8 +33,8 @@
 
           </div>
           <div class="col-6 mb-4">
-            <label class="form-label" for="modalProjectName">Project Cost</label>
-            <input type="text" id="modalProjectName" name="modalProjectName" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <label class="form-label" for="projectcost">Project Cost</label>
+            <input type="text" id="projectcost" name="projectcost" class="form-control" placeholder="" tabindex="-1" />
           </div>
           <div class="col-8">
             {{--  <h5>Project Clients </h5>  --}}
@@ -42,7 +42,7 @@
               <small class="text-light fw-medium d-block">Project Clients/Sponsering Agency</small>
               @foreach ($clients as $client)
               <div class="form-check form-check-inline mt-3">
-                <input class="form-check-input client-checkbox" type="checkbox" data-id={{$client->id}} value={{$client->id}} type="checkbox" id={{$client->id}} />
+                <input class="form-check-input client-checkbox projectClient" name="projectClient" type="checkbox" data-id={{$client->id}} value={{$client->id}} type="checkbox" id={{$client->id}} />
                 <label class="form-check-label" for="inlineCheckbox1">{{$client->client_name}}</label>
               </div>
               @endforeach
@@ -76,11 +76,9 @@
           </div>
 
           <div class="col-4 mb-4">
-            <label class="form-label" for="initiatedBy">Client Contact Person</label>
-              <select  id="contactperson" name="initiatedBy" class="select2 form-select" multiple>
-                @foreach ($members as $member)
-                  <option value={{$member->id}} >{{$member->name}}</option>
-                  @endforeach
+            <label class="form-label" for="contactperson">Client Contact Person</label>
+              <select  id="contactperson" name="contactperson" class="select2 form-select" multiple>
+
               </select>
 
           </div>
@@ -100,9 +98,9 @@
           <div class="col-4 mb-4">
             <label class="form-label" for="leads">Project Leads</label>
               <select  id="leads" name="leads" class="select2 form-select" multiple>
-                @foreach ($leads as $lead)
-                  <option value={{$lead->id}} >{{$lead->name}}</option>
-                  @endforeach
+                @foreach ($members as $member)
+                <option value={{$member->id}} >{{$member->name}}</option>
+                @endforeach
               </select>
 
           </div>
@@ -129,15 +127,15 @@
           <small class="text-light fw-medium d-block">Project Staff Strenght</small>
           <div class="col-4 mb-4">
             <label class="form-label" for="contaractStaff">Contract Staff</label>
-            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <input type="number" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="" tabindex="-1" />
           </div>
           <div class="col-4 mb-4">
-            <label class="form-label" for="contaractStaff">Field Staff</label>
-            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <label class="form-label" for="fieldStaff">Field Staff</label>
+            <input type="number" id="fieldStaff" name="fieldStaff" class="form-control" placeholder="" tabindex="-1" />
           </div>
           <div class="col-4 mb-4">
-            <label class="form-label" for="contaractStaff">Project Staff</label>
-            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <label class="form-label" for="projectStaff">Project Staff</label>
+            <input type="number" id="projectStaff" name="projectStaff" class="form-control" placeholder="" tabindex="-1" />
           </div>
 
           <div class="divider contactperson">
@@ -148,31 +146,35 @@
           {{--  <h5>Tenure Project</h5>  --}}
           <small class="text-light fw-medium d-block">Project Tenure</small>
           <div class="col-4 mb-4">
-            <label class="form-label" for="contaractStaff">Year</label>
-            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <label class="form-label" for="tenure_year">Year</label>
+            <input type="text" id="tenure_year" name="tenure_year" class="form-control" placeholder="" tabindex="-1" />
           </div>
           <div class="col-4 mb-4">
-            <label class="form-label" for="contaractStaff">Month</label>
-            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <label class="form-label" for="tenure_month">Month</label>
+            <input type="text" id="tenure_month" name="tenure_month" class="form-control" placeholder="" tabindex="-1" />
           </div>
           <div class="col-4 mb-4">
-            <label class="form-label" for="contaractStaff">Days</label>
-            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <label class="form-label" for="tenure_days">Days</label>
+            <input type="text" id="tenure_days" name="tenure_days" class="form-control" placeholder="" tabindex="-1" />
           </div>
 
           <div class="col-6 mb-4">
-            <label class="form-label" for="contaractStaff">Expected Start Date</label>
-            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <label class="form-label" for="expected_start_date">Expected Start Date</label>
+            <input type="text" id="expected_start_date" name="expected_start_date" class="form-control" placeholder="" tabindex="-1" />
           </div>
           <div class="col-6 mb-4">
-            <label class="form-label" for="contaractStaff">Expected End Date</label>
-            <input type="text" id="contaractStaff" name="contaractStaff" class="form-control" placeholder="Enter a project name" tabindex="-1" />
+            <label class="form-label" for="expected_end_date">Expected End Date</label>
+            <input type="text" id="expected_end_date" name="expected_end_date" class="form-control" placeholder="" tabindex="-1" />
           </div>
 
 
-          <div class="col-12 mb-4">
-            <label class="form-label" for="modalProjectDescription">Additonal Support </label>
-             <textarea class="form-control" id="support" name="support" rows="3"></textarea>
+          <div class="col-6 mb-4">
+            <label class="form-label" for="additional_support">Additonal Support </label>
+             <textarea class="form-control" id="additional_support" name="additional_support" rows="3"></textarea>
+          </div>
+          <div class="col-6 mb-4">
+            <label class="form-label" for="remarks">Remarks </label>
+             <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
           </div>
 
           <div class="col-12 text-center mt-4">

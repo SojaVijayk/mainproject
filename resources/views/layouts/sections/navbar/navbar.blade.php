@@ -15,7 +15,7 @@ $navbarDetached = ($navbarDetached ?? '');
       <!--  Brand demo (display only for navbar-full and hide on below xl) -->
       @if(isset($navbarFull))
       <div class="navbar-brand app-brand demo d-none d-xl-flex py-0 me-4">
-        <a href="{{url('/')}}" class="app-brand-link gap-2">
+        <a href="{{url('/user/dashboard')}}" class="app-brand-link gap-2">
           {{--  <span class="app-brand-logo demo">
             @include('_partials.macros',["height"=>20])
           </span>  --}}
@@ -85,7 +85,7 @@ $navbarDetached = ($navbarDetached ?? '');
           <!--/ Style Switcher -->
 
           <!-- Quick links  -->
-          <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-2 me-xl-0">
+          {{--  <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-2 me-xl-0">
             <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
               <i class='ti ti-layout-grid-add ti-md'></i>
             </a>
@@ -134,7 +134,7 @@ $navbarDetached = ($navbarDetached ?? '');
                     <span class="dropdown-shortcuts-icon rounded-circle mb-2">
                       <i class="ti ti-chart-bar fs-4"></i>
                     </span>
-                    <a href="{{url('/')}}" class="stretched-link">Dashboard</a>
+                    <a href="{{url('/user/dashboard')}}" class="stretched-link">Dashboard</a>
                     <small class="text-muted mb-0">User Profile</small>
                   </div>
                   <div class="dropdown-shortcuts-item col">
@@ -163,14 +163,15 @@ $navbarDetached = ($navbarDetached ?? '');
                 </div>
               </div>
             </div>
-          </li>
+          </li>  --}}
           <!-- Quick links -->
 
           <!-- Notification -->
           <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-1">
             <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
               <i class="ti ti-bell ti-md"></i>
-              <span class="badge bg-danger rounded-pill badge-notifications">5</span>
+              {{--  <span class="badge bg-danger rounded-pill badge-notifications">5</span>  --}}
+
             </a>
             <ul class="dropdown-menu dropdown-menu-end py-0">
               <li class="dropdown-menu-header border-bottom">
@@ -180,7 +181,7 @@ $navbarDetached = ($navbarDetached ?? '');
                 </div>
               </li>
               <li class="dropdown-notifications-list scrollable-container">
-                <ul class="list-group list-group-flush">
+                {{--  <ul class="list-group list-group-flush">
                   <li class="list-group-item list-group-item-action dropdown-notifications-item">
                     <div class="d-flex">
                       <div class="flex-shrink-0 me-3">
@@ -343,7 +344,7 @@ $navbarDetached = ($navbarDetached ?? '');
                       </div>
                     </div>
                   </li>
-                </ul>
+                </ul>  --}}
               </li>
               <li class="dropdown-menu-footer border-top">
                 <a href="javascript:void(0);" class="dropdown-item d-flex justify-content-center text-primary p-2 h-px-40 mb-1 align-items-center">
@@ -370,7 +371,7 @@ $navbarDetached = ($navbarDetached ?? '');
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
               <li>
-                <a class="dropdown-item" href="{{ Route::has('profile.show') ? route('profile.show') : url('pages/profile-user') }}">
+                <a class="dropdown-item" href="{{ Route::has('user-profile') ? route('user-profile') : url('user/profile') }}">
                   <div class="d-flex">
                     <div class="flex-shrink-0 me-3">
                       <div class="avatar avatar-online">
@@ -397,7 +398,7 @@ $navbarDetached = ($navbarDetached ?? '');
                 <div class="dropdown-divider"></div>
               </li>
               <li>
-                <a class="dropdown-item" href="{{ Route::has('profile.show') ? route('profile.show') : url('user/profile') }}">
+                <a class="dropdown-item" href="{{ Route::has('user-profile') ? route('user-profile') : url('user/profile') }}">
                   <i class="ti ti-user-check me-2 ti-sm"></i>
                   <span class="align-middle">My Profile</span>
                 </a>

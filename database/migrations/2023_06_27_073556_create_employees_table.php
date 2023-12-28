@@ -30,8 +30,14 @@ return new class extends Migration
             $table->smallInteger('district');
             $table->string('pincode');
             $table->string('mobile');
+            $table->string('mobile_sec');
             $table->string('email');
+            $table->string('email_sec');
             $table->string('whatsapp');
+            $table->string('facebook');
+            $table->string('twitter');
+            $table->string('linkedin');
+            $table->string('instagram');
             $table->date('dob');
             $table->string('pan');
             $table->string('profile_pic');
@@ -39,6 +45,11 @@ return new class extends Migration
             $table->smallInteger('designation');
             $table->smallInteger('employment_type');
             $table->smallInteger('reporting_officer');
+            $table->string('contract_duration');
+            $table->string('contract_start_date');
+            $table->string('contract_end_date');
+
+
 
             $table->timestamps();
         });

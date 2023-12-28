@@ -10,6 +10,7 @@ $configData = Helper::appClasses();
 @section('vendor-style')
 <!-- Vendor -->
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/formvalidation/dist/css/formValidation.min.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 @endsection
 
 @section('page-style')
@@ -21,10 +22,69 @@ $configData = Helper::appClasses();
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
 @endsection
 
 @section('page-script')
 <script src="{{asset('assets/js/pages-auth.js')}}"></script>
+<script>
+  $(document).on('click', '#passwordChange', function (e) {
+    e.preventDefault();
+    $.ajaxSetup({
+      headers: {
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      }
+  });
+    $.ajax({
+    type: "POST",
+    data:{
+      email : $('#email').val(),
+      token:$('#token').val(),
+      password : $('#password').val(),
+      password_confirmation : $('#password_confirmation').val(),
+
+    },
+
+    url: '/reset-password',
+    success: function (data) {
+      console.log(data);
+      if(data.status === 'true'){
+        Swal.fire({
+          icon: 'success',
+          title: `Successfully Updated.!`,
+          text: data.message,
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        });
+      }
+      else{
+        Swal.fire({
+          icon: 'info',
+          title: `error!`,
+          text: data.message,
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        });
+      }
+
+
+    },
+    error: function(data){
+      Swal.fire({
+        icon: 'info',
+        title: `error!`,
+        text: data.message,
+        customClass: {
+          confirmButton: 'btn btn-success'
+        }
+      });
+
+    }
+    });
+  });
+</script>
 @endsection
 
 @section('content')
@@ -52,23 +112,39 @@ $configData = Helper::appClasses();
         </div>
         <!-- /Logo -->
         <h3 class="mb-1 fw-bold">Reset Password 🔒</h3>
-        <p class="mb-4">for <span class="fw-bold">john.doe@email.com</span></p>
-        <form id="formAuthentication" class="mb-3" action="{{url('auth/login-cover')}}" method="POST">
+        {{--  <p class="mb-4">for <span class="fw-bold">john.doe@email.com</span></p>  --}}
+        <form id="formAuthentication" class="mb-3" action="{{ route('reset.password.post') }}" method="POST">
+
+         <input type="hidden" id="token" name="token" value="{{ $token }}">
+
+
+         <div class="mb-3 form-email-toggle">
+          <label class="form-label" for="email">Email</label>
+          <div class="input-group input-group-merge">
+            <input id="email" class="form-control" name="email" placeholder="" aria-describedby="email" />
+
+
+          </div>
+        </div>
+
           <div class="mb-3 form-password-toggle">
             <label class="form-label" for="password">New Password</label>
             <div class="input-group input-group-merge">
               <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
               <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
+
+
             </div>
           </div>
           <div class="mb-3 form-password-toggle">
-            <label class="form-label" for="confirm-password">Confirm Password</label>
+            <label class="form-label" for="password_confirmation">Confirm Password</label>
             <div class="input-group input-group-merge">
-              <input type="password" id="confirm-password" class="form-control" name="confirm-password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
+              <input type="password" id="password_confirmation" class="form-control" name="password_confirmation" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
               <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
+
             </div>
           </div>
-          <button class="btn btn-primary d-grid w-100 mb-3">
+          <button id="passwordChange" class="btn btn-primary d-grid w-100 mb-3">
             Set new password
           </button>
           <div class="text-center">

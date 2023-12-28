@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Client;
 
 use App\Models\Client;
-use App\Models\Employee;
+use App\Models\ClientContactPerson;
+
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Permission;
@@ -120,12 +121,86 @@ class ClientController extends Controller
       $client->client_name = $request->input('client_name');
       $client->address = $request->input('address');
       $client->email = $request->input('email');
-      $client->email = $request->input('email');
+      $client->phone = $request->input('phone');
       $client->save();
 
 
 
       if ($client) {
+        return response()->json('Updated');
+      } else {
+        return response()->json(['message' => "Internal Server Error"], 500);
+
+      }
+    }
+
+    public function contactPersonStore(Request $request,$client)
+    {
+        //
+        $this->validate($request, [
+          'name' => 'required',
+          'email' => 'required',
+          'mobile' => 'required',
+          // 'projects' => 'required',
+      ]);
+
+      $client = ClientContactPerson::create([
+        'client_id' => $client,
+        'name' => $request->input('name'),
+      'email' => $request->input('email'),
+      'address' => $request->input('address'),
+      'mobile' => $request->input('mobile'),
+      'designation' => $request->input('designation'),
+      'created_by' => Auth::user()->id]);
+      if ($client) {
+        return response()->json('created');
+      } else {
+        return response()->json(['message' => "Internal Server Error"], 500);
+
+      }
+    }
+
+
+
+    public function getAllContactPersons(Request $request)
+    {
+
+      $clients = Client::with('contactPersons')->whereIn('id',$request->clients)->get();
+
+        return response()->json(['data'=> $clients]);
+
+
+
+    }
+
+    public function editContactPerson($id)
+    {
+      $client = ClientContactPerson::find($id);
+
+          return response()->json(['data'=> $client]);
+    }
+
+    public function updateContactPerson(Request $request, $id)
+    {
+        //
+        $this->validate($request, [
+          'name' => 'required',
+          'email' => 'required',
+          'mobile' => 'required',
+          // 'projects' => 'required',
+      ]);
+
+      $client_contact = ClientContactPerson::find($id);
+      $client_contact->name = $request->input('name');
+      $client_contact->address = $request->input('address');
+      $client_contact->email = $request->input('email');
+      $client_contact->mobile = $request->input('mobile');
+      $client_contact->designation = $request->input('designation');
+      $client_contact->save();
+
+
+
+      if ($client_contact) {
         return response()->json('Updated');
       } else {
         return response()->json(['message' => "Internal Server Error"], 500);

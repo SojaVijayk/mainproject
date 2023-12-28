@@ -23,6 +23,11 @@ Route::get('/login', $controller_path . '\Auth\LoginController@index')->name('lo
 Route::post('/login', $controller_path . '\Auth\LoginController@login')->name('login.custom');
 
 Route::post('/logout', $controller_path . '\Auth\LoginController@logout')->name('logout');
+Route::get('forget-password', $controller_path . '\Auth\ForgotPasswordController@index')->name('forget.password.get');
+Route::post('forget-password', $controller_path . '\Auth\ForgotPasswordController@submitForgetPasswordForm')->name('forget.password.post');
+Route::get('reset-password/{token}', $controller_path . '\Auth\ForgotPasswordController@showResetPasswordForm')->name('reset.password.get');
+Route::post('reset-password', $controller_path . '\Auth\ForgotPasswordController@submitResetPasswordForm')->name('reset.password.post');
+
 
 //middlewear start
 Route::group(['middleware' => 'auth'], function() {
@@ -46,6 +51,10 @@ Route::get('/client/list', $controller_path . '\Client\ClientController@index')-
 Route::post('/client/store', $controller_path . '\Client\ClientController@store')->name('client-store');
 Route::get('/client/edit/{id}', $controller_path . '\Client\ClientController@editClient')->name('client-edit');
 Route::post('/client/edit/{id}', $controller_path . '\Client\ClientController@update')->name('client-update');
+Route::get('/client/contactPersons', $controller_path . '\Client\ClientController@getAllContactPersons')->name('client-contact-persons');
+Route::post('/client/contactPerson/store/{client}', $controller_path . '\Client\ClientController@contactPersonStore')->name('client-contact-store');
+Route::get('/client/contactPerson/edit/{id}', $controller_path . '\Client\ClientController@editContactPerson')->name('client-contact-edit');
+Route::post('/client/contactPerson/update/{id}', $controller_path . '\Client\ClientController@updateContactPerson')->name('client-contact-update');
 
 //Projects
 Route::get('/projects', $controller_path . '\Client\ProjectController@index')->name('client-projects');
@@ -54,6 +63,11 @@ Route::post('/project/store', $controller_path . '\Client\ProjectController@stor
 Route::get('/project/edit/{id}', $controller_path . '\Client\ProjectController@editProject')->name('project-edit');
 Route::post('/project/edit/{id}', $controller_path . '\Client\ProjectController@update')->name('project-update');
 
+//Project Managaement
+Route::get('/project/dashboard/{project_id}' , $controller_path . '\Client\ProjectController@dashboard')->name('project-dashboard');
+Route::post('/project/milestone/store', $controller_path . '\Client\ProjectController@milestoneStore')->name('project-milestone-store');
+
+
 //User Management admin
 
 Route::get('/user/employee' , $controller_path . '\Employee\EmployeeController@index')->name('user-employee');
@@ -61,6 +75,15 @@ Route::get('/user/employee/list' , $controller_path . '\Employee\EmployeeControl
 Route::get('/user/employee/view/account/{id}' , $controller_path . '\Employee\EmployeeController@employeeView')->name('user-employee-view');
 Route::post('/user/employee/store' , $controller_path . '\Employee\EmployeeController@store')->name('user-employee-store');
 Route::get('/user/employee/edit/{id}', $controller_path . '\Employee\EmployeeController@edit')->name('user-employee-edit');
+Route::post('/user/employee/update/{id}', $controller_path . '\Employee\EmployeeController@update')->name('user-employee-update');
+Route::get('/user/employee/editInfo/{id}', $controller_path . '\Employee\EmployeeController@editInfo')->name('user-employee-editInfo');
+Route::post('/user/employee/editInfo/{id}', $controller_path . '\Employee\EmployeeController@updateInfo')->name('user-employee-updateInfo');
+Route::post('/user/employee/addBankAccount/{id}', $controller_path . '\Employee\EmployeeController@addBankAccount')->name('user-account-updateInfo');
+Route::post('/user/employee/updateBankAccount', $controller_path . '\Employee\EmployeeController@updateBankAccount')->name('user-account-status-change');
+Route::post('/user/employee/uploadImage', $controller_path . '\Employee\EmployeeController@uploadImage')->name('user-account-image-change');
+
+
+Route::post('/user/employee/resetPasssword' , $controller_path . '\Employee\EmployeeController@resetPassword')->name('user.employee.resetPassword');
 //fetchEvents
 Route::get('/fetchEvents', $controller_path . '\Employee\EmployeeController@fetchEvents')->name('employee-event');
 
@@ -128,6 +151,8 @@ Route::POST('/leave/downloadBulk', $controller_path . '\Leave\LeaveRequestContro
 //user view
 Route::get('/user/profile' , $controller_path . '\Employee\EmployeeController@profileView')->name('user-profile');
 Route::get('/user/project/list', $controller_path . '\Client\ProjectController@userProjectList')->name('user-project-list');
+
+
 //Project employee Mngmnt
 Route::get('/project/employee/{project_id}' , $controller_path . '\Project\ProjectEmployeeController@index')->name('project-employee');
 Route::get('/project/employees/detail/list' , $controller_path . '\Project\ProjectEmployeeController@employeeList')->name('project-employee-list');
@@ -138,6 +163,7 @@ Route::post('/project/employee/store' , $controller_path . '\Project\ProjectEmpl
 //project Document
 
 Route::get('/project/docs/{project_id}' , $controller_path . '\Project\ProjectDocumentController@index')->name('project-employee');
+
 
 
 

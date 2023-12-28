@@ -34,6 +34,16 @@
   $(".datepicker").datepicker({
     autoclose: true ,
     });
+    var select2 = $('.select2');
+    if (select2.length) {
+      select2.each(function () {
+        var $this = $(this);
+        $this.wrap('<div class="position-relative"></div>').select2({
+          placeholder: 'Select value',
+          dropdownParent: $this.parent()
+        });
+      });
+    }
 
     /**
  * App Calendar
@@ -600,72 +610,259 @@ document.addEventListener('DOMContentLoaded', function () {
       var  toDate =  $("#toDate").val();
 
       var  view_type = $('input[name="viewTypeOptinon"]:checked').val();
+      var  reportType =  $("#reportType").val();
+
 
       $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
     })
-
+    if(reportType ==1){
       if(view_type == 'excel' || view_type == 'pdf'){
 
-      $.ajax({
-           data:  {
-            fromDate:fromDate,
-              toDate:toDate,
-              type:1,
-              view_type:view_type,
+        $.ajax({
+             data:  {
+              fromDate:fromDate,
+                toDate:toDate,
+                type:1,
+                view_type:view_type,
 
-              "_token": "{{ csrf_token() }}",
-          },
-            url: `${baseUrl}downloadBulk`,
-            type: 'POST',
-            xhrFields:{
-              responseType: 'blob'
-          },
-          beforeSend: function() {
-              //
-          },
-          success: function(data) {
-              var url = window.URL || window.webkitURL;
-              var objectUrl = url.createObjectURL(data);
-              window.open(objectUrl);
-          },
-          error: function(data) {
-              //
-          }
-      });
-      }
-      else{
+                "_token": "{{ csrf_token() }}",
+            },
+              url: `${baseUrl}downloadBulk`,
+              type: 'POST',
+              xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                //
+            },
+            success: function(data) {
+                var url = window.URL || window.webkitURL;
+                var objectUrl = url.createObjectURL(data);
+                window.open(objectUrl);
+            },
+            error: function(data) {
+                //
+            }
+        });
+        }
+        else{
 
 
+
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'1',
+               view_type:view_type,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: `${baseUrl}downloadBulk`,
+             type: 'POST',
+
+           success: function(data) {
+            {{--
+            data.list.forEach((item, index) => {
+              tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td><td> <span class="text-'+(item.in_time <= '09:30'  ? "success" : 'warning')+'">'+item.in_time+'</span></td><td><span class="text-'+(item.out_time >= '17:30'  ? "success" : 'warning')+'">'+item.out_time+'</span></td>';
+              });
+
+             --}}
+
+            var tbody='';
+            data.list.forEach((item, index) => {
+              tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td>'+
+               ' <td> <span class="text-'+(item.in_time <= '09:30'  ? "success" : 'warning')+'">'+(item.in_time != null ? item.in_time : '')+'</span></td>'+
+               '<td><span class="text-'+(item.out_time >= '17:30'  ? "success" : 'warning')+'">'+(item.out_time != null ? item.out_time : '')+'</span></td>'+
+               '';
+                var leave= '';
+                var leave_status= '';
+                var leave_day= '';
+
+                var mov_title= '';
+                var mov_loc= '';
+                var mov_date= '';
+                var mov_type= '';
+                var mov_status= '';
+
+
+                if((item.leave_type != '') && (item.leave_type != null)){
+                  leave = item.leave_type;
+                  leave_status=(item.leave_status == 1 ? 'Approved' : (item.leave_status == 2 ? 'Rejected' : 'Pending'));
+                  leave_day= (item.leave_day_type == 1 ? 'Full Day' : (item.leave_day_type == 2 ? 'AN' : 'FN'));
+
+                  tbody=tbody+'<td> Leave Details (Leave Type : '+leave+' - Day Type :'+leave_day+ ' - Status:' + leave_status+ ')</td>';
+                }
+
+
+
+                if((item.movement_status != '') && (item.movement_status != null)){
+                  mov_type = item.type;
+                  mov_title= item.title;
+                  mov_loc= item.location;
+                  mov_date = item.start_date+' - '+item.start_time+' to '+item.end_date+' - '+item.end_time;
+                  mov_status=(item.mov_status == 1 ? 'Approved' : (item.mov_status == 2 ? 'Rejected' : 'Pending'));
+                  tbody=tbody+'<td> Movement Details ( '+mov_type+' -  '+mov_title+ ' Duraton : '+mov_date+' - Status:' + mov_status+ ')</td>';
+
+                }
+
+                tbody=tbody+'</tr>';
+
+              });
+              $('#DesignationModal').modal('show');
+            $(".datatables-leave-list #dataList").html(tbody);
+
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+    }
+
+    if(reportType ==2){
+      if(view_type == 'excel' || view_type == 'pdf'){
 
         $.ajax({
-          data:  {
-           fromDate:fromDate,
-             toDate:toDate,
-             type:'1',
-             view_type:view_type,
-             "_token": "{{ csrf_token() }}",
-         },
-           url: `${baseUrl}downloadBulk`,
-           type: 'POST',
+             data:  {
+              fromDate:fromDate,
+                toDate:toDate,
+                type:1,
+                view_type:view_type,
 
-         success: function(data) {
-          var tbody='';
-          data.list.forEach((item, index) => {
-            tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td><td> <span class="text-'+(item.in_time <= '09:30'  ? "success" : 'warning')+'">'+item.in_time+'</span></td><td><span class="text-'+(item.out_time >= '17:30'  ? "success" : 'warning')+'">'+item.out_time+'</span></td>';
-            });
-            $('#DesignationModal').modal('show');
-          $(".datatables-leave-list #dataList").html(tbody);
+                "_token": "{{ csrf_token() }}",
+            },
+              url: `${baseUrl}movement/downloadBulk`,
+              type: 'POST',
+              xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                //
+            },
+            success: function(data) {
+                var url = window.URL || window.webkitURL;
+                var objectUrl = url.createObjectURL(data);
+                window.open(objectUrl);
+            },
+            error: function(data) {
+                //
+            }
+        });
+        }
+        else{
 
-         },
-         error: function(data) {
-             //
-         }
-     });
 
-      }
+
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'1',
+               view_type:view_type,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: `${baseUrl}movement/downloadBulk`,
+             type: 'POST',
+
+           success: function(data) {
+            var tbody='';
+            data.list.forEach((item, index) => {
+              tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.start_date+'</td><td>'+item.start_time+'</td><td>'+item.end_date+'</td><td>'+item.end_time+
+                '<td>'+item.title+'</td><td>'+item.type+'</td><td>'+item.location+'</td><td>'+item.description+'</td><td>'+item.requested_at+'</td>'+
+                '<td>'+(item.status == 0 ? '<span class="badge bg-secondary">Pending</span>' : (item.status == 1 ? '<span class="badge bg-success">Aproved</span>' : '<span class="badge bg-danger">Rejected</span>' ))+'</td>'+
+                '<td>'+item.action_by_name+'</td><td>'+item.action_at+'</td>';
+              });
+              $('#MovementModal').modal('show');
+            $(".datatables-leave-list #dataList").html(tbody);
+
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+    }
+
+
+    if(reportType ==3){
+      if(view_type == 'excel' || view_type == 'pdf'){
+
+        $.ajax({
+             data:  {
+              fromDate:fromDate,
+                toDate:toDate,
+                type:1,
+                view_type:view_type,
+
+                "_token": "{{ csrf_token() }}",
+            },
+              url: `${baseUrl}leave/downloadBulk`,
+              type: 'POST',
+              xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                //
+            },
+            success: function(data) {
+                var url = window.URL || window.webkitURL;
+                var objectUrl = url.createObjectURL(data);
+                window.open(objectUrl);
+            },
+            error: function(data) {
+                //
+            }
+        });
+        }
+        else{
+
+
+
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'1',
+               view_type:view_type,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: `${baseUrl}leave/downloadBulk`,
+             type: 'POST',
+
+           success: function(data) {
+            var tbody='';
+            var tbody_sub='';
+            data.list.forEach((item, index) => {
+              {{--  tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.from+'</td><td>'+item.to+'</td><td>'+item.duration+'</td><td>'+item.requested_at+'</td><td>'+item.status+'</td>';  --}}
+
+
+
+                  tbody_sub=tbody_sub+'<tr><td>'+item.name+'</td><td>'+item.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
+                    '<td>'+item.requested_at+'</td><td>'+(item.status == 0 ? '<span class="text-nowrap badge bg-label-secondary">Pending</span></td>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ '</td>'))+'<td>'+item.action_by_name+'</td><td>'+item.action_at+'</td></tr>';
+
+
+
+              });
+              $('#LeaveModal').modal('show');
+            $(".datatables-leave-list #dataList").html(tbody_sub);
+
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+    }
+
+
+
+
 
 });
 
@@ -684,13 +881,24 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="card">
       <div class="card-body">
         <div class="row">
-          <div class="mb-3 col-4">
+          <div class="col-md-3 select2-primary">
+            <label class="form-label" for="reportType">Report Type</label>
+            <select id="reportType" class="select2 form-select" >
+              <option value="">Select All</option>
+
+              <option value='1' selected>Attendance</option>
+              <option value='2' >Movement</option>
+              <option value='3' >Leave</option>
+
+            </select>
+          </div>
+          <div class="mb-3 col-3">
             <label for="fromDate" class="form-label">From</label>
             <input type="text" class="form-control datepicker" id="fromDate" name="fromDate" placeholder="MM/DD/YYYY" class="form-control" />
 
           </div>
 
-          <div class="mb-3 col-4">
+          <div class="mb-3 col-3">
             <label for="toDate" class="form-label">To</label>
             <input type="text" class="form-control datepicker" id="toDate" name="toDate" placeholder="MM/DD/YYYY" class="form-control" />
 
@@ -829,5 +1037,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 <!-- Modal -->
 @include('_partials/_modals/modal-attendance')
+@include('_partials/_modals/modal-movement-report-view')
+@include('_partials/_modals/modal-leave-report-view')
 <!-- /Modal -->
 @endsection

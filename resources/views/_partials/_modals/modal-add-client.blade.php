@@ -36,46 +36,12 @@
 
 
 
-          <div class="divider contactperson">
-            <div class="divider-text">
-               Contact Person Details
-            </div>
-          </div>
-            <div data-repeater-list="group-a">
-              <div data-repeater-item>
-                <div class="row contactperson">
-                  <div class="mb-3 col-lg-6 col-xl-3 col-12 mb-0">
-                    <label class="form-label" for="form-repeater-1-1">Name</label>
-                    <input type="text" id="contactName" name="contactName" class="form-control" placeholder="john.doe" />
-                  </div>
-                  <div class="mb-3 col-lg-6 col-xl-3 col-12 mb-0">
-                    <label class="form-label" for="form-repeater-1-2">Designation</label>
-                    <input type="text" id="contactName" name="contactName" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
-                  </div>
-
-                  <div class="mb-3 col-lg-6 col-xl-3 col-12 mb-0">
-                    <label class="form-label" for="form-repeater-1-1">Email</label>
-                    <input type="text" id="contactName" name="contactName" class="form-control" placeholder="john.doe" />
-                  </div>
-                  <div class="mb-3 col-lg-6 col-xl-3 col-12 mb-0">
-                    <label class="form-label" for="form-repeater-1-1">Mobile</label>
-                    <input type="text" id="contactName" name="contactName" class="form-control" placeholder="john.doe" />
-                  </div>
-                  <div class="mb-12 col-lg-12 col-xl-12 col-12 mb-0">
-                    <label class="form-label" for="form-repeater-1-1">Address</label>
-                    <textarea class="form-control" id="contactName" name="contactName" rows="3"></textarea>
-                  </div>
-
-                </div>
-                <hr>
-              </div>
-            </div>
 
 
 
 
           <div class="col-12 text-center mt-4">
-            <button type="submit" id="submit_client" data-id="0" data-type="new" class="btn submit-client btn-primary me-sm-3 me-1">Submit</button>
+            <button type="submit" id="submit_client"  data-id="0" data-type="new" class="btn submit-client btn-primary me-sm-3 me-1">Submit</button>
             <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
           </div>
         </form>

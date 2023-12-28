@@ -41,8 +41,8 @@
             <label class="form-label" for="leaveType">Label</label>
             <select class="select2 select-event-label form-select" id="leaveType" name="leaveType">
               <option value="" >Select</option>
-              @foreach ($leave_types as $leave)
-              <option value={{$leave->id}} >{{$leave->leave_type}}</option>
+              @foreach ($leaves_total_credit as $leave)
+              <option value={{$leave->leave_type_id}} >{{$leave->leave_type}}</option>
               @endforeach
 
             </select>

@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   mov_loc= item.location;
                   mov_date = item.start_date+' - '+item.start_time+' to '+item.end_date+' - '+item.end_time;
                   mov_status=(item.mov_status == 1 ? 'Approved' : (item.mov_status == 2 ? 'Rejected' : 'Pending'));
-                  tbody=tbody+'<td> Movement Details ( '+mov_type+' -  '+mov_title+ ' Duraton : '+move_date+' - Status:' + mov_status+ ')</td>';
+                  tbody=tbody+'<td> Movement Details ( '+mov_type+' -  '+mov_title+ ' Duraton : '+mov_date+' - Status:' + mov_status+ ')</td>';
 
                 }
 

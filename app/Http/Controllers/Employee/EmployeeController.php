@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Employee;
 use App\Models\Designation;
 use App\Models\EmploymentType;
+use App\Models\BankAccount;
 use App\Models\LeaveRequest;
 use App\Models\Movement;
 use App\Models\Attendance;
@@ -88,7 +89,7 @@ class EmployeeController extends Controller
     $userDuplicates = $users->diff($usersUnique)->count();
     DB::connection()->enableQueryLog();
     $list = User::with("roles")
-    ->select('users.*','employees.status','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','usertype_role.usertype_role')
+    ->select('users.*','employees.status','employees.id as employee_id','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','usertype_role.usertype_role')
     ->join("employees","employees.user_id","=","users.id")
     ->join("usertype_role","usertype_role.id","=","users.user_role")
     ->leftjoin("designations","designations.id","=","employees.designation")->get();
@@ -113,10 +114,13 @@ class EmployeeController extends Controller
     $where = ['users.id' => Auth::user()->id];
     $employee = User::where($where)->with("roles")->join("employees","employees.user_id","=","users.id")
     ->join("usertype_role","usertype_role.id","=","users.user_role")
-    ->leftjoin("designations","designations.id","=","employees.designation")->first();
+    ->leftjoin("designations","designations.id","=","employees.designation")
+    ->select('users.*','employees.status','employees.id as employee_id','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','usertype_role.usertype_role')
+    ->first();
     $employee_projects = Employee::with('lead_projects')->withCount('lead_projects')->with('member_projects')->withCount('member_projects')->where('user_id',$id)->first();
-
-    return view('content.employee.user-employee-view-account',compact('employee','employee_projects'),['pageConfigs'=> $pageConfigs]);
+   $employeeRoles= User::where($where)->with("roles")->first();
+   $employeeAccounts = BankAccount::where('user_id',$id)->get();
+    return view('content.employee.user-employee-view-account',compact('employee','employee_projects','employeeRoles','employeeAccounts'),['pageConfigs'=> $pageConfigs]);
   }
 
 
@@ -247,6 +251,97 @@ class EmployeeController extends Controller
 
   }
 
+  public function update(Request $request, $id)
+  {
+
+    $user = User::find($id);
+    $employee_details = Employee::where('user_id',$id)->first();
+    if($user && $employee_details){
+      $this->validate($request, [
+        'name' => 'required',
+        'email' => 'required|email|unique:users,email,'.$user->id,
+        'mobile' => 'required|numeric|unique:employees,mobile,'.$employee_details->id,
+        'empId' => 'required|unique:employees,empId,'.$employee_details->id,
+        // 'password' => 'required|same:confirm-password',
+        'doj' => 'required',
+        'roles' => 'required',
+        'usertype_role' => 'required',
+        'designation' => 'required',
+        'employment_type'=>'required',
+        'reporting_officer'=>'required'
+    ]);
+
+      $input = $request->all();
+
+      $user->update(['name'=>$request->name,
+      'email'=>$request->email,
+      'username'=>$request->empId,
+      'user_role'=>$request->usertype_role,
+      ]);
+      DB::table('model_has_roles')->where('model_id',$id)->delete();
+      $user->assignRole($request->input('roles'));
+        $doj = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('doj'))));
+
+
+      $employee = Employee::where('user_id',$id)->update(
+        [
+        'name'=>$request->name,
+        'mobile'=>$request->mobile,
+        'empId'=>$request->empId,
+        'doj'=>$doj,
+        'email'=>$request->email,
+        'designation'=>$request->designation,
+        'employment_type'=>$request->employment_type,
+        'reporting_officer'=>$request->reporting_officer
+        ]);
+
+
+        if($user && $employee ){
+          return response()->json('Updated');
+        } else {
+          // user already exist
+          return response()->json(['message' => "already exits"], 422);
+        }
+    }
+    else{
+      return response()->json(['message' => "no user found"], 422);
+    }
+
+
+
+
+
+    // $userID = $request->id;
+
+    // if ($userID) {
+    //   // update the value
+    //   $users = User::updateOrCreate(
+    //     ['id' => $userID],
+    //     ['name' => $request->name, 'email' => $request->email]
+    //   );
+
+    //   // user updated
+    //   return response()->json('Updated');
+    // } else {
+    //   // create new one if email is unique
+    //   $userEmail = User::where('email', $request->email)->first();
+
+    //   if (empty($userEmail)) {
+    //     $users = User::updateOrCreate(
+    //       ['id' => $userID],
+    //       ['name' => $request->name, 'email' => $request->email, 'password' => bcrypt(Str::random(10))]
+    //     );
+
+    //     // user created
+    //     return response()->json('Created');
+    //   } else {
+    //     // user already exist
+    //     return response()->json(['message' => "already exits"], 422);
+    //   }
+    // }
+
+
+  }
   /**
    * Display the specified resource.
    *
@@ -278,6 +373,27 @@ class EmployeeController extends Controller
     return response()->json($users);
   }
 
+  public function editInfo($id)
+  {
+    $where = ['employees.id' => $id];
+
+    // $users = User::where($where)->first();
+    $users = User::with("roles")
+    // ->select('users.*','employees.status','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','employees.employment_type','employees.designation as desig_id','employees.doj','employees.reporting_officer','designations.designation','usertype_role.usertype_role')
+    ->select('employees.*','users.id','employees.designation as desig_id','designations.designation','usertype_role.usertype_role','account_holder_name','account_number', 'ifsc', 'branch', 'bank_name', 'bank_address',  'bank_accounts.status as bank_status', 'primary')
+    ->join("employees","employees.user_id","=","users.id")
+    ->leftjoin("bank_accounts",function($join){
+      $join->on("bank_accounts.user_id","=","users.id")
+      ->where("bank_accounts.primary","=",1)
+          ->where("bank_accounts.status","=",1);
+  })
+    ->join("usertype_role","usertype_role.id","=","users.user_role")
+    ->leftjoin("designations","designations.id","=","employees.designation")->where($where)->first();
+    // return view('_partials/_modals/modal-edit-user',compact('users'));
+
+    return response()->json($users);
+  }
+
   /**
    * Update the specified resource in storage.
    *
@@ -285,9 +401,163 @@ class EmployeeController extends Controller
    * @param  int  $id
    * @return \Illuminate\Http\Response
    */
-  public function update(Request $request, $id)
+
+
+  public function updateInfo(Request $request, $id)
   {
+
+
+  $employee = Employee::find($id);
+  // print_r($employee);
+  $employee->prefix = $request->prefix;
+  $employee->gender = $request->gender;
+  $employee->pincode = $request->pincode;
+  $employee->address = $request->address;
+  $employee->dob = $request->dob;
+  $employee->country = $request->country;
+  $employee->state = $request->state;
+  $employee->district = $request->district;
+  $employee->mobile_sec = $request->mobile_sec;
+  $employee->email_sec = $request->email_sec;
+  $employee->twitter = $request->twitter;
+  $employee->facebook = $request->facebook;
+  $employee->linkedin = $request->linkedin;
+  $employee->instagram = $request->instagram;
+  $employee->whatsapp = $request->whatsapp;
+  $employee->languages = $request->languages;
+  $employee->pan = $request->pan;
+
+  if($request->has('type') && $request->type == 'HR'){
+
+    $employee->contract_start_date =   date('Y-m-d', strtotime(str_replace('-', '/', $request->contract_start_date)));
+    $employee->contract_end_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->contract_end_date)));
+    $employee->contract_duration = $request->contract_duration;
+    $employee_account = BankAccount::where('user_id',$employee->user_id)->count();
+    if($employee_account <= 0){
+      BankAccount::where('user_id',$employee->user_id)->update(["status"=>0,"primary"=>0]);
+      $employee = BankAccount::create(
+        ['account_number'=>$request->account_number,
+        'account_holder_name'=>$request->account_holder_name,
+        'ifsc'=>$request->ifsc,
+        'branch'=>$request->branch,
+        'bank_name'=>$request->bank_name,
+        'address'=>$request->address,
+        'user_id'=>$employee->user_id,
+        'status'=>1,
+        'primary'=>1,
+        "entry_by"=>Auth::user()->id
+
+        ,
+        ]);
+
+    }
+    else{
+
+      BankAccount::where('user_id',$employee->user_id)->where('primary',1)->update(
+        ['account_number'=>$request->account_number,
+        'account_holder_name'=>$request->account_holder_name,
+        'ifsc'=>$request->ifsc,
+        'branch'=>$request->branch,
+        'bank_name'=>$request->bank_name,
+        'address'=>$request->address,
+        'user_id'=>$employee->user_id,
+        'status'=>1,
+        'primary'=>1,
+        "entry_by"=>Auth::user()->i]
+      );
+
+    }
+
   }
+
+  $employee->save();
+
+
+
+  if ($employee) {
+    return response()->json('Updated');
+  } else {
+    return response()->json(['message' => "Internal Server Error"], 500);
+
+  }
+}
+
+public function AddBankAccount(Request $request,$id){
+  BankAccount::where('user_id',$id)->update(["status"=>0,"primary"=>0]);
+      $employee = BankAccount::create(
+        ['account_number'=>$request->account_number,
+        'account_holder_name'=>$request->account_holder_name,
+        'ifsc'=>$request->ifsc,
+        'branch'=>$request->branch,
+        'bank_name'=>$request->bank_name,
+        'address'=>$request->address,
+        'user_id'=>$id,
+        'status'=>1,
+        'primary'=>1,
+        "entry_by"=>Auth::user()->id
+
+        ,
+        ]);
+        if ($employee) {
+          return response()->json('Updated');
+        } else {
+          return response()->json(['message' => "Internal Server Error"], 500);
+
+        }
+}
+public function updateBankAccount(Request $request){
+  BankAccount::where('user_id',$request->user_id)->update(["status"=>0,"primary"=>0]);
+  $employee = BankAccount::where('user_id',$request->user_id)->where('id',$request->account_id)->update(["status"=>1,"primary"=>1]);
+
+        if ($employee) {
+          return response()->json('Updated');
+        } else {
+          return response()->json(['message' => "Internal Server Error"], 500);
+
+        }
+}
+
+public function uploadImage(Request $request){
+
+  $request->validate([
+    'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+]);
+
+
+        // $request->image->storeAs('public/img/avatars', $fileName);
+        $destinationPath = 'assets/img/avatars';
+        // $myimage = $request->image->getClientOriginalName();
+        $fileName = time() . '.' . $request->image->extension();
+        $request->image->move(public_path($destinationPath), $fileName);
+        $id= Auth::user()->id;
+
+        $employee_details = Employee::where('user_id',$id)->first();
+
+        if(file_exists(public_path('assets/img/avatars/'.$employee_details->profile_pic))){
+          if($employee_details->profile_pic != 'avatar.png'){
+            $file =public_path('assets/img/avatars/'.$employee_details->profile_pic);
+            $img= unlink($file);
+          }
+
+          $employee = Employee::where('user_id',$id)->update(["profile_pic"=> $fileName]);
+
+              if ($employee) {
+                return response()->json('Updated');
+              } else {
+                return response()->json(['message' => "Internal Server Error"], 500);
+
+              }
+
+
+          }else{
+            return response()->json(['message' => "Internal Server Error"], 500);
+          }
+
+
+
+}
+
+
 
   /**
    * Remove the specified resource from storage.
@@ -300,6 +570,20 @@ class EmployeeController extends Controller
     $users = User::where('id', $id)->delete();
   }
 
+
+  public function resetPassword(Request $request){
+    $request->validate([
+      'password' => 'required|string|min:6|confirmed',
+      'password_confirmation' => 'required'
+  ]);
+  $id= Auth::user()->id;
+  $user = User::where('id',$id)
+  ->update(['password' => Hash::make($request->password)]);
+  $pageConfigs = ['myLayout' => 'blank'];
+  // return view('content.authentications.auth-forgot-password-cover', ['pageConfigs' => $pageConfigs]);
+  return response()->json('updated');
+
+  }
   public function fetchEvents(Request $request){
     $id= Auth::user()->id;
     $employee_details=Employee::where('user_id',$id)->first();

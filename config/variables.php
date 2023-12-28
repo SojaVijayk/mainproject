@@ -32,5 +32,6 @@ return [
   "instagramUrl" => "https://www.instagram.com/cmdkerala/",
   "login1"=>"https://assets1.lottiefiles.com/packages/lf20_xlmz9xwm.json",
   "login2"=>"https://assets1.lottiefiles.com/packages/lf20_xlmz9xwm.json",
-  "login3"=>"https://assets5.lottiefiles.com/packages/lf20_Xx30GI58E1.json"
+  "login3"=>"https://assets5.lottiefiles.com/packages/lf20_Xx30GI58E1.json",
+  "coming-soon"=>"https://lottie.host/94462664-0628-4c20-8879-291d9b787d51/6XLtpo6VVJ.json"
 ];

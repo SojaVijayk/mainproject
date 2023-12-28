@@ -18,6 +18,22 @@ return new class extends Migration
           $table->string('type');
           $table->string('leads');
           $table->string('members');
+          $table->string('total_cost');
+          $table->string('members');
+          $table->integer('client_contact_person');
+          $table->integer('initiated_by');
+          $table->string('contract_staff_strength');
+          $table->string('field_staff_strength');
+          $table->string('project_staff_strength');
+          $table->string('tenure_year');
+          $table->string('tenure_month');
+          $table->string('tenure_days');
+          $table->date('expected_start_date');
+          $table->date('expected_end_date');
+          $table->text('additional_support');
+          $table->text('remarks');
+
+
             $table->timestamps();
             $table->unique(['project_name']);
         });

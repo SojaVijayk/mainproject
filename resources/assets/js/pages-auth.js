@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               }
             }
           },
-          'confirm-password': {
+          'password_confirmation': {
             validators: {
               notEmpty: {
                 message: 'Please confirm password'

@@ -28,11 +28,14 @@ class LeaveRequestController extends Controller
     public function index()
   {
     $pageConfigs = ['myLayout' => 'horizontal'];
-    $leave_types = Leave::orderBy('id','DESC')->get();
 
     $id= Auth::user()->id;
-
     $employee_details=Employee::where('user_id',$id)->first();
+
+    $leave_types = Leave::orderBy('id','DESC')->get();
+
+
+
 
      $leaves_total_credit = LeaveAssign::select('leave_assigns.id','leave_assigns.leave_type as leave_type_id','leaves.leave_type','total_credit','employment_types.employment_type','leave_assigns.status','leave_assigns.created_at')
      ->leftjoin("leaves","leaves.id","=","leave_assigns.leave_type")
@@ -91,7 +94,7 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
 
 
 
-    return view('content.leave.leave-request',compact('leave_types','leaves_total_credit_details','date_start','date_end'),['pageConfigs'=> $pageConfigs]);
+    return view('content.leave.leave-request',compact('leave_types','leaves_total_credit_details','date_start','date_end','leaves_total_credit'),['pageConfigs'=> $pageConfigs]);
   }
 
   public function leaveList()
@@ -135,6 +138,7 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
     $to = date('2024-03-31');
     $employee = Employee::where('employees.user_id',Auth::user()->id)->first();
     $total_leaves_credit = LeaveAssign::where('employment_type', $employee->employment_type)->where('leave_type', $request->input('leave_type_id'))->first();
+
     $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$from, $to])->sum('leave_duration');
     $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$from, $to])->sum('leave_duration');
     $balance = $total_leaves_credit->total_credit - ( $availed_leave + $pending_leave);

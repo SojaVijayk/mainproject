@@ -15,7 +15,7 @@
       "submenu": [
         {
           "url": "/user/profile",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-user",
           "name": "Profile",
           "slug": "user-profile",
           "permission": 1
@@ -31,12 +31,14 @@
         {
           "url": "master/employment-type",
           "name": "Employment Type",
+          "icon": "menu-icon tf-icon ti ti-badge",
           "slug": "master-employment-type",
           "permission": "employment-type"
         },
         {
           "url": "master/designation",
           "name": "Designation",
+          "icon": "menu-icon tf-icon ti ti-tie",
           "slug": "master-designation",
           "permission": "designation"
         }
@@ -51,6 +53,7 @@
         {
           "url": "user/employee",
           "name": "Employee Management",
+          "icon": "menu-icon tf-icons ti ti-users",
           "slug": "user-employee",
           "permission": "employee-management"
         }
@@ -64,14 +67,14 @@
       "submenu": [
         {
           "url": "client/list",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-users",
           "name": "Create Client",
           "slug": "client-list",
           "permission": "client-create"
         },
         {
           "url": "projects",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-layers-intersect",
           "name": "Create Project",
           "slug": "client-projects",
           "permission": "project-create"
@@ -93,14 +96,14 @@
       "submenu": [
         {
           "url": "/",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-users",
           "name": "Client",
           "slug": "payroll-analytics",
           "permission": "payroll-list"
         },
         {
           "url": "/",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-layers-intersect",
           "name": "Project",
           "slug": "payroll-analytics",
           "permission": "payroll-list"
@@ -109,34 +112,34 @@
     },
     {
       "name": "Attendance Management",
-      "icon": "menu-icon tf-icons ti ti-notepad",
+      "icon": "menu-icon tf-icons ti ti-calendar-event",
       "slug": "attendance",
       "permission": 1,
       "submenu": [
         {
           "url": "/attendance",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-calendar-event",
           "name": "Attendance",
           "slug": "attendance-index",
           "permission": "attendance-individual-view"
         },
         {
           "url": "/movement",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-sort-ascending-2",
           "name": "Movement",
           "slug": "attendance-movement",
           "permission": "movement-individual"
         },
         {
           "url": "/leave/request",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-door-exit",
           "name": "Leave",
           "slug": "attendance-leave-request",
           "permission": "leave-individual-request"
         },
         {
           "url": "/attendance-management",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti   ti-ad-2",
           "name": "Attendance Management",
           "slug": "attendance-hrView",
           "permission": "attendance-management"
@@ -158,28 +161,28 @@
       "submenu": [
         {
           "url": "/leave",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-database",
           "name": "Leave Master",
           "slug": "leave-master-index",
           "permission": "leave-master"
         },
         {
           "url": "/leave-assign",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-location",
           "name": "Leave Assign",
           "slug": "leave-assign",
           "permission": "leave-assign"
         },
         {
           "url": "/movement/approve-list",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-zoom-check",
           "name": "Movement Request Approval",
           "slug": "leave-movement-approve-list",
           "permission": "leave-request-approve"
         },
         {
           "url": "/leave/approve-list",
-          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "icon": "menu-icon tf-icons ti ti-zoom-check",
           "name": "Leave Request Approval",
           "slug": "leave-approve-list",
           "permission": "leave-request-approve"

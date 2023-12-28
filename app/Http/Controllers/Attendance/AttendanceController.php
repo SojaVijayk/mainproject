@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 // use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use PDF;
 
+use DB;
 
 
 class AttendanceController extends Controller
@@ -49,9 +50,10 @@ class AttendanceController extends Controller
       else{
         $employees = $request->input('employeeList');
       }
+      \DB::enableQueryLog();
       $attendance = Attendance::select('attendances.*','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','leave_request_details.leave_day_type',
       'leave_request_details.status as leave_status','emp.name as action_by_name','leaves.leave_type',
-      'movements.title','movements.type','movements.start_date','movements.start_time','movements.end_date','movements.end_time','movements.status as movement_status','emp_mov.name as action_by_name')
+      'movements.title','movements.type','movements.start_date','movements.start_time','movements.end_date','movements.end_time','movements.status as movement_status','emp_mov.name as action_by_name','attendances.date as dates')
     ->join("employees","employees.user_id","=","attendances.user_id")
 
 
@@ -63,11 +65,16 @@ class AttendanceController extends Controller
   ->leftjoin("leaves","leaves.id","=","leave_request_details.leave_type_id")
 
   ->leftjoin("movements",function($join){
-    $join->on("movements.user_id","=","attendances.user_id")
+    $join->on("movements.user_id","=","attendances.user_id");
+    $join->on("movements.start_date",">=","attendances.date");
+    $join->on("movements.end_date","<=","attendances.date");
 
-        // ->whereBetween('movements.start_date', 'attendances.date')
-        // ->whereBetween('movements.end_date', 'attendances.date')
-        ->whereBetween('attendances.date', ['movements.start_date','movements.end_date']);
+
+        // ->whereBetween('movements.start_date', [$from,$to])
+        // ->whereBetween('movements.end_date', [$from,$to]);
+        // ->whereBetween('movements.start_date', ['2023-10-20','2023-10-20'])
+        // ->whereBetween('movements.end_date',  ['2023-10-20','2023-10-20']);
+        // ->whereBetween('attendances.date', ['movements.start_date','movements.end_date']);
 
 })
 ->leftjoin("employees as emp_mov","emp_mov.user_id","=","movements.action_by")
@@ -77,6 +84,7 @@ class AttendanceController extends Controller
     ->whereIn('attendances.user_id',$employees)
     ->whereBetween('attendances.date', [$from, $to])
     ->orderBy('attendances.user_id','DESC')->get();
+    // dd(\DB::getQueryLog());
 
     if($request->input('view_type') == 'html'){
       return response()->json(["list"=>$attendance]);
