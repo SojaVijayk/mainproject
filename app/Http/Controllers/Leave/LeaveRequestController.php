@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Exports\LeaveExport;
 use Maatwebsite\Excel\Facades\Excel;
 use PDF;
+use App\Http\Controllers\MasterFunctionController;
 
 class LeaveRequestController extends Controller
 {
@@ -46,6 +47,36 @@ class LeaveRequestController extends Controller
      foreach( $leaves_total_credit as $leave_detail){
        $from = date('2023-04-01');
        $to = date('2024-03-31');
+       $subscriptionDate = $employee_details->doj;
+    $dateArray = (explode("-", $subscriptionDate));
+    if (date("Y") ==  $dateArray[0]) {
+      // Convert the subscription date to a Carbon instance
+      $subscriptionDateTime = Carbon::parse($subscriptionDate);
+
+      // Calculate the expiration date by adding one year to the subscription date
+      $expirationDateTime = $subscriptionDateTime->addYear();
+
+      // Format the expiration date as YYYY-MM-DD
+      $date_end = $expirationDateTime->format("Y-m-d");
+      $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
+    } else {
+      $doj = $employee_details->doj;
+      $dateArray = (explode("-", $doj));
+      $subscriptionDate = date("Y") . '-' . $dateArray[1] . '-' . $dateArray[2];
+      // Convert the subscription date to a Carbon instance
+      $subscriptionDateTime = Carbon::parse($subscriptionDate);
+
+      // Calculate the expiration date by adding one year to the subscription date
+      $expirationDateTime = $subscriptionDateTime->addYear();
+
+      // Format the expiration date as YYYY-MM-DD
+      $date_end = $expirationDateTime->format("Y-m-d");
+      // $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
+      $date_start = date("Y") . '-' .$dateArray[1] . '-' . $dateArray[2];
+    }
+
+    $result = (new MasterFunctionController)->GenerateLeavePeriod(3,$employee_details->doj);
+    print_r($result);exit;
 
        $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$from, $to])->sum('leave_duration');
        $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$from, $to])->sum('leave_duration');
@@ -63,33 +94,7 @@ class LeaveRequestController extends Controller
      }
 
 
-     $subscriptionDate = $employee_details->doj;
-     $dateArray = (explode("-",$subscriptionDate));
-     if(date("Y") ==  $dateArray[0] ){
-        // Convert the subscription date to a Carbon instance
-$subscriptionDateTime = Carbon::parse($subscriptionDate);
 
-// Calculate the expiration date by adding one year to the subscription date
-$expirationDateTime = $subscriptionDateTime->addYear();
-
-// Format the expiration date as YYYY-MM-DD
-$date_end = $expirationDateTime->format("Y-m-d");
-$date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
-     }
-     else{
-      $doj = $employee_details->doj;
-      $dateArray = (explode("-",$doj));
-      $subscriptionDate = date("Y").'-'. $dateArray[1].'-'.$dateArray[2];
-      // Convert the subscription date to a Carbon instance
-$subscriptionDateTime = Carbon::parse($subscriptionDate);
-
-// Calculate the expiration date by adding one year to the subscription date
-$expirationDateTime = $subscriptionDateTime->addYear();
-
-// Format the expiration date as YYYY-MM-DD
-$date_end = $expirationDateTime->format("Y-m-d");
-$date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
-     }
 
 
 
@@ -374,8 +379,8 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
       return response()->json(["list"=>$list]);
     }
     else if($request->input('view_type') == 'pdf'){
-      $pdf = PDF::loadView('exports.leave-export-pdf', compact('list'));
-      return $pdf->download('leave.pdf');
+      // $pdf = PDF::loadView('exports.leave-export-pdf', compact('list'));
+      // return $pdf->download('leave.pdf');
 
     }
     else if($request->input('view_type') == 'excel'){

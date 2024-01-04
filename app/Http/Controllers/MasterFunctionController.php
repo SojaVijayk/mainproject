@@ -1,0 +1,143 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+
+class MasterFunctionController extends Controller
+{
+    //
+    function GenerateLeavePeriod ($leave_period,$joiningDate = False){
+      if($leave_period == 3){
+         //Joining Date
+         $result = $this->calculateJobPeriod($joiningDate);
+        return $result;
+      }
+     else if($leave_period == 2){
+       //Financial Year
+        $result = $this->getFinancialYearDates();
+        return $result;
+
+     }
+     else if($leave_period == 1){
+      //calendar Year
+      $result = $this->getCalendarYearDates();
+      return $result;
+    }
+
+
+
+
+    }
+
+    public function getFinancialYearDates()
+    {
+        // Set the time zone to match your requirements
+        date_default_timezone_set('Asia/Kolkata');
+
+        // Get the current date
+        $currentDate = now();
+
+        // Set the start date of the financial year (April 1 of the current year)
+        $financialYearStart = now()->month(4)->day(1)->startOfDay();
+
+        // If the current date is before the financial year start date, adjust the start date to the previous year
+        if ($currentDate->lt($financialYearStart)) {
+            $financialYearStart->subYear();
+        }
+
+        // Set the end date of the financial year (March 31 of the next year)
+        $financialYearEnd = $financialYearStart->copy()->addYear()->subDay();
+
+        // Format dates in MySQL date format (Y-m-d)
+        $startDateFormatted = $financialYearStart->toDateString();
+        $endDateFormatted = $financialYearEnd->toDateString();
+
+        // Return the results
+        return [
+            'start_date' => $startDateFormatted,
+            'end_date' => $endDateFormatted,
+        ];
+    }
+
+    public function getCalendarYearDates()
+    {
+      // Get the current year
+      $currentYear = now()->year;
+
+      // Set the start date to January 1st of the current year
+      $startDate = Carbon::createFromDate($currentYear, 1, 1);
+
+      // Set the end date to December 31st of the current year
+      $endDate = Carbon::createFromDate($currentYear, 12, 31);
+
+      // Format dates in MySQL date format (Y-m-d)
+      $startDateFormatted = $startDate->toDateString();
+      $endDateFormatted = $endDate->toDateString();
+
+      // Return the current calendar year start and end dates
+      return [
+          'start_date' => $startDateFormatted,
+          'end_date' => $endDateFormatted,
+      ];
+  }
+
+  // public function calculateJobPeriod($joiningDate)
+  //   {
+  //       // Convert the provided joining date to a Carbon instance
+  //       $joiningDate = Carbon::parse($joiningDate);
+
+  //       // Calculate the end date of the initial one-year contract
+  //       $initialContractEndDate = $joiningDate->copy()->addYear()->subDay();
+
+  //       // If the current date is beyond the end date of the initial contract, renew the job period
+  //       if (now()->gt($initialContractEndDate)) {
+  //           // Renew the job period starting from the next day
+  //           $startDate = $initialContractEndDate->copy()->addDay();
+  //           // End the renewed job period one year later
+  //           $endDate = $startDate->copy()->addYear()->subDay();
+  //       } else {
+  //           // If the initial contract is still valid, set the start and end dates accordingly
+  //           $startDate = $joiningDate;
+  //           $endDate = $initialContractEndDate;
+  //       }
+
+  //       return [
+  //           'job_period_start_date' => $startDate->toDateString(),
+  //           'job_period_end_date' => $endDate->toDateString(),
+  //       ];
+  //   }
+  public function calculateJobPeriod($joiningDate)
+    {
+        // Convert the provided joining date to a Carbon instance
+        $joiningDate = Carbon::parse($joiningDate);
+
+        // Calculate the end date of the initial one-year contract
+        $initialContractEndDate = $joiningDate->copy()->addYear()->subDay();
+
+        // Check if the current date is beyond the end date of the initial contract
+        if (now()->gt($initialContractEndDate)) {
+            // Renew the job period starting from the next day
+            $startDate = $initialContractEndDate->copy()->addDay();
+            // End the renewed job period one year later
+            $endDate = $startDate->copy()->addYear()->subDay();
+
+            // If the renewed job period end date is over, extend the period by one year from the current date
+            if (now()->gt($endDate)) {
+                $startDate = now()->copy()->addDay();
+                $endDate = $startDate->copy()->addYear()->subDay();
+            }
+        } else {
+            // If the initial contract is still valid, set the start and end dates accordingly
+            $startDate = $joiningDate;
+            $endDate = $initialContractEndDate;
+        }
+
+        return [
+            'job_period_start_date' => $startDate->toDateString(),
+            'job_period_end_date' => $endDate->toDateString(),
+        ];
+    }
+
+  }
