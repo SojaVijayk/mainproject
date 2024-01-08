@@ -27,8 +27,12 @@ document.addEventListener('DOMContentLoaded', function (e) {
               notEmpty: {
                 message: 'Please enter your email'
               },
-              emailAddress: {
-                message: 'Please enter valid email address'
+              // emailAddress: {
+              //   message: 'Please enter valid email address'
+              // }
+              stringLength: {
+                min: 4,
+                message: 'Username must be more than 6 characters'
               }
             }
           },
@@ -38,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 message: 'Please enter email / username'
               },
               stringLength: {
-                min: 6,
+                min: 4,
                 message: 'Username must be more than 6 characters'
               }
             }

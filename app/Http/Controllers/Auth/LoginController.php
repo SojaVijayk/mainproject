@@ -29,6 +29,7 @@ class LoginController extends Controller
      * @var string
      */
     protected $redirectTo = RouteServiceProvider::ADMIN_DASHBOARD;
+    protected $username;
 
     /**
      * show login form for admin guard
@@ -57,8 +58,9 @@ class LoginController extends Controller
         ]);
 
         // Attempt to login
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+        // if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
 
+          if (Auth::attempt($request->only($this->username(), 'password'), $request->remember)) {
             // Redirect to dashboard
             session()->flash('success', 'Successully Logged in !');
 
@@ -100,79 +102,37 @@ class LoginController extends Controller
         auth()->logout();
         return redirect()->route('login');
     }
-    public function menu(){
 
+    public function __construct()
+    {
+        $this->middleware('guest')->except('logout');
 
- $jayParsedAry = [
-   "menu" => [
-         [
-            "name" => "Dashboards",
-            "icon" => "menu-icon tf-icons ti ti-smart-home",
-            "slug" => "dashboard"
-         ],
-         [
-               "name" => "Users",
-               "icon" => "menu-icon tf-icons ti ti-users",
-               "slug" => "laravel-example",
-               "submenu" => [
-                  [
-                     "url" => "laravel/user-management",
-                     "name" => "Employee Management",
-                     "slug" => "laravel-example-user-management"
-                  ]
-               ]
-            ],
-          [
-              "menuHeader" => "App Configurations"
-          ],
+        $this->username = $this->findUsername();
+    }
 
-         [
-              "name" => "Roles & Permissions",
-              "icon" => "menu-icon tf-icons ti ti-settings",
-              "slug" => "app",
-              "submenu" => [
-                [
-                    "url" => "app/roles",
-                    "name" => "Roles",
-                    "slug" => "app-roles"
-                ],
-                [
-                      "url" => "app/permission",
-                      "name" => "Permission",
-                      "slug" => "app-permission"
-                    ]
-              ]
-        ],
-         [
-            "menuHeader" => "Projects Management"
-         ],
-         [
-            "name" => "Clients",
-            "icon" => "menu-icon tf-icons ti ti-users",
-            "slug" => "client",
-            "submenu" => [
-              [
-                  "url" => "client/list",
-                  "name" => "Client List",
-                  "slug" => "client-list"
-              ]
-            ]
-       ],
-         [
-            "name" => "Projects",
-            "icon" => "menu-icon tf-icons ti ti-users",
-            "slug" => "client-project",
-            "submenu" => [
-              [
-                  "url" => "projects",
-                  "name" => "Project List",
-                  "slug" => "client-projects"
-              ]
-            ]
-        ],
-]
-];
+    /**
+     * Get the login username to be used by the controller.
+     *
+     * @return string
+     */
+    public function findUsername()
+    {
+        $login = request()->input('email');
 
+        $fieldType = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
+        request()->merge([$fieldType => $login]);
+
+        return $fieldType;
+    }
+
+    /**
+     * Get username property.
+     *
+     * @return string
+     */
+    public function username()
+    {
+        return $this->username;
     }
 }
