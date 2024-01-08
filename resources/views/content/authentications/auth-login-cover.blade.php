@@ -5,7 +5,7 @@ $configData = Helper::appClasses();
 
 @extends('layouts/layoutMaster')
 
-@section('title', 'Login Cover - Pages')
+@section('title', 'Login')
 
 @section('vendor-style')
 <!-- Vendor -->
@@ -136,21 +136,21 @@ $configData = Helper::appClasses();
         </div>
 
         <div class="d-flex justify-content-center">
-          <a href="javascript:;" class="btn btn-icon btn-label-facebook me-3">
+          <a href="https://www.facebook.com/cmdkerala/" class="btn btn-icon btn-label-facebook me-3">
             <i class="tf-icons fa-brands fa-facebook-f fs-5"></i>
           </a>
 
-          <a href="javascript:;" class="btn btn-icon btn-label-google-plus me-3">
+          {{--  <a href="javascript:;" class="btn btn-icon btn-label-google-plus me-3">
             <i class="tf-icons fa-brands fa-google fs-5"></i>
-          </a>
+          </a>  --}}
 
           {{--  <a href="javascript:;" class="btn btn-icon btn-label-twitter">
             <i class="tf-icons fa-brands fa-twitter fs-5"></i>
           </a>  --}}
-          <a href="javascript:;" class="btn btn-icon btn-label-linkedin me-3">
+          <a href="https://www.linkedin.com/company/cmdkerala/" class="btn btn-icon btn-label-linkedin me-3">
             <i class="tf-icons fa-brands fa-linkedin fs-5"></i>
           </a>
-          <a href="javascript:;" class="btn btn-icon btn-label-instagram">
+          <a href="https://www.instagram.com/cmdkerala/" class="btn btn-icon btn-label-instagram">
             <i class="tf-icons fa-brands fa-instagram fs-5"></i>
           </a>
         </div>

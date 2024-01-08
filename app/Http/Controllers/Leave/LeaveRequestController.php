@@ -45,41 +45,44 @@ class LeaveRequestController extends Controller
      ->orderBy('leave_assigns.leave_type','ASC')->get();
      $leaves_total_credit_details=[];
      foreach( $leaves_total_credit as $leave_detail){
-       $from = date('2023-04-01');
-       $to = date('2024-03-31');
-       $subscriptionDate = $employee_details->doj;
-    $dateArray = (explode("-", $subscriptionDate));
-    if (date("Y") ==  $dateArray[0]) {
-      // Convert the subscription date to a Carbon instance
-      $subscriptionDateTime = Carbon::parse($subscriptionDate);
+    //    $from = date('2023-04-01');
+    //    $to = date('2024-03-31');
+    //    $subscriptionDate = $employee_details->doj;
+    // $dateArray = (explode("-", $subscriptionDate));
+    // if (date("Y") ==  $dateArray[0]) {
+    //   // Convert the subscription date to a Carbon instance
+    //   $subscriptionDateTime = Carbon::parse($subscriptionDate);
 
-      // Calculate the expiration date by adding one year to the subscription date
-      $expirationDateTime = $subscriptionDateTime->addYear();
+    //   // Calculate the expiration date by adding one year to the subscription date
+    //   $expirationDateTime = $subscriptionDateTime->addYear();
 
-      // Format the expiration date as YYYY-MM-DD
-      $date_end = $expirationDateTime->format("Y-m-d");
-      $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
-    } else {
-      $doj = $employee_details->doj;
-      $dateArray = (explode("-", $doj));
-      $subscriptionDate = date("Y") . '-' . $dateArray[1] . '-' . $dateArray[2];
-      // Convert the subscription date to a Carbon instance
-      $subscriptionDateTime = Carbon::parse($subscriptionDate);
+    //   // Format the expiration date as YYYY-MM-DD
+    //   $date_end = $expirationDateTime->format("Y-m-d");
+    //   $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
+    // } else {
+    //   $doj = $employee_details->doj;
+    //   $dateArray = (explode("-", $doj));
+    //   $subscriptionDate = date("Y") . '-' . $dateArray[1] . '-' . $dateArray[2];
+    //   // Convert the subscription date to a Carbon instance
+    //   $subscriptionDateTime = Carbon::parse($subscriptionDate);
 
-      // Calculate the expiration date by adding one year to the subscription date
-      $expirationDateTime = $subscriptionDateTime->addYear();
+    //   // Calculate the expiration date by adding one year to the subscription date
+    //   $expirationDateTime = $subscriptionDateTime->addYear();
 
-      // Format the expiration date as YYYY-MM-DD
-      $date_end = $expirationDateTime->format("Y-m-d");
-      // $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
-      $date_start = date("Y") . '-' .$dateArray[1] . '-' . $dateArray[2];
-    }
+    //   // Format the expiration date as YYYY-MM-DD
+    //   $date_end = $expirationDateTime->format("Y-m-d");
+    //   // $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
+    //   $date_start = date("Y") . '-' .$dateArray[1] . '-' . $dateArray[2];
+    // }
 
-    $result = (new MasterFunctionController)->GenerateLeavePeriod(3,$employee_details->doj);
-    print_r($result);exit;
+    $date_result = (new MasterFunctionController)->GenerateLeavePeriod($employee_details->employment_type,$employee_details->doj);
+    $date_start = $date_result['start_date'];
+    $date_end = $date_result['end_date'];
+    // echo $employee_details->employment_type;
+    // print_r($date_result);exit();
 
-       $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$from, $to])->sum('leave_duration');
-       $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$from, $to])->sum('leave_duration');
+       $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
+       $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
 
        $leave_balance = [
          "leave_type"=>$leave_detail->leave_type,
@@ -131,6 +134,8 @@ class LeaveRequestController extends Controller
         'to' => 'required|',
         'date_list' => 'required|',
         'duration' => 'required|',
+        'leave_period_start' => 'required',
+        'leave_period_end' => 'required'
 
 
     ]);
@@ -139,13 +144,17 @@ class LeaveRequestController extends Controller
     $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('from'))));
     $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('to'))));
     $date_list = json_encode($request->input('date_list'));
-    $from = date('2023-04-01');
-    $to = date('2024-03-31');
+    // $from = date('2023-04-01');
+    // $to = date('2024-03-31');
     $employee = Employee::where('employees.user_id',Auth::user()->id)->first();
     $total_leaves_credit = LeaveAssign::where('employment_type', $employee->employment_type)->where('leave_type', $request->input('leave_type_id'))->first();
 
-    $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$from, $to])->sum('leave_duration');
-    $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$from, $to])->sum('leave_duration');
+    $date_result = (new MasterFunctionController)->GenerateLeavePeriod($employee->employment_type,$employee->doj);
+    $date_start = $date_result['start_date'];
+    $date_end = $date_result['end_date'];
+
+    $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
+    $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
     $balance = $total_leaves_credit->total_credit - ( $availed_leave + $pending_leave);
     if($request->input('duration') <=  $balance){
 
@@ -164,7 +173,9 @@ class LeaveRequestController extends Controller
           'leave_day_type' => $data['leave_day_type'],
           'leave_duration' => ($data['leave_day_type'] == 1 ? 1 : 0.5),
             'date' => $data['date'],
-           'user_id' => $id,'status' => 0,'requested_at' => $date
+           'user_id' => $id,'status' => 0,'requested_at' => $date,
+           'leave_period_start' => $request->input('leave_period_start'),
+           'leave_period_end' => $request->input('leave_period_end')
         ]);
         }
 
@@ -243,11 +254,21 @@ class LeaveRequestController extends Controller
     ->select('leave_requests.*','leaves.leave_type','employees.employment_type','employees.doj','employees.name','employees.email','employees.profile_pic','designations.designation')->where('leave_requests.id',$id)->first();
 
     $total_leaves_credit = LeaveAssign::where('employment_type', $list->employment_type)->where('leave_type', $list->leave_type_id)->first();
-    $from = date('2023-04-01');
-    $to = date('2024-03-31');
+    // $date_result = (new MasterFunctionController)->GenerateLeavePeriod($list->employment_type,$list->doj);
+    // $date_start = $date_result['start_date'];
+    // $date_end = $date_result['end_date'];
+    //   echo $list->employment_type;
+    // print_r($date_result);exit();
+    $leave_period_data = LeaveRequestDetails::where('request_id',$id)->first();
+    $date_start =  $leave_period_data->leave_period_start;
+    $date_end =  $leave_period_data->leave_period_end;
+      // print_r(  $leave_period_data);exit();
 
-    $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$from, $to])->sum('leave_duration');
-    $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$from, $to])->sum('leave_duration');
+
+    // $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
+    // $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
+    $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_start', $date_start)->sum('leave_duration');
+    $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_end', $date_end)->sum('leave_duration');
 
     $leave_balance = [
       "total_leaves_credit"=>$total_leaves_credit->total_credit,
@@ -256,19 +277,6 @@ class LeaveRequestController extends Controller
       "balance_credit"=>($total_leaves_credit->total_credit-($availed_leave + $pending_leave)),
 
     ];
-
-    $subscriptionDate = $list->doj;
-    $dateArray = (explode("-",$subscriptionDate));
-
-// Convert the subscription date to a Carbon instance
-$subscriptionDateTime = Carbon::parse($subscriptionDate);
-
-// Calculate the expiration date by adding one year to the subscription date
-$expirationDateTime = $subscriptionDateTime->addYear();
-
-// Format the expiration date as YYYY-MM-DD
-$date_end = $expirationDateTime->format("Y-m-d");
-$date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
 
           return response()->json(['leave_list'=> $list,"leave_balance"=>$leave_balance,'date_start'=>$date_start,'date_end'=>$date_end]);
     }
@@ -287,6 +295,11 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
       $date= date('Y-m-d H:i:s');
 
       $designation = LeaveRequestDetails::find($id);
+
+      $date_start =  $designation->start_date;
+      $date_end =  $designation->end_date;
+
+
       $designation->status = $request->input('status');
       $designation->action_at = $date;
       $designation->remark = $request->input('remark');
@@ -308,11 +321,15 @@ $date_start= $dateArray[2].'-'. $dateArray[1].'-'.date("Y");
         ->select('leave_requests.*','leaves.leave_type','employees.employment_type','employees.name','employees.email','employees.profile_pic','designations.designation')->where('leave_requests.id',$designation->request_id)->first();
 
         $total_leaves_credit = LeaveAssign::where('employment_type', $list->employment_type)->where('leave_type', $list->leave_type_id)->first();
-        $from = date('2023-04-01');
-        $to = date('2024-03-31');
+        // $date_result = (new MasterFunctionController)->GenerateLeavePeriod($list->employment_type,$list->doj);
+        // $date_start = $date_result['start_date'];
+        // $date_end = $date_result['end_date'];
 
-        $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$from, $to])->sum('leave_duration');
-        $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$from, $to])->sum('leave_duration');
+        // $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
+        // $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
+        $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_start', $date_start)->sum('leave_duration');
+        $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_end', $date_end)->sum('leave_duration');
+
 
         $leave_balance = [
           "total_leaves_credit"=>$total_leaves_credit->total_credit,

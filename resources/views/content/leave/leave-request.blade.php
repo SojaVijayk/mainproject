@@ -45,11 +45,20 @@ $(function () {
       calendarWeeks: true,
       clearBtn: true,
       todayHighlight: true,
-      orientation: "auto right"
+      orientation: "auto right",
+      {{--  minDate: new Date('2024-01-05')  --}}
+      {{--  minDate: new Date($('#date_start').val()),
+      maxDate: new Date($('#date_end').val()),  --}}
       });
       $('.availability').hide();
       $('.message').hide();
+      var start = new Date($('#date_start').val());
+      var end = new Date($('#date_end').val());
+      $('#fromDate').datepicker('setStartDate', new Date(start.getFullYear(), (start.getMonth()), start.getDate(), start.getHours(), start.getMinutes()));
+      $('#fromDate').datepicker('setEndDate', new Date(end.getFullYear(), (end.getMonth()), end.getDate(), end.getHours(), end.getMinutes()));
 
+      $('#toDate').datepicker('setStartDate', new Date(start.getFullYear(), (start.getMonth()), start.getDate(), start.getHours(), start.getMinutes()));
+      $('#toDate').datepicker('setEndDate', new Date(end.getFullYear(), (end.getMonth()), end.getDate(), end.getHours(), end.getMinutes()));
 
       {{--  $("#bs-datepicker-multidate").datepicker({ multidate: true,
         calendarWeeks: true,
@@ -57,9 +66,10 @@ $(function () {
         todayHighlight: true,
         orientation: "auto right" });  --}}
 
-        leaveType
+
         $('#fromDate').change(function(){
           $("#dateList").empty();
+
           $("#toDate").val('');
             var sDate = $(this).datepicker("getDate");
             var minDate = $(this).datepicker("getDate");
@@ -435,6 +445,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
       var request_type =   $("#submit_designation").data('type');
       var desig_id =   $("#submit_designation").data('id');
       var duration = 0;
+      var  leave_period_start =  $("#date_start").val();
+      var  leave_period_end =  $("#date_end").val();
       dateArray.forEach((item, index) => {
         var date_leave_type_val = $('.'+item+'-radio:checked').val();
         if(date_leave_type_val == 1 ){
@@ -459,6 +471,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
               duration:duration,
               date_list:date_leave_type,
               description:description,
+              leave_period_start:leave_period_start,
+              leave_period_end:leave_period_end,
               "_token": "{{ csrf_token() }}",
           },
             url: `${baseUrl}leave/request/store`,
@@ -674,7 +688,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
     <i class="ti ti-calendar ti-sm"></i>
   </span>
   <div class="d-flex flex-column ps-1">
-
+    <input type="hidden" id="date_start" value="{{$date_start}}" />
+    <input type="hidden" id="date_end" value="{{$date_end}}" />
     <p class="mb-0"> Leave Statistics for the period of {{$date_start}} TO {{$date_end}}</p>
     <h5 class="alert-heading mb-2"></h5>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">

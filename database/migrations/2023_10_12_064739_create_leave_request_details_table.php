@@ -25,6 +25,8 @@ return new class extends Migration
             $table->unsignedBiginteger('leave_type_id')->unsigned();
             $table->foreign('leave_type_id')->references('id')
             ->on('leaves')->onDelete('cascade');
+            $table->date('leave_period_start');
+            $table->date('leave_period_end');
             $table->dateTime('requested_at');
             $table->integer('action_by');
             $table->dateTime('action_at');

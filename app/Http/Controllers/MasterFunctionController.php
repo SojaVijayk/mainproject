@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Models\EmploymentType;
 
 class MasterFunctionController extends Controller
 {
     //
-    function GenerateLeavePeriod ($leave_period,$joiningDate = False){
+    function GenerateLeavePeriod ($employment_type,$joiningDate = False){
+      $employment_types = EmploymentType::select('id','employment_type','leave_period','status','created_at')->where('id',$employment_type)->first();
+      $leave_period = $employment_types->leave_period;
       if($leave_period == 3){
          //Joining Date
          $result = $this->calculateJobPeriod($joiningDate);
@@ -125,7 +128,7 @@ class MasterFunctionController extends Controller
 
             // If the renewed job period end date is over, extend the period by one year from the current date
             if (now()->gt($endDate)) {
-                $startDate = now()->copy()->addDay();
+                $startDate = $endDate->addDay();
                 $endDate = $startDate->copy()->addYear()->subDay();
             }
         } else {
@@ -135,8 +138,8 @@ class MasterFunctionController extends Controller
         }
 
         return [
-            'job_period_start_date' => $startDate->toDateString(),
-            'job_period_end_date' => $endDate->toDateString(),
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
         ];
     }
 

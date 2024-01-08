@@ -4,11 +4,11 @@
 return [
   "creatorName" => "Centre for Management Development",
   "creatorUrl" => "https://cmd.kerala.gov.in",
-  "templateName" => "CMD Suite",
+  "templateName" => "CMD HRMS",
   "templateSuffix" => "Complete ERP Solution for CMD",
   "templateVersion" => "1.0.0",
   "templateFree" => false,
-  "templateDescription" => "Start your development with a Dashboard for Bootstrap 5",
+  "templateDescription" => "CMD Trivandrum ERP: Streamlining Operations for Excellence",
   "templateKeyword" => "dashboard, bootstrap 5 dashboard, bootstrap 5 design, bootstrap 5",
   "licenseUrl" => "https://themeforest.net/licenses/standard",
   "livePreview" => "https://demos.pixinvent.com/vuexy-html-admin-template/landing/",
