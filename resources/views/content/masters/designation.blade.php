@@ -130,7 +130,8 @@
                                     '<span class="text-nowrap"><button class="btn btn-sm btn-icon me-2 edit-designation" data-id="' +
                                     full['id'] +
                                     '" data-bs-target="#DesignationModal" data-bs-toggle="modal" data-bs-dismiss="modal"><i class="ti ti-edit"></i></button>' +
-                                    '<button class="btn btn-sm btn-icon delete-record"><i class="ti ti-trash"></i></button></span>'
+                                    {{--  '<button class="btn btn-sm btn-icon delete-record"><i class="ti ti-trash"></i></button></span>'  --}}
+                                    '</span>'
                                 );
                             }
                         }
@@ -289,7 +290,9 @@
                                     customClass: {
                                         confirmButton: 'btn btn-success'
                                     }
-                                });
+                                }).then((result) => {
+                                  window.location.reload();
+                              });
 
                             },
                             error: function(err) {
@@ -327,7 +330,9 @@
                                     customClass: {
                                         confirmButton: 'btn btn-success'
                                     }
-                                });
+                                }).then((result) => {
+                                  window.location.reload();
+                              });
 
                             },
                             error: function(err) {
@@ -352,9 +357,9 @@
             })();
 
             // Delete Record
-            $('.datatables-designation tbody').on('click', '.delete-record', function() {
+            {{--  $('.datatables-designation tbody').on('click', '.delete-record', function() {
                 dt_permission.row($(this).parents('tr')).remove().draw();
-            });
+            });  --}}
 
             // Edit Record
             $('.datatables-designation tbody').on('click', '.edit-designation', function() {

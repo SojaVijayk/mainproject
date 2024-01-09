@@ -808,7 +808,36 @@
             });
 
 
+            $('#employment_type').change(function(){
+            var employment_type = $(this).val();
+              $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+                }
+            })
+            $.ajax({
+              type: "GET",
 
+              url: '/helpers/emplymenttypeDesignation/' + employment_type,
+              success: function(response) {
+                  {{--  console.log(response);  --}}
+                  $('#designation').empty();
+                  var select = $('#designation');
+                  $.each(response.data, function(index,value) {
+                    {{--  console.log(value.designation);  --}}
+                    $('<option>').val(value.id).text(value.designation).appendTo(select);
+
+                 });
+                  $('#designation').trigger('change');
+
+
+              },
+              error: function(data) {
+
+              }
+          });
+
+           });
 
             $(document).on('click', '.edit-record', function() {
                 var user_id = $(this).data('id'),

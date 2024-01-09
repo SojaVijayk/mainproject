@@ -100,7 +100,7 @@ Route::get('/master/employment-type/list', $controller_path . '\Masters\Employme
 Route::post('/master/employment-type/store', $controller_path . '\Masters\EmploymentTypeController@store')->name('master-designation-store');
 Route::get('/master/employment-type/edit/{id}', $controller_path . '\Masters\EmploymentTypeController@edit')->name('master-designation-edit');
 Route::post('/master/employment-type/update/{id}', $controller_path . '\Masters\EmploymentTypeController@update')->name('master-designation-update');
-
+Route::get('/helpers/emplymenttypeDesignation/{id}', $controller_path . '\MasterFunctionController@getEmploymenttypeDesignations')->name('emplymenttype-designation-list');
 
 //Leave Master
 Route::get('/leave', $controller_path . '\Leave\LeaveController@index')->name('leave-master-index');

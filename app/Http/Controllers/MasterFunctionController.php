@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\EmploymentType;
+use App\Models\Designation;
 
 class MasterFunctionController extends Controller
 {
@@ -141,6 +142,23 @@ class MasterFunctionController extends Controller
             'start_date' => $startDate->toDateString(),
             'end_date' => $endDate->toDateString(),
         ];
+    }
+
+
+    public function getEmploymenttypeDesignations($employment_type)
+    {
+
+        $designations = Designation::select('designations.id','designation','designations.status','designations.created_at','employment_types.employment_type')
+        ->leftjoin("employment_types","employment_types.id","=","designations.employment_type")
+        ->where('designations.employment_type',$employment_type)
+        ->where('designations.status',1)
+        ->orderBy('designations.id','DESC')->get();
+        return response()->json(['data'=> $designations]);
+
+        // return view('content.apps.app-access-permission'.compact('permissions'))
+        //     ->with('i', ($request->input('page', 1) - 1) * 5);
+
+
     }
 
   }
