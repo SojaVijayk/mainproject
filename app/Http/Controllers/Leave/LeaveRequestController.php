@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Exports\LeaveExport;
 use Maatwebsite\Excel\Facades\Excel;
 use PDF;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\MasterFunctionController;
 
 class LeaveRequestController extends Controller
@@ -83,16 +84,55 @@ class LeaveRequestController extends Controller
 
        $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
        $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
+      if($leave_detail->leave_type_id == 2 || $leave_detail->leave_type_id == 3){
 
-       $leave_balance = [
-         "leave_type"=>$leave_detail->leave_type,
-         "leave_type_id"=>$leave_detail->leave_type_id,
-         "total_leaves_credit"=>$leave_detail->total_credit,
-         "availed_leave"=>$availed_leave,
-         "pending_leave"=>$pending_leave,
-         "balance_credit"=>($leave_detail->total_credit-($availed_leave + $pending_leave))
+        $user_leave = DB::table('opening_leave_credits')->where('user_id',Auth::user()->id)->where('leave_type_id',$leave_detail->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
+       if( $user_leave){
+        $opening = $user_leave->credit;
+       }
+       else{
+        $opening = $leave_detail->total_credit;
+       }
 
-       ];
+        //sick Leave
+        if($leave_detail->leave_type_id == 2){
+          $balance_credit=  ($opening- $availed_leave);
+          if($balance_credit > 120){
+            $balance_credit = 120;
+          }
+        }
+        //Privilaged
+        if($leave_detail->leave_type_id == 3){
+          $balance_credit=  ($opening - $availed_leave);
+          if($balance_credit > 300){
+            $balance_credit = 300;
+          }
+        }
+
+
+        $leave_balance = [
+          "leave_type"=>$leave_detail->leave_type,
+          "leave_type_id"=>$leave_detail->leave_type_id,
+          "total_leaves_credit"=>$leave_detail->total_credit,
+          "availed_leave"=>$availed_leave,
+          "pending_leave"=>$pending_leave,
+          "balance_credit"=>($balance_credit-($availed_leave + $pending_leave))
+
+        ];
+
+      }
+      else{
+        $leave_balance = [
+          "leave_type"=>$leave_detail->leave_type,
+          "leave_type_id"=>$leave_detail->leave_type_id,
+          "total_leaves_credit"=>$leave_detail->total_credit,
+          "availed_leave"=>$availed_leave,
+          "pending_leave"=>$pending_leave,
+          "balance_credit"=>($leave_detail->total_credit-($availed_leave + $pending_leave))
+
+        ];
+      }
+
        array_push($leaves_total_credit_details,$leave_balance);
      }
 
@@ -269,14 +309,49 @@ class LeaveRequestController extends Controller
     // $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
     $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_start', $date_start)->sum('leave_duration');
     $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_end', $date_end)->sum('leave_duration');
+    if($list->leave_type_id == 2 || $list->leave_type_id == 3){
 
-    $leave_balance = [
-      "total_leaves_credit"=>$total_leaves_credit->total_credit,
-      "availed_leave"=>$availed_leave,
-      "pending_leave"=>$pending_leave,
-      "balance_credit"=>($total_leaves_credit->total_credit-($availed_leave + $pending_leave)),
+      $user_leave = DB::table('opening_leave_credits')->where('user_id',Auth::user()->id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
+      if( $user_leave){
+        $opening = $user_leave->credit;
+       }
+       else{
+        $opening = $total_leaves_credit->total_credit;
+       }
+      //sick Leave
+      if($list->leave_type_id == 2){
+        $balance_credit=  ($opening - $availed_leave);
+        if($balance_credit > 120){
+          $balance_credit = 120;
+        }
+      }
+      //Privilaged
+      if($list->leave_type_id == 3){
+        $balance_credit=  ($opening - $availed_leave);
+        if($balance_credit > 300){
+          $balance_credit = 300;
+        }
+      }
 
-    ];
+
+      $leave_balance = [
+        "total_leaves_credit"=>$total_leaves_credit->total_credit,
+        "availed_leave"=>$availed_leave,
+        "pending_leave"=>$pending_leave,
+        "balance_credit"=>($balance_credit-($availed_leave + $pending_leave)),
+
+      ];
+    }
+    else{
+      $leave_balance = [
+        "total_leaves_credit"=>$total_leaves_credit->total_credit,
+        "availed_leave"=>$availed_leave,
+        "pending_leave"=>$pending_leave,
+        "balance_credit"=>($total_leaves_credit->total_credit-($availed_leave + $pending_leave)),
+
+      ];
+    }
+
 
           return response()->json(['leave_list'=> $list,"leave_balance"=>$leave_balance,'date_start'=>$date_start,'date_end'=>$date_end]);
     }
@@ -329,15 +404,50 @@ class LeaveRequestController extends Controller
         // $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
         $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_start', $date_start)->sum('leave_duration');
         $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_end', $date_end)->sum('leave_duration');
+        if($list->leave_type_id == 2 || $list->leave_type_id == 3){
+
+          $user_leave = DB::table('opening_leave_credits')->where('user_id',Auth::user()->id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
+          if( $user_leave){
+            $opening = $user_leave->credit;
+           }
+           else{
+            $opening = $total_leaves_credit->total_credit;
+           }
+          //sick Leave
+          if($list->leave_type_id == 2){
+            $balance_credit=  ($opening - $availed_leave);
+            if($balance_credit > 120){
+              $balance_credit = 120;
+            }
+          }
+          //Privilaged
+          if($list->leave_type_id == 3){
+            $balance_credit=  ($opening - $availed_leave);
+            if($balance_credit > 300){
+              $balance_credit = 300;
+            }
+          }
 
 
-        $leave_balance = [
-          "total_leaves_credit"=>$total_leaves_credit->total_credit,
-          "availed_leave"=>$availed_leave,
-          "pending_leave"=>$pending_leave,
-          "balance_credit"=>($total_leaves_credit->total_credit-($availed_leave + $pending_leave)),
+          $leave_balance = [
+            "total_leaves_credit"=>$total_leaves_credit->total_credit,
+            "availed_leave"=>$availed_leave,
+            "pending_leave"=>$pending_leave,
+            "balance_credit"=>($balance_credit-($availed_leave + $pending_leave)),
 
-        ];
+          ];
+        }
+        else{
+          $leave_balance = [
+            "total_leaves_credit"=>$total_leaves_credit->total_credit,
+            "availed_leave"=>$availed_leave,
+            "pending_leave"=>$pending_leave,
+            "balance_credit"=>($total_leaves_credit->total_credit-($availed_leave + $pending_leave)),
+
+          ];
+        }
+
+
         if($count == 0){
           $leaveDetails =LeaveRequest::find($designation->request_id);
 
