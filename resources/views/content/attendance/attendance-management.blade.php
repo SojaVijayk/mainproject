@@ -428,16 +428,23 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 <div class="row">
   <div class="col">
+    @can('attendance-management')
     <h6 class="mt-4">Import Attendance & Generate Report </h6>
+    @endcan
+    @can('team-attendance-management')
+    <h6 class="mt-4"> Generate Report </h6>
+    @endcan
     <div class="card mb-3">
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" role="tablist">
           <li class="nav-item  ">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-personal" role="tab" aria-selected="true">Generate Attendance / Leave / Movement Report</button>
           </li>
+          @can('attendance-management')
           <li class="nav-item">
             <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-account" role="tab" aria-selected="false">Attendance Update</button>
           </li>
+          @endcan
 
         </ul>
       </div>
