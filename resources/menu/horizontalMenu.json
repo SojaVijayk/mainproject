@@ -145,6 +145,13 @@
           "permission": "attendance-management"
         },
         {
+          "url": "/attendance-management",
+          "icon": "menu-icon tf-icons ti   ti-ad-2",
+          "name": "Team Attendance Management",
+          "slug": "attendance-hrView",
+          "permission": "team-attendance-management"
+        },
+        {
           "url": "/",
           "icon": "menu-icon tf-icons ti ti-chart-pie-2",
           "name": "Attendance Mark",

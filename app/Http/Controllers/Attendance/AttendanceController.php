@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Attendance;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Leave;
+use App\Models\User;
 use App\Models\EmploymentType;
 use App\Models\Employee;
 use App\Imports\AttendanceImport;
@@ -33,11 +34,25 @@ class AttendanceController extends Controller
 
     public function attendanceManagement()
     {
+      $id= Auth::user()->id;
       $employment_types = EmploymentType::orderBy('id','DESC')->get();
-      $employees = Employee::orderBy('id','DESC')->get();
+      $hr = User::permission('attendance-management')->where('users.id',$id)->count();
+      $team = User::permission('team-attendance-management')->where('users.id',$id)->count();
+
+      // print_r($team);exit;
+      if($hr > 0 ){
+        $employees = Employee::orderBy('id','DESC')->get();
+      }
+      else if($team > 0){
+
+        $employees = Employee::where('employees.reporting_officer',$id)->orderBy('id','DESC')->get();
+      }
+
       $pageConfigs = ['myLayout' => 'horizontal'];
       return view('content.attendance.attendance-management',compact('employment_types','employees'),['pageConfigs'=> $pageConfigs]);
     }
+
+
 
     public function downloadBulk(Request $request){
 
@@ -50,7 +65,7 @@ class AttendanceController extends Controller
       else{
         $employees = $request->input('employeeList');
       }
-      \DB::enableQueryLog();
+      // \DB::enableQueryLog();
       $attendance = Attendance::select('attendances.*','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','leave_request_details.leave_day_type',
       'leave_request_details.status as leave_status','emp.name as action_by_name','leaves.leave_type',
       'movements.title','movements.type','movements.start_date','movements.start_time','movements.end_date','movements.end_time','movements.status as movement_status','emp_mov.name as action_by_name','attendances.date as dates')

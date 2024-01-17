@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
             <input type="text" class="form-control datepicker" id="toDate" name="toDate" placeholder="MM/DD/YYYY" class="form-control" />
 
               </div>
-              <div class="col-md-4">
+              {{--  <div class="col-md-4">
                 <label class="form-label" for="formtabs-country">Employment Type</label>
                 <select id="formtabs-country" class="select2 form-select" multiple data-allow-clear="true">
                   <option value="">Select All</option>
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 
                 </select>
-              </div>
+              </div>  --}}
               <div class="col-md-4 select2-primary">
                 <label class="form-label" for="employeeList">Employee</label>
                 <select id="employeeList" class="select2 form-select" multiple>
