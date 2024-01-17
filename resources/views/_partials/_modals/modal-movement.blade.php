@@ -11,11 +11,11 @@
 
         <form id="designationForm" class="row" onsubmit="return false">
           <div class="mb-3">
-            <label class="form-label" for="eventTitle">Title</label>
-            <input type="text" class="form-control" id="eventTitle" name="eventTitle" placeholder="Event Title" />
+            <label class="form-label" for="eventTitle">Purpose</label>
+            <input type="text" class="form-control" id="eventTitle" name="eventTitle" placeholder="Purpose" />
           </div>
           <div class="mb-3">
-            <label class="form-label" for="eventLabel">Label</label>
+            <label class="form-label" for="eventLabel">Movement Type</label>
             <select class="select2 select-event-label form-select" id="eventLabel" name="eventLabel">
               <option data-label="primary" value="Field" selected>Field</option>
               <option data-label="danger" value="Personal">Personal</option>
