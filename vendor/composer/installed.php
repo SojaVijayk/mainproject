@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '1d476db16d086653eac130fc0ea41a4c70fa13ef',
+        'reference' => '720d2898b74e78bdec3c45c03d77d51c156188a6',
         'name' => 'laravel/laravel',
         'dev' => true,
     ),
@@ -409,6 +409,15 @@
                 0 => 'v10.13.5',
             ),
         ),
+        'imanghafoori/laravel-masterpass' => array(
+            'pretty_version' => 'v2.2.49',
+            'version' => '2.2.49.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../imanghafoori/laravel-masterpass',
+            'aliases' => array(),
+            'reference' => 'd7f17688f108940f491a11d651625f3d9bf815c2',
+            'dev_requirement' => false,
+        ),
         'kodova/hamcrest-php' => array(
             'dev_requirement' => true,
             'replaced' => array(
@@ -430,7 +439,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '1d476db16d086653eac130fc0ea41a4c70fa13ef',
+            'reference' => '720d2898b74e78bdec3c45c03d77d51c156188a6',
             'dev_requirement' => false,
         ),
         'laravel/passport' => array(

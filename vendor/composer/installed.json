@@ -1632,6 +1632,77 @@
             "install-path": "../hamcrest/hamcrest-php"
         },
         {
+            "name": "imanghafoori/laravel-masterpass",
+            "version": "v2.2.49",
+            "version_normalized": "2.2.49.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/imanghafoori1/laravel-MasterPass.git",
+                "reference": "d7f17688f108940f491a11d651625f3d9bf815c2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/imanghafoori1/laravel-MasterPass/zipball/d7f17688f108940f491a11d651625f3d9bf815c2",
+                "reference": "d7f17688f108940f491a11d651625f3d9bf815c2",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": "^5.5|^6.0|^7.0|^8.0|^9.0|^10.0",
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^3.5|^4.0|^5.0|^8.0"
+            },
+            "suggest": {
+                "imanghafoori/laravel-anypass": " Allows you login with any password in local environment.",
+                "imanghafoori/laravel-decorator": "Allows you to easily apply the decorator pattern in a laravel app.",
+                "imanghafoori/laravel-heyman": "It allows to write expressive code to authorize, validate and authenticate.",
+                "imanghafoori/laravel-terminator": "Gives you opportunity to refactor your controllers.",
+                "imanghafoori/laravel-widgetize": "Gives you a better structure and caching opportunity for your laravel apps."
+            },
+            "time": "2023-02-15T13:36:35+00:00",
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Imanghafoori\\MasterPass\\MasterPassServiceProvider"
+                    ]
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Imanghafoori\\MasterPass\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Iman Ghafoori",
+                    "email": "imanghafoori1@gmail.com"
+                }
+            ],
+            "description": "A minimal yet powerful package to help you easily impersonate your users.",
+            "homepage": "https://github.com/imanghafoori1/laravel-masterpass",
+            "keywords": [
+                "laravel",
+                "laravel-auth",
+                "laravel-authentication",
+                "laravel-login",
+                "laravel-password",
+                "laravel-utility",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/imanghafoori1/laravel-MasterPass/issues",
+                "source": "https://github.com/imanghafoori1/laravel-MasterPass/tree/v2.2.49"
+            },
+            "install-path": "../imanghafoori/laravel-masterpass"
+        },
+        {
             "name": "laravel/framework",
             "version": "v10.13.5",
             "version_normalized": "10.13.5.0",
