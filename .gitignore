@@ -1,9 +1,9 @@
 /.phpunit.cache
-/node_modules
+# /node_modules
 
 
 /storage/*.key
-/vendor
+# /vendor
 
 # .env
 .env.backup
