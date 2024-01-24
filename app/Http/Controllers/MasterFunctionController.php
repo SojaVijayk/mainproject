@@ -7,6 +7,13 @@ use Carbon\Carbon;
 use App\Models\EmploymentType;
 use App\Models\Designation;
 
+use App\Models\Employee;
+use App\Models\User;
+use App\Models\Leave;
+use App\Models\LeaveRequest;
+use App\Models\LeaveRequestDetails;
+use App\Models\LeaveAssign;
+
 class MasterFunctionController extends Controller
 {
     //
@@ -160,5 +167,42 @@ class MasterFunctionController extends Controller
 
 
     }
+    function getLeaveBalance ($employment_type,$user_id,$joiningDate = False){
+
+      $employee_details=Employee::where('user_id',$user_id)->first();
+    }
+
+
+
+
+    //    $from = date('2023-04-01');
+    //    $to = date('2024-03-31');
+    //    $subscriptionDate = $employee_details->doj;
+    // $dateArray = (explode("-", $subscriptionDate));
+    // if (date("Y") ==  $dateArray[0]) {
+    //   // Convert the subscription date to a Carbon instance
+    //   $subscriptionDateTime = Carbon::parse($subscriptionDate);
+
+    //   // Calculate the expiration date by adding one year to the subscription date
+    //   $expirationDateTime = $subscriptionDateTime->addYear();
+
+    //   // Format the expiration date as YYYY-MM-DD
+    //   $date_end = $expirationDateTime->format("Y-m-d");
+    //   $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
+    // } else {
+    //   $doj = $employee_details->doj;
+    //   $dateArray = (explode("-", $doj));
+    //   $subscriptionDate = date("Y") . '-' . $dateArray[1] . '-' . $dateArray[2];
+    //   // Convert the subscription date to a Carbon instance
+    //   $subscriptionDateTime = Carbon::parse($subscriptionDate);
+
+    //   // Calculate the expiration date by adding one year to the subscription date
+    //   $expirationDateTime = $subscriptionDateTime->addYear();
+
+    //   // Format the expiration date as YYYY-MM-DD
+    //   $date_end = $expirationDateTime->format("Y-m-d");
+    //   // $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
+    //   $date_start = date("Y") . '-' .$dateArray[1] . '-' . $dateArray[2];
+    // }
 
   }

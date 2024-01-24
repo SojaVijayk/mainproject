@@ -26,6 +26,7 @@ class MovementController extends Controller
     public function index()
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
+
       return view('content.attendance.movement',['pageConfigs'=> $pageConfigs]);
     }
 
