@@ -147,6 +147,21 @@ Route::get('/leave/request/delete/{id}', $controller_path . '\Leave\LeaveRequest
 
 Route::POST('/leave/downloadBulk', $controller_path . '\Leave\LeaveRequestController@downloadBulk')->name('attendance-download-bulk');
 
+
+//Missed punch
+Route::get('/misspunch', $controller_path . '\Attendance\MissedPunchController@index')->name('attendance-misspunch');
+Route::post('/misspunch/store', $controller_path . '\Attendance\MissedPunchController@store')->name('attendance-misspunch-store');
+Route::get('/misspunch/edit/{id}', $controller_path . '\Attendance\MissedPunchController@edit')->name('attendance-misspunch-edit');
+Route::post('/misspunch/update/{id}', $controller_path . '\Attendance\MissedPunchController@update')->name('attendance-misspunch-update');
+Route::get('/misspunch/delete/{id}', $controller_path . '\Attendance\MissedPunchController@destroy')->name('attendance-misspunch-delete');
+
+
+Route::get('/misspunch/approve-list', $controller_path . '\Attendance\MissedPunchController@approveList')->name('leave-misspunch-approve-list');
+Route::get('/misspunch/request-list', $controller_path . '\Attendance\MissedPunchController@requestList')->name('attendance-misspunch-request-list');
+Route::get('/misspunch/list', $controller_path . '\Attendance\MissedPunchController@misspunchList')->name('attendance-misspunch-list');
+Route::post('/misspunch/action/{id}', $controller_path . '\Attendance\MissedPunchController@action')->name('attendance-misspunch-action');
+Route::POST('/misspunch/downloadBulk', $controller_path . '\Attendance\MissedPunchController@downloadBulk')->name('attendance-misspunch-download-bulk');
+//
 //Employee login Routes
 //user view
 Route::get('/user/profile' , $controller_path . '\Employee\EmployeeController@profileView')->name('user-profile');

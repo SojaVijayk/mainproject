@@ -688,6 +688,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 var mov_status= '';
 
 
+
+
+                var miss_date= '';
+                var miss_type= '';
+                var miss_in= '';
+                var miss_out= '';
+                var miss_status= '';
+
+
                 if((item.leave_type != '') && (item.leave_type != null)){
                   leave = item.leave_type;
                   leave_status=(item.leave_status == 1 ? 'Approved' : (item.leave_status == 2 ? 'Rejected' : 'Pending'));
@@ -705,6 +714,15 @@ document.addEventListener('DOMContentLoaded', function () {
                   mov_date = item.start_date+' - '+item.start_time+' to '+item.end_date+' - '+item.end_time;
                   mov_status=(item.mov_status == 1 ? 'Approved' : (item.mov_status == 2 ? 'Rejected' : 'Pending'));
                   tbody=tbody+'<td> Movement Details ( '+mov_type+' -  '+mov_title+ ' Duraton : '+mov_date+' - Status:' + mov_status+ ')</td>';
+
+                }
+
+                if((item.miss_status != '') && (item.miss_status != null)){
+                  miss_type = item.miss_type;
+
+                  miss_date = item.miss_date+' - In Time '+item.checkinTime+' Out Time '+item.checkoutTime;
+                  miss_status=(item.miss_status == 1 ? 'Approved' : (item.miss_status == 2 ? 'Rejected' : 'Pending'));
+                  tbody=tbody+'<td> Miss Punch Details ( '+miss_type+' - Duraton : '+miss_date+' - Status:' + miss_status+ ')</td>';
 
                 }
 
@@ -860,6 +878,71 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    else if(reportType ==4){
+      if(view_type == 'excel' || view_type == 'pdf'){
+
+        $.ajax({
+             data:  {
+              fromDate:fromDate,
+                toDate:toDate,
+                type:1,
+                view_type:view_type,
+
+                "_token": "{{ csrf_token() }}",
+            },
+              url: `${baseUrl}misspunch/downloadBulk`,
+              type: 'POST',
+              xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                //
+            },
+            success: function(data) {
+                var url = window.URL || window.webkitURL;
+                var objectUrl = url.createObjectURL(data);
+                window.open(objectUrl);
+            },
+            error: function(data) {
+                //
+            }
+        });
+        }
+        else{
+
+
+
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'1',
+               view_type:view_type,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: `${baseUrl}misspunch/downloadBulk`,
+             type: 'POST',
+
+           success: function(data) {
+            var tbody='';
+            data.list.forEach((item, index) => {
+              tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td><td>'+(item.type == 1 ? "Checkin" : item.type == 2 ? "Checkout" : "Checkin&Checkout")+'</td><td>'+item.checkinTime+'</td><td>'+item.checkoutTime+
+                '<td>'+item.description+'</td><td>'+item.requested_at+'</td>'+
+                '<td>'+(item.status == 0 ? '<span class="badge bg-secondary">Pending</span>' : (item.status == 1 ? '<span class="badge bg-success">Aproved</span>' : '<span class="badge bg-danger">Rejected</span>' ))+'</td>'+
+                '<td>'+item.action_by_name+'</td><td>'+item.action_at+'</td>';
+              });
+              $('#MisspunchModal').modal('show');
+            $(".datatables-leave-list #dataList").html(tbody);
+
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+    }
+
 
 
 
@@ -889,6 +972,7 @@ document.addEventListener('DOMContentLoaded', function () {
               <option value='1' selected>Attendance</option>
               <option value='2' >Movement</option>
               <option value='3' >Leave</option>
+              <option value='4' >Miss Punch</option>
 
             </select>
           </div>
@@ -1039,5 +1123,6 @@ document.addEventListener('DOMContentLoaded', function () {
 @include('_partials/_modals/modal-attendance')
 @include('_partials/_modals/modal-movement-report-view')
 @include('_partials/_modals/modal-leave-report-view')
+@include('_partials/_modals/modal-misspunch-report-view')
 <!-- /Modal -->
 @endsection

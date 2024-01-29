@@ -68,7 +68,8 @@ class AttendanceController extends Controller
       // \DB::enableQueryLog();
       $attendance = Attendance::select('attendances.*','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','leave_request_details.leave_day_type',
       'leave_request_details.status as leave_status','emp.name as action_by_name','leaves.leave_type',
-      'movements.title','movements.type','movements.start_date','movements.start_time','movements.end_date','movements.end_time','movements.status as movement_status','emp_mov.name as action_by_name','attendances.date as dates')
+      'movements.title','movements.type','movements.start_date','movements.start_time','movements.end_date','movements.end_time','movements.status as movement_status',
+    'missed_punches.type as miss_type','missed_punches.date as miss_date','missed_punches.checkinTime','missed_punches.checkoutTime','missed_punches.status as miss_status','emp_mov.name as action_by_name','attendances.date as dates',)
     ->join("employees","employees.user_id","=","attendances.user_id")
 
 
@@ -93,6 +94,14 @@ class AttendanceController extends Controller
 
 })
 ->leftjoin("employees as emp_mov","emp_mov.user_id","=","movements.action_by")
+
+->leftjoin("missed_punches",function($join){
+  $join->on("missed_punches.user_id","=","attendances.user_id");
+  $join->on("missed_punches.date","=","attendances.date");
+
+
+})
+->leftjoin("employees as emp_miss","emp_miss.user_id","=","missed_punches.action_by")
 
 
     ->leftjoin("designations","designations.id","=","employees.designation")

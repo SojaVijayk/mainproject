@@ -138,6 +138,13 @@
           "permission": "leave-individual-request"
         },
         {
+          "url": "/misspunch",
+          "icon": "menu-icon tf-icons ti ti-fingerprint",
+          "name": "Miss Punch Request",
+          "slug": "attendance-misspunch",
+          "permission": "miss-punch"
+        },
+        {
           "url": "/attendance-management",
           "icon": "menu-icon tf-icons ti   ti-ad-2",
           "name": "Attendance Management",
@@ -183,15 +190,22 @@
         {
           "url": "/movement/approve-list",
           "icon": "menu-icon tf-icons ti ti-zoom-check",
-          "name": "Movement Request Approval",
+          "name": "Movement Approval",
           "slug": "leave-movement-approve-list",
           "permission": "leave-request-approve"
         },
         {
           "url": "/leave/approve-list",
           "icon": "menu-icon tf-icons ti ti-zoom-check",
-          "name": "Leave Request Approval",
+          "name": "Leave Approval",
           "slug": "leave-approve-list",
+          "permission": "leave-request-approve"
+        },
+        {
+          "url": "/misspunch/approve-list",
+          "icon": "menu-icon tf-icons ti ti-zoom-check",
+          "name": "Misspunch Approval",
+          "slug": "leave-misspunch-approve-list",
           "permission": "leave-request-approve"
         }
       ]

@@ -3,47 +3,45 @@
 namespace App\Http\Controllers\Attendance;
 
 use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
 use App\Models\Attendance;
-use App\Models\Leave;
-use App\Models\EmploymentType;
-use App\Models\Movement;
+
+use App\Models\MissedPunch;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
+
 use DB;
 use Carbon\Carbon;
 
-use App\Mail\LeaveRequestMail;
-use App\Mail\LeaveRequestActionMail;
+
 use Illuminate\Support\Facades\Mail;
-use App\Exports\MovementExport;
+use App\Exports\MisspunchExport;
 use Maatwebsite\Excel\Facades\Excel;
 use PDF;
 
-class MovementController extends Controller
+class MissedPunchController extends Controller
 {
+    //
+
     public function index()
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
 
-      return view('content.attendance.movement',['pageConfigs'=> $pageConfigs]);
+      return view('content.attendance.misspunch',['pageConfigs'=> $pageConfigs]);
     }
 
-    public function movementList()
+    public function misspunchList()
     {
-      $movements = Movement::all();
-      $totalCount = $movements->count();
-      $approved = Movement::where('status',1)->get()->count();
-      $rejected = Movement::where('status',2)->get()->count();
-      $pending = Movement::where('status',0)->get()->count();
+
       $id= Auth::user()->id;
 
-      $list = Movement::join("employees","employees.user_id","=","movements.user_id")
+      $list = MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
-      ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
-      ->select('movements.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('movements.user_id',$id)
-      ->orderBy('movements.status')->get();
+      ->leftjoin("employees as emp","emp.user_id","=","missed_punches.action_by")
+      ->select('missed_punches.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('missed_punches.user_id',$id)
+      ->orderBy('missed_punches.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
         //   dd($queries);
@@ -55,31 +53,39 @@ class MovementController extends Controller
     {
         //
         $this->validate($request, [
-          'title' => 'required',
           'type' => 'required|',
-          'start_date' => 'required|',
-          'start_time' => 'required|',
-          'end_date' => 'required|',
-          'end_time' => 'required|',
-          'location' => 'required|',
+          'date' => 'required|',
+
+          'description' => 'required|',
+
 
 
       ]);
       $id= Auth::user()->id;
       $date= date('Y-m-d H:i:s');
-      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('start_date'))));
-      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('end_date'))));
-
-      $permission = Movement::create(['title' => $request->input('title'),'type' => $request->input('type')
-      ,'start_date' => $from,'start_time' => $request->input('start_time'),'end_date' => $to,'end_time' => $request->input('end_time')
-      ,'location' => $request->input('location'),'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date
+      $attendance_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('date'))));
+      if($request->input('checkinTime') == '' || $request->input('checkinTime') ==NULL){
+        $checkin= NULL;
+      }
+      else{
+        $checkin = $request->input('checkinTime');
+      }
+      if($request->input('checkoutTime') == '' || $request->input('checkoutTime') ==NULL){
+        $checkout= NULL;
+      }
+      else{
+        $checkout = $request->input('checkoutTime');
+      }
+      $permission = MissedPunch::create(['type' => $request->input('type')
+      ,'date' => $attendance_date,'checkinTime' => $checkin,'checkoutTime' => $checkout
+      ,'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date
     ]);
 
       if ($permission) {
         $mailData = [
-          'title' => 'Movement Request',
+          'title' => 'Miss Punch Request',
           'button' => 'Take Action',
-          'url' => 'http://localhost:8000/movement/approve-list',
+          'url' => 'http://localhost:8000/misspunch/approve-list',
           'body' => Auth::user()->name." created a new movement request for the period of ".$request->input('start_date')." - ".$request->input('start_time')." to ".$request->input('end_date')." - ".$request->input('end_time').".  Please login to your account for take action.",
         ];
         $reporting = Employee::where('employees.user_id',Auth::user()->id)
@@ -98,7 +104,7 @@ class MovementController extends Controller
     public function edit($id)
     {
         //
-        $designation = Movement::find($id);
+        $designation = MissedPunch::find($id);
 
           return response()->json(['designation'=> $designation]);
     }
@@ -110,30 +116,35 @@ class MovementController extends Controller
     {
         //
         $this->validate($request, [
-          'title' => 'required',
           'type' => 'required|',
-          'start_date' => 'required|',
-          'start_time' => 'required|',
-          'end_date' => 'required|',
-          'end_time' => 'required|',
-          'location' => 'required|',
+          'date' => 'required|',
+
+          'description' => 'required|',
 
       ]);
 
       $date= date('Y-m-d H:i:s');
-      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('start_date'))));
-      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('end_date'))));
+      $attendance_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('date'))));
+      if($request->input('checkinTime') == '' || $request->input('checkinTime') ==NULL){
+        $checkin= NULL;
+      }
+      else{
+        $checkin = $request->input('checkinTime');
+      }
+      if($request->input('checkoutTime') == '' || $request->input('checkoutTime') ==NULL){
+        $checkout= NULL;
+      }
+      else{
+        $checkout = $request->input('checkinTime');
+      }
+      $designation = MissedPunch::find($id);
 
-      $designation = Movement::find($id);
 
 
-      $designation->title = $request->input('title');
       $designation->type = $request->input('type');
-      $designation->start_date = $from;
-      $designation->start_time = $request->input('start_time');
-      $designation->end_date = $to;
-      $designation->end_time = $request->input('end_time');
-      $designation->location = $request->input('location');
+      $designation->date = $attendance_date;
+      $designation->checkinTime = $checkin;
+      $designation->checkoutTime = $checkout;
       $designation->description = $request->input('description');
       $designation->requested_at = $date;
       $designation->save();
@@ -154,7 +165,7 @@ class MovementController extends Controller
     public function destroy($id)
     {
         //
-        $movement=Movement::find($id);
+        $movement=MissedPunch::find($id);
           $movement->delete(); //returns true/false
     }
 
@@ -166,30 +177,28 @@ class MovementController extends Controller
 
       $id= Auth::user()->id;
 
-      $list = Movement::join("employees","employees.user_id","=","movements.user_id")
-      ->select('movements.*')->where('employees.reporting_officer',$id);
+      $list = MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
+      ->select('missed_punchess.*')->where('employees.reporting_officer',$id);
 
       $totalCount = $list->count();
-      $approved = $list->where('movements.status',1)->count();
-      $pending = $list->where('movements.status',0)->count();
-      $rejected =$list->where('movements.status',2)->count();
-
-
+      $approved = $list->where('missed_punches.status',1)->count();
+      $pending = $list->where('missed_punches.status',0)->count();
+      $rejected =$list->where('missed_punches.status',2)->count();
 
 
       $pageConfigs = ['myLayout' => 'horizontal'];
-      return view('content.attendance.movement-approve-list',compact('totalCount','approved','pending','rejected'),['pageConfigs'=> $pageConfigs]);
+      return view('content.attendance.misspunch-approve-list',compact('totalCount','approved','pending','rejected'),['pageConfigs'=> $pageConfigs]);
     }
     public function requestList()
     {
 
       $id= Auth::user()->id;
 
-      $list = Movement::join("employees","employees.user_id","=","movements.user_id")
+      $list = MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
-      ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
-      ->select('movements.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',)->where('employees.reporting_officer',$id)
-      ->orderBy('movements.status')->get();
+      ->leftjoin("employees as emp","emp.user_id","=","missed_punches.action_by")
+      ->select('missed_punches.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',)->where('employees.reporting_officer',$id)
+      ->orderBy('missed_punches.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
         //   dd($queries);
@@ -208,7 +217,7 @@ class MovementController extends Controller
 
       $date= date('Y-m-d H:i:s');
 
-      $designation = Movement::find($id);
+      $designation = MissedPunch::find($id);
       $designation->status = $request->input('status');
       $designation->remark = $request->input('remark');
       $designation->action_at = $date;
@@ -249,16 +258,15 @@ class MovementController extends Controller
         $employees = $request->input('employeeList');
       }
 
-      $list = Movement::join("employees","employees.user_id","=","movements.user_id")
+      $list = MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
-      ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
-      ->select('movements.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')
+      ->leftjoin("employees as emp","emp.user_id","=","missed_punches.action_by")
+      ->select('missed_punches.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')
       // ->where('movements.user_id',$id)
       // ->orderBy('movements.status')->get();
-      ->whereIn('movements.user_id',$employees)
-    ->whereBetween('movements.start_date', [$from, $to])
-    ->whereBetween('movements.end_date', [$from, $to])
-    ->orderBy('movements.user_id','DESC')->get();
+      ->whereIn('missed_punches.user_id',$employees)
+    ->whereBetween('missed_punches.date', [$from, $to])
+    ->orderBy('missed_punches.user_id','DESC')->get();
 
 
 
@@ -266,17 +274,15 @@ class MovementController extends Controller
       return response()->json(["list"=>$list]);
     }
     else if($request->input('view_type') == 'pdf'){
-      $pdf = PDF::loadView('exports.movement-export-pdf', compact('list'));
-      return $pdf->download('movement.pdf');
+      $pdf = PDF::loadView('exports.misspunch-export-pdf', compact('list'));
+      return $pdf->download('misspunch.pdf');
 
     }
     else if($request->input('view_type') == 'excel'){
 
-      return Excel::download(new MovementExport($list), 'movement.xlsx');
+      return Excel::download(new MisspunchExport($list), 'misspunch.xlsx');
 
     }
       // return response()->download(public_path('storage/AttendanceRepot01-09-2023To30-09-2023Bulk.pdf'));
     }
-
-
 }

@@ -391,6 +391,73 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
         }
     }
+    else if(reportType ==4){
+      if(view_type == 'excel' || view_type == 'pdf'){
+
+        $.ajax({
+             data:  {
+              fromDate:fromDate,
+                toDate:toDate,
+                type:'2',
+                view_type:view_type,
+                employeeList:employeeList,
+                "_token": "{{ csrf_token() }}",
+            },
+              url: `${baseUrl}misspunch/downloadBulk`,
+              type: 'POST',
+              xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                //
+            },
+            success: function(data) {
+                var url = window.URL || window.webkitURL;
+                var objectUrl = url.createObjectURL(data);
+                window.open(objectUrl);
+            },
+            error: function(data) {
+                //
+            }
+        });
+        }
+        else{
+
+
+
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'2',
+               view_type:view_type,
+               employeeList:employeeList,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: `${baseUrl}misspunch/downloadBulk`,
+             type: 'POST',
+
+           success: function(data) {
+            var tbody='';
+            data.list.forEach((item, index) => {
+              tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td><td>'+(item.type == 1 ? "Checkin" : item.type == 2 ? "Checkout" : "Checkin&Checkout")+'</td><td>'+item.checkinTime+'</td><td>'+item.checkoutTime+
+                '<td>'+item.description+'</td><td>'+item.requested_at+'</td>'+
+                '<td>'+(item.status == 0 ? '<span class="badge bg-secondary">Pending</span>' : (item.status == 1 ? '<span class="badge bg-success">Aproved</span>' : '<span class="badge bg-danger">Rejected</span>' ))+'</td>'+
+                '<td>'+item.action_by_name+'</td><td>'+item.action_at+'</td>';
+              });
+              $('#MisspunchModal').modal('show');
+            $(".datatables-leave-list #dataList").html(tbody);
+
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+    }
+
+
 
 
 
@@ -461,6 +528,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   <option value='1' selected>Attendance</option>
                   <option value='2' >Movement</option>
                   <option value='3' >Leave</option>
+                  <option value='4' >Miss punch</option>
 
                 </select>
               </div>
@@ -562,6 +630,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 <!-- Modal -->
 @include('_partials/_modals/modal-attendance')
 @include('_partials/_modals/modal-movement-report-view')
+@include('_partials/_modals/modal-misspunch-report-view')
 @include('_partials/_modals/modal-leave-report-view')
 <!-- /Modal -->
 @endsection
