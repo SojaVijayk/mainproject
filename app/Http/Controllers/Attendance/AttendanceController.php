@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Attendance;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\AttendanceLog;
 use App\Models\Leave;
 use App\Models\User;
 use App\Models\EmploymentType;

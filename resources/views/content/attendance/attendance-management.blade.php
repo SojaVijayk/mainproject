@@ -14,7 +14,24 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/dropzone/dropzone.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}" />
 
-
+<style>
+  #loading-overlay {
+    position: absolute;
+    width: 100%;
+    height:100%;
+    left: 0;
+    top: 0;
+    display: none;
+    align-items: center;
+    background-color: #000;
+    z-index: 999;
+    opacity: 0.5;
+}
+.loading-icon{ position:absolute;border-top:2px solid #fff;border-right:2px solid #fff;border-bottom:2px solid #fff;border-left:2px solid #767676;border-radius:25px;width:25px;height:25px;margin:0 auto;position:absolute;left:50%;margin-left:-20px;top:50%;margin-top:-20px;z-index:4;-webkit-animation:spin 1s linear infinite;-moz-animation:spin 1s linear infinite;animation:spin 1s linear infinite;}
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+</style>
 @endsection
 
 @section('vendor-script')
@@ -113,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
     $("body").on("click","#import", function (e) {
       e.preventDefault();
+      $("#loading-overlay").show();
 
       var fd = new FormData();
       var files = $('input[type=file]')[0].files[0];
@@ -130,10 +148,27 @@ document.addEventListener('DOMContentLoaded', function (e) {
               processData: false,
               // dataType: 'json',
               success: function (data) {
+                $("#loading-overlay").hide();
+                Swal.fire({
+                  icon: 'success',
+                  title: `Successfully Imported!`,
+                  {{--  text: `Designation ${status} Successfully.`,  --}}
+                  customClass: {
+                    confirmButton: 'btn btn-success'
+                  }
+                });
 
               },
               error: function(data){
-
+                $("#loading-overlay").hide();
+                Swal.fire({
+                  title: 'Oh Sorry!',
+                  text: 'Something went wrong',
+                  icon: 'error',
+                  customClass: {
+                    confirmButton: 'btn btn-success'
+                  }
+                });
               }
           });
   });
@@ -494,6 +529,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 
 <div class="row">
+  <div id="loading-overlay">
+    <div class="loading-icon"></div>
+</div>
   <div class="col">
     @can('attendance-management')
     <h6 class="mt-4">Import Attendance & Generate Report </h6>

@@ -16,8 +16,8 @@
       <tr>
           <td>{{ $item->name }}</td>
           <td>{{ $item->date }}</td>
-          <td>{{ $item->in_time }}</td>
-          <td>{{ $item->out_time }}</td>
+          <td>{{ $item->InTime }}</td>
+          <td>{{ $item->OutTime }}</td>
 
 
 

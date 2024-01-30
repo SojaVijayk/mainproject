@@ -11,7 +11,7 @@ use App\Models\EmploymentType;
 use App\Models\BankAccount;
 use App\Models\LeaveRequest;
 use App\Models\Movement;
-use App\Models\Attendance;
+use App\Models\AttendanceLog;
 use App\Models\LeaveRequestDetails;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -599,11 +599,11 @@ public function uploadImage(Request $request){
     ->get();
 
 
-    $attendance = Attendance::select('attendances.*','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation')
-  ->join("employees","employees.user_id","=","attendances.user_id")
+    $attendance = AttendanceLog::select('AttendanceLogs.*','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation')
+  ->join("employees","employees.user_id","=","AttendanceLogs.user_id")
   ->leftjoin("designations","designations.id","=","employees.designation")
-  ->where('attendances.user_id',$id)
-  ->orderBy('attendances.user_id','DESC')->get();
+  ->where('AttendanceLogs.user_id',$id)
+  ->orderBy('AttendanceLogs.user_id','DESC')->get();
 
 
     $j=0;
@@ -658,7 +658,7 @@ public function uploadImage(Request $request){
     foreach( $attendance as $item){
       $date_from = strtotime($item->date);
      $from= date('Y-m-d H:i:s', $date_from);
-      if(($item->in_time == null && $item->out_time == null) || ($item->in_time == '' && $item->out_time == '')){
+      if(($item->InTime == null && $item->OutTime == null) || ($item->InTime == '' && $item->OutTime == '')){
         $prop=["calendar"=>"Absent"];
       }
       else{
@@ -669,7 +669,7 @@ public function uploadImage(Request $request){
         'id'=>$j,
         'url'=>'',
         // 'title'=>'IN '.($item->in_time != null && $item->in_time != '' ? $item->in_time : 'No Record' ).' OUT '.$item->out_time,
-        'title'=>(($item->in_time != null && $item->in_time != '') && ($item->out_time != null && $item->out_time != '')  ? 'Present (IN '.$item->in_time.' OUT '.$item->in_time.')' : (($item->in_time != null && $item->in_time != '') && ($item->out_time == null || $item->out_time !== '') ? 'IN '.$item->in_time: 'Absent') ),
+        'title'=>(($item->InTime != null && $item->InTime != '') && ($item->OutTime != null && $item->OutTime != '')  ? 'Present (IN '.$item->InTime.' OUT '.($item->OutTime != $item->InTime ? $item->OutTime : 'No Records').')' : (($item->InTime != null && $item->InTime != '') && ($item->OutTime == null || $item->OutTime == '') ? 'IN '.$item->InTime: 'Absent') ),
         'start'=>$from,
         'end'=>$from,
         'allDay'=>true,

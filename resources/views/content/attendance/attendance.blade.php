@@ -674,8 +674,11 @@ document.addEventListener('DOMContentLoaded', function () {
             var tbody='';
             data.list.forEach((item, index) => {
               tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td>'+
-               ' <td> <span class="text-'+(item.in_time <= '09:30'  ? "success" : 'warning')+'">'+(item.in_time != null ? item.in_time : '')+'</span></td>'+
-               '<td><span class="text-'+(item.out_time >= '17:30'  ? "success" : 'warning')+'">'+(item.out_time != null ? item.out_time : '')+'</span></td>'+
+                '<td><span class="text-success"><strong>IN</strong></span> : '+item.InTime+'<br><span class="text-danger"><strong>Out</strong></span> : '+(item.OutTime != item.InTime ? item.OutTime : 'No Records')+
+                  {{--  '</td><td>'+(item.OutTime != item.InTime ? item.OutTime : '')+'</td>'+  --}}
+                '<td>'+(item.LateBy >0 ? item.LateBy : "-")+'</td><td>'+(item.EarlyBy >0 ? item.EarlyBy : "-")+'</td><td>'+(item.Duration >0 ? item.Duration : "-")+'</td>'+
+               {{--  ' <td> <span class="text-'+(item.InTime <= '09:30'  ? "success" : 'warning')+'">'+(item.InTime != null ? item.InTime : '')+'</span></td>'+
+               '<td><span class="text-'+(item.OutTime >= '17:30'  ? "success" : 'warning')+'">'+(item.OutTime != null ? item.OutTime : '')+'</span></td>'+  --}}
                '';
                 var leave= '';
                 var leave_status= '';
@@ -724,6 +727,10 @@ document.addEventListener('DOMContentLoaded', function () {
                   miss_status=(item.miss_status == 1 ? 'Approved' : (item.miss_status == 2 ? 'Rejected' : 'Pending'));
                   tbody=tbody+'<td> Miss Punch Details ( '+miss_type+' - Duraton : '+miss_date+' - Status:' + miss_status+ ')</td>';
 
+                }
+
+                if(((item.miss_status == '') || (item.miss_status == null)) && ((item.movement_status == '') || (item.movement_status == null)) && ((item.leave_type == '') || (item.leave_type == null)) ){
+                  tbody= tbody+'<td></td>';
                 }
 
                 tbody=tbody+'</tr>';

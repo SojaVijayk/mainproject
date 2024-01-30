@@ -110,8 +110,8 @@ line-height: 15px;
                       <td>{{ $item->designation }}</td>
                       <td>{{  date("d-m-Y", strtotime($item->date)) }}  </td>
 
-                      <td>{{ $item->in_time }}</td>
-                      <td>{{ $item->out_time }}</td>
+                      <td>{{ $item->InTime }}</td>
+                      <td>{{ $item->OutTime }}</td>
 
 
 

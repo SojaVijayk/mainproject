@@ -116,10 +116,11 @@ Route::get('/leave-assign/edit/{id}', $controller_path . '\Leave\LeaveAssignCont
 Route::post('/leave-assign/update/{id}', $controller_path . '\Leave\LeaveAssignController@assignUpdate')->name('leave-assign-update');
 
 Route::get('/attendance', $controller_path . '\Attendance\AttendanceController@index')->name('attendance-index');
-Route::post('/attendance/import', $controller_path . '\Attendance\AttendanceController@import')->name('attendance-import');
+// Route::post('/attendance/import', $controller_path . '\Attendance\AttendanceController@import')->name('attendance-import');
+Route::post('/attendance/import', $controller_path . '\Attendance\AttendanceLogController@import')->name('attendance-import');
 Route::get('/attendance-management', $controller_path . '\Attendance\AttendanceController@attendanceManagement')->name('attendance-hrView');
 Route::get('/download', $controller_path . '\Attendance\AttendanceController@download')->name('attendance-download');
-Route::POST('/downloadBulk', $controller_path . '\Attendance\AttendanceController@downloadBulk')->name('attendance-download-bulk');
+Route::POST('/downloadBulk', $controller_path . '\Attendance\AttendanceLogController@downloadBulk')->name('attendance-download-bulk');
 Route::get('/movement', $controller_path . '\Attendance\MovementController@index')->name('attendance-movement');
 Route::post('/movement/store', $controller_path . '\Attendance\MovementController@store')->name('attendance-movement-store');
 Route::get('/movement/edit/{id}', $controller_path . '\Attendance\MovementController@edit')->name('attendance-movement-edit');

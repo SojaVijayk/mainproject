@@ -22,9 +22,14 @@
 
                   <th>Name</th>
                   <th>Date</th>
-                  <th>IN</th>
-                  <th>Out</th>
-                  <th>Remark</th>
+                  <th width= "25%">Time</th>
+                  {{--  <th>Out</th>  --}}
+
+                  <th>Late By (Minutes)</th>
+                  <th>Early Exit (Minutes)</th>
+                  <th>Duration (Minutes)</th>
+
+                  <th width="10%">Remark</th>
                 </tr>
               </thead>
               <tbody id="dataList"></tbody>
