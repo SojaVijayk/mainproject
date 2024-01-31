@@ -42,6 +42,38 @@ class MasterFunctionController extends Controller
 
     }
 
+    function GetLeavePeriod ($user_id,$leave_type){
+
+      $employee = Employee::where('user_id',$user_id)->first();
+      $employment_types = EmploymentType::select('id','employment_type','leave_period','status','created_at')->where('id',$employee->employment_type)->first();
+      $leave_period = $employment_types->leave_period;
+      if($leave_period == 4){
+        //special annual Joining Date
+        $result = $this->calculateContractPeriodLeave($user_id,$employee->contract_start_date,$employee->contract_end_date,$employee->employment_type,$leave_type);
+       return $result;
+     }
+      if($leave_period == 3){
+         //Joining Date
+         $result = $this->calculateJobPeriod($employee->doj);
+        return $result;
+      }
+     else if($leave_period == 2){
+       //Financial Year
+        $result = $this->getFinancialYearDates();
+        return $result;
+
+     }
+     else if($leave_period == 1){
+      //calendar Year
+      $result = $this->getCalendarYearDates();
+      return $result;
+    }
+
+
+
+
+    }
+
     public function getFinancialYearDates()
     {
         // Set the time zone to match your requirements
@@ -204,5 +236,83 @@ class MasterFunctionController extends Controller
     //   // $date_start = $dateArray[2] . '-' . $dateArray[1] . '-' . date("Y");
     //   $date_start = date("Y") . '-' .$dateArray[1] . '-' . $dateArray[2];
     // }
+    public function calculateContractPeriodLeave($user_id,$start_date,$end_date,$employment_type,$leave_type)
+    {
 
+      $start_date_array = explode('-', $start_date);
+      $start_month = $start_date_array[1];
+      $start_day   = $start_date_array[2];
+      $start_year  = $start_date_array[0];
+
+      $end_date_array = explode('-', $end_date);
+      $end_month = $end_date_array[1];
+      $end_day   = $end_date_array[2];
+      $end_year  = $end_date_array[0];
+
+      $today = date('Y-m-d');
+      $today_array = explode('-', $today);
+      $today_month = $today_array[1];
+      $today_day   = $today_array[2];
+      $today_year  = $today_array[0];
+
+      $eligible_start_month_leave=0;
+
+
+      if($today_year ==   $start_year){
+        $period_start_date= $start_date;
+        $period_end_date= $today_year.'-12-31';
+
+        if($start_day <= 15 ){
+          $eligible_start_month_leave=1;
+        }
+
+      }
+      else{
+        $period_start_date = $today_year.'-01-01';
+        $period_end_date = $end_date;
+
+        if( $end_day >=15){
+          $eligible_start_month_leave=1;
+        }
+      }
+
+
+      $period_start_date_array = explode('-', $period_start_date);
+      $period_start_month = $period_start_date_array[1];
+      $period_start_day   = $period_start_date_array[2];
+      $period_start_year  = $period_start_date_array[0];
+
+      $period_end_date_array = explode('-', $period_end_date);
+      $period_end_month = $period_end_date_array[1];
+      $period_end_day   = $period_end_date_array[2];
+      $period_end_year  = $period_end_date_array[0];
+
+
+
+
+      $leave_detail = LeaveAssign::where('leave_type',$leave_type)->where('employment_type',$employment_type)->first();
+      if($leave_type == 1){
+        $days= $period_end_month -  $period_start_month;
+        if($eligible_start_month_leave ==1){
+          $days++;
+        }
+        $total_leave= $days;
+      }
+      else{
+        $total_leave= $leave_detail->total_credit;
+      }
+
+      $employee = Employee::where('user_id',$user_id)->first();
+      $result1 = $this->calculateJobPeriod($employee->doj);
+
+
+      return [
+        'cl_start_date' => $period_start_date,
+        'cl_end_date' => $period_end_date,
+        'start_date' => $result1['start_date'],
+        'end_date' => $result1['end_date'],
+        'total_leave'=>   $total_leave
+    ];
+
+    }
   }
