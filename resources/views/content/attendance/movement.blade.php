@@ -228,7 +228,7 @@ $(function () {
         }
       ],
       // For responsive popup
-      responsive: {
+      {{--  responsive: {
         details: {
           display: $.fn.dataTable.Responsive.display.modal({
             header: function (row) {
@@ -259,7 +259,7 @@ $(function () {
             return data ? $('<table class="table"/><tbody />').append(data) : false;
           }
         }
-      }
+      }  --}}
 
     });
   }
