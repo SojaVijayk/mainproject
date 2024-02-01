@@ -56,7 +56,7 @@ class MissedPunchController extends Controller
           'type' => 'required|',
           'date' => 'required|',
 
-          'description' => 'required|',
+          // 'description' => 'required|',
 
 
 
@@ -119,7 +119,7 @@ class MissedPunchController extends Controller
           'type' => 'required|',
           'date' => 'required|',
 
-          'description' => 'required|',
+          // 'description' => 'required|',
 
       ]);
 
