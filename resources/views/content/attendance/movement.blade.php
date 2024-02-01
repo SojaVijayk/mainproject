@@ -68,7 +68,7 @@ $(function () {
       columns: [
         // columns according to JSON
         { data: '' },
-        { data: 'designation' },
+        {{--  { data: 'designation' },  --}}
         { data: 'title' },
         { data: 'type' },
         {{--  { data: 'start_date' },
@@ -91,7 +91,7 @@ $(function () {
           }
         },
 
-        {
+        {{--  {
           // Name
           targets: 1,
           render: function (data, type, full, meta) {
@@ -99,10 +99,10 @@ $(function () {
             var $designation = full['designation'];
             return '<span class="text-nowrap">' + $name + '<br>' + $designation + '</span>';
           }
-        },
+        },  --}}
         {
           // Name
-          targets: 2,
+          targets: 1,
           render: function (data, type, full, meta) {
             var $name = full['title'];
             var $startDate = full['start_date'];
@@ -120,7 +120,7 @@ $(function () {
         },
         {
           // Name
-          targets: 3,
+          targets: 2,
           render: function (data, type, full, meta) {
             var $name = full['type'];
             return '<span class="text-nowrap">' + $name + '</span>';
@@ -148,7 +148,7 @@ $(function () {
 
         {
           // Name
-          targets: 4,
+          targets: 3,
           render: function (data, type, full, meta) {
             var $name = full['requested_at'];
             return '<span class="text-nowrap">' + $name + '</span>';
@@ -156,7 +156,7 @@ $(function () {
         },
         {
           // User Role
-          targets: 5,
+          targets: 4,
           render: function (data, type, full, meta) {
             var $status = full['status'];
             $out = ($status==1 ? '<a><span class="badge bg-label-success m-1">Approved</span></a>' : ($status==2 ? '<a><span class="badge bg-label-danger m-1">Rejected</span></a>' : '<a><span class="badge bg-label-warning m-1">Pending</span></a>')  )
@@ -165,7 +165,7 @@ $(function () {
         },
         {
           // Name
-          targets: 6,
+          targets: 5,
           render: function (data, type, full, meta) {
             var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
             var $action_at = (full['action_at'] == null ? '' :full['action_at']);
