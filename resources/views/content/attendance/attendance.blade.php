@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
       appOverlay = document.querySelector('.app-overlay'),
       calendarsColor = {
         {{--  Business: 'primary',
-        Holiday: 'success',
+
         Personal: 'danger',
         Family: 'warning',
         ETC: 'info'  --}}
@@ -80,7 +80,8 @@ document.addEventListener('DOMContentLoaded', function () {
         Approved: 'success',
         Absent: 'danger',
         Rejected: 'warning',
-        Present: 'primary'
+        Present: 'primary',
+        Holiday: 'danger',
       },
       offcanvasTitle = document.querySelector('.offcanvas-title'),
       btnToggleSidebar = document.querySelector('.btn-toggle-sidebar'),

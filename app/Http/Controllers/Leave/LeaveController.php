@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Leave;
 
 use App\Http\Controllers\Controller;
 use App\Models\Leave;
+use App\Models\Holiday;
 use Illuminate\Http\Request;
+use App\Http\Controllers\MasterFunctionController;
 
 class LeaveController extends Controller
 {
@@ -119,5 +121,28 @@ class LeaveController extends Controller
     public function destroy(Leave $leaves)
     {
         //
+    }
+
+    Public Function generateHoliday(){
+
+      $year = date('Y');
+    $weekends = (new MasterFunctionController)->findWeekendDays($year);
+
+      // Print the result
+      foreach ($weekends as $month => $dates) {
+          // echo "Month: $month\n";
+          foreach ($dates as $date) {
+              // echo "$date\n";
+              $count = Holiday::where('date',$date)->where('description','Holiday')->count();
+              if($count==0){
+            Holiday::create(['date' => $date,
+                'description' => 'Holiday']);
+              }
+
+
+          }
+
+      }
+
     }
 }

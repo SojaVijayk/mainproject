@@ -109,6 +109,8 @@ Route::post('/leave/store', $controller_path . '\Leave\LeaveController@store')->
 Route::get('/leave/edit/{id}', $controller_path . '\Leave\LeaveController@edit')->name('leave-edit');
 Route::post('/leave/update/{id}', $controller_path . '\Leave\LeaveController@update')->name('leave-update');
 
+Route::get('geneateHoliday', $controller_path . '\Leave\LeaveController@generateHoliday')->name('generate-holiday');
+
 Route::get('/leave-assign', $controller_path . '\Leave\LeaveAssignController@index')->name('leave-assign');
 Route::get('/leave-assign/list', $controller_path . '\Leave\LeaveAssignController@getAllAssignLeaves')->name('leave-assign-list');
 Route::post('/leave-assign/store', $controller_path . '\Leave\LeaveAssignController@store')->name('leave-assign-store');

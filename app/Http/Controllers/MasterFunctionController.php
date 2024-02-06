@@ -315,4 +315,34 @@ class MasterFunctionController extends Controller
     ];
 
     }
+
+
+
+    public function findWeekendDays($year) {
+      $weekends = array();
+
+      // Loop through each month
+      for ($month = 1; $month <= 12; $month++) {
+          // Get the number of days in the month
+          $num_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+          // Loop through each day of the month
+          for ($day = 1; $day <= $num_days; $day++) {
+              $date = mktime(0, 0, 0, $month, $day, $year);
+              $dayOfWeek = date('N', $date); // Get day of week (1 = Monday, 7 = Sunday)
+
+              // Check if it's Saturday or Sunday
+              if ($dayOfWeek == 6 || $dayOfWeek == 7) {
+                  $weekends[$month][] = date('Y-m-d', $date); // Add weekend day to array
+              }
+          }
+      }
+
+      return $weekends;
+  }
+
+
+
+
+
   }

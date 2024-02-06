@@ -13,6 +13,7 @@ use App\Models\LeaveRequest;
 use App\Models\Movement;
 use App\Models\AttendanceLog;
 use App\Models\LeaveRequestDetails;
+use App\Models\Holiday;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -605,6 +606,8 @@ public function uploadImage(Request $request){
   ->where('AttendanceLogs.user_id',$id)
   ->orderBy('AttendanceLogs.user_id','DESC')->get();
 
+  $holidays = Holiday::get();
+
 
     $j=0;
     $leaves=[];
@@ -680,6 +683,32 @@ public function uploadImage(Request $request){
       $j++;
 
     }
+
+
+    foreach( $holidays as $holiday){
+      $date_from = strtotime($holiday->date);
+      $from= date('Y-m-d H:i:s', $date_from);
+
+      $date_to = strtotime($holiday->date);
+      $to= date('Y-m-d H:i:s', $date_to);
+
+      $prop=["calendar"=>"Holiday"];
+      $obj = [
+        'id'=>$j,
+        'url'=>'',
+        'title'=>$holiday->description,
+        'start'=>$from,
+        'end'=>$to,
+        'allDay'=>true,
+        'extendedProps'=>$prop
+
+      ];
+      array_push($leaves,$obj);
+      $j++;
+
+    }
+
+
 
 
     return response()->json(['events'=> $leaves]);
