@@ -40,6 +40,11 @@
           "url": "master/designation",
           "name": "Designation",
           "slug": "master-designation"
+        },
+        {
+          "url": "geneateHoliday",
+          "name": "Geneate Holiday",
+          "slug": "generate-holiday"
         }
       ]
     },
