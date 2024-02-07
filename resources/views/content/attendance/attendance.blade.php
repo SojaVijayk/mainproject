@@ -45,6 +45,36 @@
       });
     }
 
+    function calculateDuration(startDate, endDate) {
+      // Convert both dates to milliseconds
+      var startTime = new Date(startDate).getTime();
+      var endTime = new Date(endDate).getTime();
+
+      // Calculate the difference in milliseconds
+      var timeDiff = endTime - startTime;
+
+      // Convert milliseconds to seconds, minutes, hours, and days
+      var seconds = Math.floor(timeDiff / 1000);
+      var minutes = Math.floor(seconds / 60);
+      var hours = Math.floor(minutes / 60);
+      var days = Math.floor(hours / 24);
+
+      // Calculate remaining hours, minutes, and seconds
+      hours %= 24;
+      minutes %= 60;
+      seconds %= 60;
+
+      // Return an object with the duration components
+      return {
+          days: days,
+          hours: hours,
+          minutes: minutes,
+          seconds: seconds
+      };
+  }
+
+
+
     /**
  * App Calendar
  */
@@ -674,10 +704,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
             var tbody='';
             data.list.forEach((item, index) => {
+              var totalDuration = 0;
+              var extraTime = 0;
+              if((item.InTime != null && item.InTime!='') && (item.OutTime != null && item.OutTime != '')){
+                var startDate = item.InTime; // Format: YYYY-MM-DDTHH:MM:SS
+              var endDate = item.OutTime; // Format: YYYY-MM-DDTHH:MM:SS
+
+              var duration = calculateDuration(item.InTime, item.OutTime);
+              var hours= duration.hours;
+             var  minutes= duration.minutes;
+              totalDuration = (hours*60)+minutes;
+              if(totalDuration > 480){
+                {{--  extraTime = totalDuration-480;  --}}
+              }
+
+
+              }
+
+
+
               tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td>'+
                 '<td><span class="text-success"><strong>IN</strong></span> : '+item.InTime+'<br><span class="text-danger"><strong>Out</strong></span> : '+(item.OutTime != item.InTime ? item.OutTime : 'No Records')+
                   {{--  '</td><td>'+(item.OutTime != item.InTime ? item.OutTime : '')+'</td>'+  --}}
-                '<td>'+(item.LateBy >0 ? item.LateBy : "-")+'</td><td>'+(item.EarlyBy >0 ? item.EarlyBy : "-")+'</td><td>'+(item.Duration >0 ? item.Duration : "-")+'</td>'+
+                '<td>'+(item.LateBy >0 ? item.LateBy : "-")+'</td><td>'+(item.EarlyBy >0 ? item.EarlyBy : "-")+'</td><td>'+(totalDuration >0 ? totalDuration : "-")+'</td>'+
                {{--  ' <td> <span class="text-'+(item.InTime <= '09:30'  ? "success" : 'warning')+'">'+(item.InTime != null ? item.InTime : '')+'</span></td>'+
                '<td><span class="text-'+(item.OutTime >= '17:30'  ? "success" : 'warning')+'">'+(item.OutTime != null ? item.OutTime : '')+'</span></td>'+  --}}
                '';

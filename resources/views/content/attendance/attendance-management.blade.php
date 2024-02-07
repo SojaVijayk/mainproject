@@ -75,6 +75,34 @@ $(function () {
     });
   }
 
+  function calculateDuration(startDate, endDate) {
+    // Convert both dates to milliseconds
+    var startTime = new Date(startDate).getTime();
+    var endTime = new Date(endDate).getTime();
+
+    // Calculate the difference in milliseconds
+    var timeDiff = endTime - startTime;
+
+    // Convert milliseconds to seconds, minutes, hours, and days
+    var seconds = Math.floor(timeDiff / 1000);
+    var minutes = Math.floor(seconds / 60);
+    var hours = Math.floor(minutes / 60);
+    var days = Math.floor(hours / 24);
+
+    // Calculate remaining hours, minutes, and seconds
+    hours %= 24;
+    minutes %= 60;
+    seconds %= 60;
+
+    // Return an object with the duration components
+    return {
+        days: days,
+        hours: hours,
+        minutes: minutes,
+        seconds: seconds
+    };
+}
+
   // ajax setup
   $.ajaxSetup({
     headers: {
@@ -241,9 +269,30 @@ document.addEventListener('DOMContentLoaded', function (e) {
            success: function(data) {
             var tbody='';
             data.list.forEach((item, index) => {
+              var totalDuration = 0;
+              var extraTime = 0;
+              if((item.InTime != null && item.InTime!='') && (item.OutTime != null && item.OutTime != '')){
+                var startDate = item.InTime; // Format: YYYY-MM-DDTHH:MM:SS
+              var endDate = item.OutTime; // Format: YYYY-MM-DDTHH:MM:SS
+
+              var duration = calculateDuration(item.InTime, item.OutTime);
+              var hours= duration.hours;
+             var  minutes= duration.minutes;
+              totalDuration = (hours*60)+minutes;
+              if(totalDuration > 480){
+                {{--  extraTime = totalDuration-480;  --}}
+              }
+
+              }
+
+
+
               tbody=tbody+'<tr><td>'+item.name+'</td><td>'+item.date+'</td>'+
-               ' <td> <span class="text-'+(item.in_time <= '09:30'  ? "success" : 'warning')+'">'+(item.in_time != null ? item.in_time : '')+'</span></td>'+
-               '<td><span class="text-'+(item.out_time >= '17:30'  ? "success" : 'warning')+'">'+(item.out_time != null ? item.out_time : '')+'</span></td>'+
+               {{--  ' <td> <span class="text-'+(item.in_time <= '09:30'  ? "success" : 'warning')+'">'+(item.in_time != null ? item.in_time : '')+'</span></td>'+
+               '<td><span class="text-'+(item.out_time >= '17:30'  ? "success" : 'warning')+'">'+(item.out_time != null ? item.out_time : '')+'</span></td>'+  --}}
+               '<td><span class="text-success"><strong>IN</strong></span> : '+item.InTime+'<br><span class="text-danger"><strong>Out</strong></span> : '+(item.OutTime != item.InTime ? item.OutTime : 'No Records')+
+              '<td>'+(item.LateBy >0 ? item.LateBy : "-")+'</td><td>'+(item.EarlyBy >0 ? item.EarlyBy : "-")+'</td><td>'+(totalDuration >0 ? totalDuration : "-")+'</td>'+
+
                '';
                 var leave= '';
                 var leave_status= '';
@@ -254,6 +303,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 var mov_date= '';
                 var mov_type= '';
                 var mov_status= '';
+
+
+                var miss_date= '';
+                var miss_type= '';
+                var miss_in= '';
+                var miss_out= '';
+                var miss_status= '';
 
 
                 if((item.leave_type != '') && (item.leave_type != null)){
@@ -274,6 +330,19 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   mov_status=(item.mov_status == 1 ? 'Approved' : (item.mov_status == 2 ? 'Rejected' : 'Pending'));
                   tbody=tbody+'<td> Movement Details ( '+mov_type+' -  '+mov_title+ ' Duraton : '+mov_date+' - Status:' + mov_status+ ')</td>';
 
+                }
+
+                if((item.miss_status != '') && (item.miss_status != null)){
+                  miss_type = item.miss_type;
+
+                  miss_date = item.miss_date+' - In Time '+item.checkinTime+' Out Time '+item.checkoutTime;
+                  miss_status=(item.miss_status == 1 ? 'Approved' : (item.miss_status == 2 ? 'Rejected' : 'Pending'));
+                  tbody=tbody+'<td> Miss Punch Details ( '+miss_type+' - Duraton : '+miss_date+' - Status:' + miss_status+ ')</td>';
+
+                }
+
+                if(((item.miss_status == '') || (item.miss_status == null)) && ((item.movement_status == '') || (item.movement_status == null)) && ((item.leave_type == '') || (item.leave_type == null)) ){
+                  tbody= tbody+'<td></td>';
                 }
 
                 tbody=tbody+'</tr>';
