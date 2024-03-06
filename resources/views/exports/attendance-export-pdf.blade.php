@@ -58,7 +58,7 @@ line-height: 15px;
 <body>
      <footer>
             {{--  <img src="./assets/img/attendanceFooter.png" width="300px" height="25px">  --}}
-               CMD Suite  Generated On {{date("d:m:Y H:i:s")}}
+               CMD HRMS  Generated On {{date("d:m:Y H:i:s")}}
     </footer>
     <div style="page-break-after: never;">
         <div align="center" style="width:100%;">
@@ -69,7 +69,9 @@ line-height: 15px;
                     <td style="vertical-align: top;">
                       --}}
                       <td  width="70px" align="center" >
-                        <img width="60px" height="60px" src="../../assets/img/branding/cmdlogo.png">
+                        <img width="60px" height="60px" src="{{ public_path('assets/img/branding/cmlogo.png') }}">
+
+
 
 
                       <div >
@@ -111,7 +113,7 @@ line-height: 15px;
                       <td>{{  date("d-m-Y", strtotime($item->date)) }}  </td>
 
                       <td>{{ $item->InTime }}</td>
-                      <td>{{ $item->OutTime }}</td>
+                      <td>@if($item->InTime != $item->OutTime){{ $item->OutTime }} @else No Records @endif</td>
 
 
 

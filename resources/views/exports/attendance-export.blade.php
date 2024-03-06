@@ -17,7 +17,8 @@
           <td>{{ $item->name }}</td>
           <td>{{ $item->date }}</td>
           <td>{{ $item->InTime }}</td>
-          <td>{{ $item->OutTime }}</td>
+          <td>@if($item->InTime != $item->OutTime){{ $item->OutTime }} @else No Records @endif</td>
+
 
 
 

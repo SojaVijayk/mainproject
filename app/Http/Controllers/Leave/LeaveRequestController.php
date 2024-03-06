@@ -51,7 +51,7 @@ class LeaveRequestController extends Controller
     // $date_result = (new MasterFunctionController)->GenerateLeavePeriod($employee_details->employment_type,$employee_details->doj);
 
     $date_result = (new MasterFunctionController)->GetLeavePeriod($employee_details->user_id,$leave_detail->leave_type_id);
-
+// print_r($date_result);exit;
 
     $date_start = $date_result['start_date'];
     $date_end = $date_result['end_date'];
