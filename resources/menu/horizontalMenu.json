@@ -41,6 +41,13 @@
           "icon": "menu-icon tf-icon ti ti-tie",
           "slug": "master-designation",
           "permission": "designation"
+        },
+        {
+          "url": "master/holiday",
+          "name": "Holiday",
+          "icon": "menu-icon tf-icon ti ti-badge",
+          "slug": "master-holiday",
+          "permission": "holiday"
         }
       ]
     },

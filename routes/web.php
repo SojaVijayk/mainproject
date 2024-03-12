@@ -102,6 +102,15 @@ Route::get('/master/employment-type/edit/{id}', $controller_path . '\Masters\Emp
 Route::post('/master/employment-type/update/{id}', $controller_path . '\Masters\EmploymentTypeController@update')->name('master-designation-update');
 Route::get('/helpers/emplymenttypeDesignation/{id}', $controller_path . '\MasterFunctionController@getEmploymenttypeDesignations')->name('emplymenttype-designation-list');
 
+
+Route::get('/master/holiday', $controller_path . '\HolidayController@index')->name('master-holiday');
+Route::get('/master/holiday/list', $controller_path . '\HolidayController@getAllHolidays')->name('master-holiday-list');
+Route::post('/master/holiday/store', $controller_path . '\HolidayController@store')->name('master-holiday-store');
+Route::get('/master/holiday/edit/{id}', $controller_path . '\HolidayController@edit')->name('master-holiday-edit');
+Route::post('/master/holiday/update/{id}', $controller_path . '\HolidayController@update')->name('master-holiday-update');
+
+
+
 //Leave Master
 Route::get('/leave', $controller_path . '\Leave\LeaveController@index')->name('leave-master-index');
 Route::get('/leave/list', $controller_path . '\Leave\LeaveController@getAllLeaves')->name('leave-list');

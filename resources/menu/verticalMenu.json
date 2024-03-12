@@ -45,6 +45,11 @@
           "url": "geneateHoliday",
           "name": "Geneate Holiday",
           "slug": "generate-holiday"
+        },
+        {
+          "url": "master/holiday",
+          "name": "Holiday Management",
+          "slug": "master-holiday"
         }
       ]
     },
