@@ -56,7 +56,7 @@ $(function () {
         { data: 'title' },
 
         { data: 'start_date' },
-        { data: 'end_date' },
+        {{--  { data: 'end_date' },  --}}
         { data: 'status' },
         {{--  { data: 'action_by' },  --}}
         { data: '' }
@@ -135,10 +135,12 @@ $(function () {
           render: function (data, type, full, meta) {
             var $name = full['start_date'];
             var $time = full['start_time'];
-            return '<span class="text-nowrap">' + $name + '-'+$time+'</span>';
+            var $name2 = full['end_date'];
+            var $time2 = full['end_time'];
+            return 'From <span class="text-nowrap">' + $name + '-'+$time+'</span><br> To <span class="text-nowrap">' + $name2 + '-'+$time2+'</span>';
           }
         },
-        {
+        {{--  {
           // Name
           targets: 4,
           render: function (data, type, full, meta) {
@@ -146,13 +148,13 @@ $(function () {
             var $time = full['end_time'];
             return '<span class="text-nowrap">' + $name + '-'+$time+'</span>';
           }
-        },
+        },  --}}
 
 
 
         {
           // User Role
-          targets: 5,
+          targets: 4,
           render: function (data, type, full, meta) {
             var $status = full['status'];
             $out = ($status==1 ? '<a><span class="badge bg-label-success m-1">Approved</span></a>' : ($status==2 ? '<a><span class="badge bg-label-danger m-1">Rejected</span></a>' : '<a><span class="badge bg-label-warning m-1">Pending</span></a>')  )
@@ -212,7 +214,7 @@ $(function () {
 
       ],
       // For responsive popup
-      responsive: {
+      {{--  responsive: {
         details: {
           display: $.fn.dataTable.Responsive.display.modal({
             header: function (row) {
@@ -243,7 +245,7 @@ $(function () {
             return data ? $('<table class="table"/><tbody />').append(data) : false;
           }
         }
-      }
+      }  --}}
 
     });
   }
@@ -499,8 +501,8 @@ $(function () {
           <th></th>
           <th>User</th>
           <th>Movement Details</th>
-          <th>From</th>
-          <th>To</th>
+          <th>TIME</th>
+          {{--  <th>To</th>  --}}
           <th>Status</th>
           {{--  <th>Action By</th>  --}}
           <th>Actions</th>

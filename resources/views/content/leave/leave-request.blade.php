@@ -46,6 +46,7 @@ $(function () {
       clearBtn: true,
       todayHighlight: true,
       orientation: "auto right",
+      format:'dd/mm/yyyy',
       {{--  minDate: new Date('2024-01-05')  --}}
       {{--  minDate: new Date($('#date_start').val()),
       maxDate: new Date($('#date_end').val()),  --}}
@@ -54,6 +55,7 @@ $(function () {
       $('.message').hide();
       var start = new Date($('#date_start').val());
       var end = new Date($('#date_end').val());
+
       $('#fromDate').datepicker('setStartDate', new Date(start.getFullYear(), (start.getMonth()), start.getDate(), start.getHours(), start.getMinutes()));
       $('#fromDate').datepicker('setEndDate', new Date(end.getFullYear(), (end.getMonth()), end.getDate(), end.getHours(), end.getMinutes()));
 
@@ -68,6 +70,7 @@ $(function () {
 
 
         $('#fromDate').change(function(){
+          console.log(start);
           $("#dateList").empty();
 
           $("#toDate").val('');
