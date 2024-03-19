@@ -46,7 +46,7 @@ $(function () {
       clearBtn: true,
       todayHighlight: true,
       orientation: "auto right",
-      format:'dd/mm/yyyy',
+      {{--  format:'dd/mm/yyyy',  --}}
       {{--  minDate: new Date('2024-01-05')  --}}
       {{--  minDate: new Date($('#date_start').val()),
       maxDate: new Date($('#date_end').val()),  --}}
