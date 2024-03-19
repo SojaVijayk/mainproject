@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       <thead>
         <tr>
           <th></th>
-          <th>User</th>
+          {{--  <th>User</th>  --}}
 
           <th>Movement Details</th>
           <th>Type</th>
