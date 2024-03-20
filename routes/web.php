@@ -22,6 +22,8 @@ Route::get('/login', $controller_path . '\Auth\LoginController@index')->name('lo
 //AUTH
 Route::post('/login', $controller_path . '\Auth\LoginController@login')->name('login.custom');
 
+Route::get('/home', $controller_path . '\Auth\LoginController@index')->name('login');
+
 Route::post('/logout', $controller_path . '\Auth\LoginController@logout')->name('logout');
 Route::get('forget-password', $controller_path . '\Auth\ForgotPasswordController@index')->name('forget.password.get');
 Route::post('forget-password', $controller_path . '\Auth\ForgotPasswordController@submitForgetPasswordForm')->name('forget.password.post');
@@ -36,6 +38,8 @@ Route::group(['middleware' => 'auth'], function() {
 //Dashboard
 Route::get('/dashboard', $controller_path . '\dashboard\Analytics@index')->name('dashboard-admin');
 Route::get('/user/dashboard', $controller_path . '\layouts\Horizontal@index')->name('dashboard-user');
+
+Route::get('/home', $controller_path . '\layouts\Horizontal@index')->name('dashboard-user');
 
 //ROLE & Permission
 Route::get('/app/roles', $controller_path . '\Configuration\RoleController@index')->name('app-roles');
