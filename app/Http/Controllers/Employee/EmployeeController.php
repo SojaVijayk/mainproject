@@ -713,4 +713,6 @@ public function uploadImage(Request $request){
 
     return response()->json(['events'=> $leaves]);
      }
+
+
 }
