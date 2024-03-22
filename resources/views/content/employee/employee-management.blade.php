@@ -1193,7 +1193,7 @@
                     <div class="mb-3">
                         <label class="form-label" for="employment_type">Employment Type</label>
                         <select id="employment_type" name="employment_type" class=" form-select select2">
-                            <option disabled value="">Select</option>
+                            <option disabled value="" selected>Select</option>
                             @foreach ($employment_types as $employment_type)
                                 <option value={{ $employment_type->id }}> {{ $employment_type->employment_type }}</option>
                             @endforeach
@@ -1204,7 +1204,7 @@
                     <div class="mb-3">
                         <label class="form-label" for="designation">Designation</label>
                         <select id="designation" name="designation" class=" form-select select2">
-                            <option disabled value="">Select</option>
+                          <option disabled value="" selected>Select</option>
                             @foreach ($designations as $designation)
                                 <option value={{ $designation->id }}> {{ $designation->designation }}</option>
                             @endforeach
@@ -1221,6 +1221,7 @@
                     <div class="mb-3">
                         <label class="form-label" for="usertype_role">User Role</label>
                         <select id="usertype_role" name="usertype_role" class="form-select select2">
+                          <option disabled value="" selected>Select</option>
                             @foreach ($usertype_roles as $usertype_role)
                                 <option value={{ $usertype_role->id }}> {{ $usertype_role->usertype_role }}</option>
                             @endforeach
@@ -1229,6 +1230,7 @@
                     <div class="mb-3">
                         <label class="form-label" for="reporting_officer">Reporting Officer</label>
                         <select id="reporting_officer" name="reporting_officer" class="form-select select2">
+                          <option disabled value="" selected>Select</option>
                             @foreach ($reporting_officers as $reporting_officer)
                                 <option value={{ $reporting_officer->user_id }}> {{ $reporting_officer->name }}</option>
                             @endforeach
