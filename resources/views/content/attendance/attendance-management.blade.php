@@ -14,6 +14,8 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/dropzone/dropzone.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}" />
 
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-select/bootstrap-select.css')}}" />
+
 <style>
   #loading-overlay {
     position: absolute;
@@ -46,6 +48,7 @@
 <script src="{{asset('assets/vendor/libs/jquery-timepicker/jquery-timepicker.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/dropzone/dropzone.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/bootstrap-select/bootstrap-select.js')}}"></script>
 
 @endsection
 
@@ -55,6 +58,7 @@
 
 
 $(function () {
+  $(".selectpicker").selectpicker();
   var dataTablePermissions = $('.datatables-designation'),
     dt_permission,
     permissionList = baseUrl + 'movement/list';
@@ -630,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               <div class="col-md-4 select2-primary">
                 <label class="form-label" for="reportType">Report Type</label>
                 <select id="reportType" class="select2 form-select" >
-                  <option value="">Select All</option>
+                  {{--  <option value="">Select All</option>  --}}
 
                   <option value='1' selected>Attendance</option>
                   <option value='2' >Movement</option>
@@ -662,8 +666,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
               </div>  --}}
               <div class="col-md-4 select2-primary">
                 <label class="form-label" for="employeeList">Employee</label>
-                <select id="employeeList" class="select2 form-select" multiple>
-                  <option value="">Select All</option>
+                {{--  <select id="employeeList" class="select2 form-select" multiple>
+
+                  @foreach ($employees as $item)
+                  <option value={{$item->user_id}}>{{$item->name}}</option>
+                  @endforeach
+                </select>  --}}
+
+                <select id="employeeList" class="selectpicker w-100" data-live-search="true" data-style="btn-default" multiple data-actions-box="true">
                   @foreach ($employees as $item)
                   <option value={{$item->user_id}}>{{$item->name}}</option>
                   @endforeach
