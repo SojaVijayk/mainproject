@@ -156,9 +156,9 @@ line-height: 15px;
                           Leave Details <br>
                          (
                           Leave Type -{{ $leave->leave_type }} <br>
-                          Duration - {{ ($item->leave_day_type == 1 ? "Full Day" : ($item->leave_day_type == 2 ? "FN" : "AN")) }} -
+                          Duration - {{ ($leave->leave_day_type == 1 ? "Full Day" : ($leave->leave_day_type == 2 ? "FN" : "AN")) }} -
 
-                          status - {{ ($item->status == 0 ? 'Pending' : ($item->status == 1 ? 'Approved' : 'Rejected'))}} -
+                          status - {{ ($leave->status == 0 ? 'Pending' : ($leave->status == 1 ? 'Approved' : 'Rejected'))}} -
                           {{ $leave->leave_action_by_name }}
                          )
 
