@@ -158,7 +158,7 @@ line-height: 15px;
                           Leave Type -{{ $leave->leave_type }} <br>
                           Duration - {{ ($leave->leave_day_type == 1 ? "Full Day" : ($leave->leave_day_type == 2 ? "FN" : "AN")) }} -
 
-                          status - {{ ($leave->status == 0 ? 'Pending' : ($leave->status == 1 ? 'Approved' : 'Rejected'))}} -
+                          status - {{ ($leave->leave_status == 0 ? 'Pending' : ($leave->leave_status == 1 ? 'Approved' : 'Rejected'))}} -
                           {{ $leave->leave_action_by_name }}
                          )
 
@@ -176,7 +176,7 @@ line-height: 15px;
                           Type - {{ $movement->type }} <br>
                           Location - {{ $movement->location }} <br>
                           Desc - {{ $movement->description }} <br>
-                          Status - {{ ($movement->status == 0 ? 'Pending' : ($movement->status == 1 ? 'Approved' : 'Rejected'))}} -
+                          Status - {{ ($movement->movement_status == 0 ? 'Pending' : ($movement->movement_status == 1 ? 'Approved' : 'Rejected'))}} -
                           {{ $movement->movement_action_by_name }} - {{ $movement->remark }}
                          )
 
@@ -192,7 +192,7 @@ line-height: 15px;
                           Type - {{ ($punch->miss_type == 1 ? 'Checkin' : ($punch->miss_type == 2 ? 'Checkout' : 'Checkin & Checkout'))}} <br>
                           checkinTime - {{ $punch->checkinTime }} - checkoutTime {{ $punch->checkoutTime }} <br>
                           Desc - {{ $punch->description }} <br>
-                          Status - {{ ($punch->status == 0 ? 'Pending' : ($punch->status == 1 ? 'Approved' : 'Rejected'))}} -
+                          Status - {{ ($punch->miss_status == 0 ? 'Pending' : ($punch->miss_status == 1 ? 'Approved' : 'Rejected'))}} -
                           {{ $punch->misspunch_action_by_name }}
                          )
 
