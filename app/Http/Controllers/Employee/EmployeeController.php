@@ -648,7 +648,7 @@ public function uploadImage(Request $request){
         'title'=>$movement->title.' '.($movement->status == 1 ? 'Approved (Action By :'.$movement->action_by_name.')' : ($movement->status == 2 ? 'Rejected (Action By :'.$movement->action_by_name.')' : "Pending")),
         'start'=>$from,
         'end'=>$to,
-        'allDay'=>true,
+        'allDay'=>false,
         'extendedProps'=>$prop
 
       ];
