@@ -182,8 +182,10 @@ class MissedPunchController extends Controller
 
       $totalCount = $list->count();
       $approved = $list->where('missed_punches.status',1)->count();
-      $pending = $list->where('missed_punches.status',0)->count();
-      $rejected =$list->where('missed_punches.status',2)->count();
+      $pending = MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
+      ->select('missed_punchess.*')->where('employees.reporting_officer',$id)->where('missed_punches.status',0)->count();
+      $rejected =MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
+      ->select('missed_punchess.*')->where('employees.reporting_officer',$id)->where('missed_punches.status',2)->count();
 
 
       $pageConfigs = ['myLayout' => 'horizontal'];

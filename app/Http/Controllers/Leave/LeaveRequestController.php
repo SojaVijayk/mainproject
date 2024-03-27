@@ -351,8 +351,10 @@ class LeaveRequestController extends Controller
 
       $totalCount = $list->count();
       $action_started = $list->where('leave_requests.status',1)->count();
-      $pending = $list->where('leave_requests.status',0)->count();
-      $completed =$list->where('leave_requests.status',2)->count();
+      $pending = LeaveRequest::join("employees","employees.user_id","=","leave_requests.user_id")
+      ->select('leave_requests.*')->where('employees.reporting_officer',$id)->where('leave_requests.status',0)->count();
+      $completed =LeaveRequest::join("employees","employees.user_id","=","leave_requests.user_id")
+      ->select('leave_requests.*')->where('employees.reporting_officer',$id)->where('leave_requests.status',2)->count();
 
 
 

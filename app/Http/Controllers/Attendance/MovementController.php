@@ -170,10 +170,13 @@ class MovementController extends Controller
       ->select('movements.*')->where('employees.reporting_officer',$id);
 
       $totalCount = $list->count();
-      $approved = $list->where('movements.status',1)->count();
-      $pending = $list->where('movements.status',0)->count();
-      $rejected =$list->where('movements.status',2)->count();
 
+      $approved = $list->where('movements.status',1)->count();
+      $pending = Movement::join("employees","employees.user_id","=","movements.user_id")
+      ->select('movements.*')->where('employees.reporting_officer',$id)->where('movements.status',0)->count();
+      $rejected =Movement::join("employees","employees.user_id","=","movements.user_id")
+      ->select('movements.*')->where('employees.reporting_officer',$id)->where('movements.status',2)->count();
+// echo $pending;exit;
 
 
 
