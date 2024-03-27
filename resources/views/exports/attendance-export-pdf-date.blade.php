@@ -167,8 +167,15 @@ line-height: 15px;
 
 
                           @foreach ($movements as $movement)
+                          @php
 
-                          @if(($movement->start_date == $DATE || $movement->end_date == $DATE) && ($movement->mov_user_id == $emp->user_id))
+                          $start = date('Y-m-d', strtotime($movement->start_date));
+                          $end = date('Y-m-d', strtotime($movement->end_date));
+
+
+                          @endphp
+                          @if((($DATE >= $start) && ($DATE <= $end)) && ($movement->mov_user_id == $emp->user_id))
+                          {{--  @if((($movement->start_date == $DATE) || ($movement->end_date == $DATE)) && ($movement->mov_user_id == $emp->user_id))  --}}
                           Movement Details <br>
                          (
                           Start {{ $movement->start_date }} - {{ $movement->start_time }} End {{ $movement->end_date }} - {{ $movement->end_time }} <br>
