@@ -44,6 +44,7 @@ $(function () {
 
     $(".datepicker").datepicker({
       autoclose: true ,
+      format:'dd-mm-yyyy',
       {{--  maxDate: new Date(new Date()),  --}}
       });
       $(".timepicker").timepicker({

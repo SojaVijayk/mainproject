@@ -24,7 +24,7 @@
           <div class="row">
           <div class="mb-3 col-12">
             <label for="date" class="form-label">Date</label>
-            <input type="text" class="form-control datepicker" id="date" name="date" placeholder="MM/DD/YYYY" class="form-control" />
+            <input type="text" class="form-control datepicker" id="date" name="date" placeholder="DD/MM/YYYY" class="form-control" />
 
           </div>
         </div>

@@ -46,7 +46,7 @@ $(function () {
       clearBtn: true,
       todayHighlight: true,
       orientation: "auto right",
-      {{--  format:'dd/mm/yyyy',  --}}
+      format:'dd/mm/yyyy',
       {{--  minDate: new Date('2024-01-05')  --}}
       {{--  minDate: new Date($('#date_start').val()),
       maxDate: new Date($('#date_end').val()),  --}}
@@ -101,9 +101,20 @@ $(function () {
 
       $("#toDate").change(function () {
 
-        var startDate = new Date($("#fromDate").val());
-        var endDate = new Date($("#toDate").val());
+        {{--  var startDate = new Date($("#fromDate").val());  --}}
+        {{--  var endDate = new Date($("#toDate").val());  --}}
+        {{--  var startDate = start;
+        var endDate = end;  --}}
+
+        let dateString = $("#fromDate").val();
+      let [day, month, year] = dateString.split('/');
+      const startDate = new Date(+year, +month - 1, +day)
+      let dateString1 = $("#toDate").val();
+      let [day1, month1, year1] = dateString1.split('/');
+      const endDate = new Date(+year1, +month1 - 1, +day1)
         var dateList = [];
+        {{--  alert(startDate);  --}}
+
 
         if (startDate <= endDate) {
 

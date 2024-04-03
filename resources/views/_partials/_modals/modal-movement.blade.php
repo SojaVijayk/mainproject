@@ -27,7 +27,7 @@
           <div class="row">
           <div class="mb-3 col-6">
             <label for="fromDate" class="form-label">From</label>
-            <input type="text" class="form-control datepicker" id="fromDate" name="fromDate" placeholder="MM/DD/YYYY" class="form-control" />
+            <input type="text" class="form-control datepicker" id="fromDate" name="fromDate" placeholder="DD/MM/YYYY" class="form-control" />
 
           </div>
           <div class="mb-3 col-6">
@@ -39,7 +39,7 @@
         <div class="row">
           <div class="mb-3 col-6">
             <label for="toDate" class="form-label">To</label>
-            <input type="text" class="form-control datepicker" id="toDate" name="toDate" placeholder="MM/DD/YYYY" class="form-control" />
+            <input type="text" class="form-control datepicker" id="toDate" name="toDate" placeholder="DD/MM/YYYY" class="form-control" />
 
           </div>
           <div class="mb-3 col-6">

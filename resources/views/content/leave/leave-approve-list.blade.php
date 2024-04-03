@@ -513,7 +513,7 @@ else if(status== 2){
 @endsection
 
 @section('content')
-<h4 class="fw-semibold mb-4">Movement Approval List</h4>
+<h4 class="fw-semibold mb-4">Leave Approval List</h4>
 
 <div class="row g-4 mb-4">
   <div class="col-sm-6 col-xl-3">

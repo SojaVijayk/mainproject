@@ -42,6 +42,7 @@ $(function () {
 
     $(".datepicker").datepicker({
       autoclose: true ,
+      format:"dd-mm-yyyy"
       });
       $(".timepicker").timepicker({
         step: 15 ,
@@ -323,8 +324,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 
     $("#toDate").change(function () {
-      var startDate = new Date($("#fromDate").val());
-      var endDate = new Date($("#toDate").val());
+      var startDate = $("#fromDate").val();
+      var endDate = $("#toDate").val();
       if (startDate <= endDate) {
         //
       }
