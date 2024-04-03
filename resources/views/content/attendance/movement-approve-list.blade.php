@@ -133,9 +133,9 @@ $(function () {
           // Name
           targets: 3,
           render: function (data, type, full, meta) {
-            var $name = full['start_date'];
+            var $name = full['formatted_start_date'];
             var $time = full['start_time'];
-            var $name2 = full['end_date'];
+            var $name2 = full['formatted_end_date'];
             var $time2 = full['end_time'];
             return 'From <span class="text-nowrap">' + $name + '-'+$time+'</span><br> To <span class="text-nowrap">' + $name2 + '-'+$time2+'</span>';
           }

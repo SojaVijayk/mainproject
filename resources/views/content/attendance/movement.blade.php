@@ -106,9 +106,9 @@ $(function () {
           targets: 1,
           render: function (data, type, full, meta) {
             var $name = full['title'];
-            var $startDate = full['start_date'];
+            var $startDate = full['formatted_start_date'];
             var $startTime = full['start_time'];
-            var $endDate = full['end_date'];
+            var $endDate = full['formatted_end_date'];
             var $endTime = full['end_time'];
             var $location = full['location'];
             var $description = full['description'];

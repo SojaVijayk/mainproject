@@ -203,8 +203,18 @@ class LeaveRequestController extends Controller
     ]);
     $id= Auth::user()->id;
     $date= date('Y-m-d H:i:s');
-    $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('from'))));
-    $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('to'))));
+    // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('from'))));
+    // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('to'))));
+
+    $var = $request->input('from');
+    $datef = str_replace('/', '-', $var);
+    $from=  date('Y-m-d', strtotime($datef));
+
+    $var2 = $request->input('to');
+    $datet = str_replace('/', '-', $var2);
+    $to=  date('Y-m-d', strtotime($datet));
+
+
     $date_list = json_encode($request->input('date_list'));
     // $from = date('2023-04-01');
     // $to = date('2024-03-31');

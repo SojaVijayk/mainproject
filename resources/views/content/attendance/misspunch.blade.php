@@ -72,7 +72,7 @@ $(function () {
       columns: [
         // columns according to JSON
         { data: '' },
-        { data: 'date' },
+        { data: 'formatted_date' },
 
         { data: 'type' },
         { data: 'checkinTime' },

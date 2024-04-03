@@ -42,7 +42,7 @@ class MovementController extends Controller
       $list = Movement::join("employees","employees.user_id","=","movements.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
-      ->select('movements.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('movements.user_id',$id)
+      ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('movements.user_id',$id)
       ->orderBy('movements.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
@@ -67,8 +67,16 @@ class MovementController extends Controller
       ]);
       $id= Auth::user()->id;
       $date= date('Y-m-d H:i:s');
-      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('start_date'))));
-      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('end_date'))));
+      // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('start_date'))));
+      // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('end_date'))));
+
+      $var = $request->input('start_date');
+      $datef = str_replace('/', '-', $var);
+      $from=  date('Y-m-d', strtotime($datef));
+
+      $var2 = $request->input('end_date');
+      $datet = str_replace('/', '-', $var2);
+      $to=  date('Y-m-d', strtotime($datet));
 
       $permission = Movement::create(['title' => $request->input('title'),'type' => $request->input('type')
       ,'start_date' => $from,'start_time' => $request->input('start_time'),'end_date' => $to,'end_time' => $request->input('end_time')
@@ -121,8 +129,16 @@ class MovementController extends Controller
       ]);
 
       $date= date('Y-m-d H:i:s');
-      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('start_date'))));
-      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('end_date'))));
+      // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('start_date'))));
+      // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('end_date'))));
+
+      $var = $request->input('start_date');
+      $datef = str_replace('/', '-', $var);
+      $from=  date('Y-m-d', strtotime($datef));
+
+      $var2 = $request->input('end_date');
+      $datet = str_replace('/', '-', $var2);
+      $to=  date('Y-m-d', strtotime($datet));
 
       $designation = Movement::find($id);
 
@@ -191,7 +207,7 @@ class MovementController extends Controller
       $list = Movement::join("employees","employees.user_id","=","movements.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
-      ->select('movements.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',)->where('employees.reporting_officer',$id)
+      ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',)->where('employees.reporting_officer',$id)
       ->orderBy('movements.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);

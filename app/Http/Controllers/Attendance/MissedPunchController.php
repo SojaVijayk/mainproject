@@ -40,7 +40,7 @@ class MissedPunchController extends Controller
       $list = MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","missed_punches.action_by")
-      ->select('missed_punches.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('missed_punches.user_id',$id)
+      ->select('missed_punches.*',DB::raw("DATE_FORMAT(missed_punches.date, '%d-%b-%Y') as formatted_date"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('missed_punches.user_id',$id)
       ->orderBy('missed_punches.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
@@ -63,7 +63,12 @@ class MissedPunchController extends Controller
       ]);
       $id= Auth::user()->id;
       $date= date('Y-m-d H:i:s');
-      $attendance_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('date'))));
+      // $attendance_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('date'))));
+      $var = $request->input('date');
+      $datef = str_replace('/', '-', $var);
+      $attendance_date=  date('Y-m-d', strtotime($datef));
+
+
       if($request->input('checkinTime') == '' || $request->input('checkinTime') ==NULL){
         $checkin= NULL;
       }
@@ -124,7 +129,11 @@ class MissedPunchController extends Controller
       ]);
 
       $date= date('Y-m-d H:i:s');
-      $attendance_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('date'))));
+      // $attendance_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('date'))));
+      $var = $request->input('date');
+      $datef = str_replace('/', '-', $var);
+      $attendance_date=  date('Y-m-d', strtotime($datef));
+
       if($request->input('checkinTime') == '' || $request->input('checkinTime') ==NULL){
         $checkin= NULL;
       }
@@ -199,7 +208,7 @@ class MissedPunchController extends Controller
       $list = MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","missed_punches.action_by")
-      ->select('missed_punches.*','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',)->where('employees.reporting_officer',$id)
+      ->select('missed_punches.*',DB::raw("DATE_FORMAT(missed_punches.date, '%d-%b-%Y') as formatted_date"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',)->where('employees.reporting_officer',$id)
       ->orderBy('missed_punches.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
