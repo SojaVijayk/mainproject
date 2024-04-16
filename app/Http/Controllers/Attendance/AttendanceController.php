@@ -30,8 +30,11 @@ class AttendanceController extends Controller
       $from = date('Y-m-01');
 
       // Get today's date
-      $to = date('Y-m-d');
+      // $to = date('Y-m-d');
       $id= Auth::user()->id;
+
+      $data = AttendanceLog::select('date')->orderBy('date', 'desc')->first();
+      $to= $data->date;
 
       $DurationMinutes = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('Duration');
       $LateBy = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('LateBy');
