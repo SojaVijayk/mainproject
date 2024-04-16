@@ -27,7 +27,24 @@ class AttendanceController extends Controller
     public function index()
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
-      return view('content.attendance.attendance',['pageConfigs'=> $pageConfigs]);
+      $from = date('Y-m-01');
+
+      // Get today's date
+      $to = date('Y-m-d');
+      $id= Auth::user()->id;
+
+      $DurationMinutes = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('Duration');
+      $LateBy = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('LateBy');
+      $EarlyBy = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('EarlyBy');
+      $grace=240;
+      $remaining = $grace-($LateBy+$EarlyBy);
+      $durationHours = floor($DurationMinutes / 60) . " hours " . ($DurationMinutes % 60) . " minutes";
+      $LateByHours = floor($LateBy / 60) . " hours " . ($LateBy % 60) . " minutes";
+      $EarlyByHours = floor($EarlyBy / 60) . " hours " . ($EarlyBy % 60) . " minutes";
+
+
+
+      return view('content.attendance.attendance',['pageConfigs'=> $pageConfigs],compact('durationHours','from','to','grace','remaining','LateBy','EarlyBy','DurationMinutes','LateByHours','EarlyByHours'));
     }
     public function download(){
       return response()->download(public_path('storage/AttendanceRepot01-09-2023To30-09-2023.pdf'));

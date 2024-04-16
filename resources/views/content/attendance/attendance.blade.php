@@ -1016,6 +1016,69 @@ document.addEventListener('DOMContentLoaded', function () {
 @endsection
 
 @section('content')
+<div class="row ">
+  <div class="alert alert-warning alert-dismissible d-flex align-items-baseline" role="alert">
+    <span class="alert-icon alert-icon-lg text-primary me-2">
+      <i class="ti ti-calendar ti-sm"></i>
+    </span>
+    <div class="d-flex flex-column ps-1">
+      <p class="mb-0 text-dark"> Attendance Statistics for the period of {{$from}} TO {{$to}}</p>
+      <h5 class="alert-heading mb-2"></h5>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+      </button>
+    </div>
+  </div>
+<!-- Orders -->
+<div class="col-lg-3 col-6 mb-4">
+  <div class="card bg-gradient-primary">
+    <div class="card-body text-center">
+      <div class="badge rounded-pill p-2 bg-label-success mb-2"><i class="ti ti-chart-pie-2 ti-sm"></i></div>
+      <h5 class="card-title mb-2"><small>Minutes<br></small>{{$DurationMinutes}}</h5>
+      <h5 class="card-title mb-2"><small>Hours<br></small>{{$durationHours}}</h5>
+      <small class="badge rounded-pill p-2 bg-label-danger mb-2">Total Duration</small>
+    </div>
+  </div>
+</div>
+
+<!-- Reviews -->
+<div class="col-lg-3 col-6 mb-4">
+  <div class="card">
+    <div class="card-body text-center">
+      <div class="badge rounded-pill p-2 bg-label-danger mb-2"><i class="ti ti ti-clock ti-sm"></i></div>
+
+      <h5 class="card-title mb-2"><small>Minutes<br></small>{{$LateBy}}</h5>
+      <h5 class="card-title mb-2"><small>Hours<br></small>{{$LateByHours}}</h5>
+      <small class="badge rounded-pill p-2 bg-label-danger mb-2">Late By</small>
+    </div>
+  </div>
+</div>
+<div class="col-lg-3 col-6 mb-4">
+  <div class="card">
+    <div class="card-body text-center">
+      <div class="badge rounded-pill p-2 bg-label-warning mb-2"><i class="ti ti ti-clock ti-sm"></i></div>
+
+      <h5 class="card-title mb-2"><small>Minutes<br></small>{{$EarlyBy}}</h5>
+      <h5 class="card-title mb-2"><small>Hours<br></small>{{$EarlyByHours}}</h5>
+      <small class="badge rounded-pill p-2 bg-label-danger mb-2">Early Exit By</small>
+    </div>
+  </div>
+</div>
+<div class="col-lg-3 col-6 mb-4">
+  <div class="card">
+    <div class="card-body text-center">
+      <div class="badge rounded-pill p-2 bg-label-primary mb-2"><i class="ti ti-alert-triangle ti-sm"></i></div>
+
+      <h5 class="card-title mb-2"><small>Total Minutes<br></small>{{$grace}}</h5>
+      <h5 class="card-title mb-2"><small>Remaining Minutes<br></small>{{$remaining}}</h5>
+      <small class="badge rounded-pill p-2 bg-label-danger mb-2">Grace Period</small>
+    </div>
+  </div>
+</div>
+
+
+
+
+</div>
 <div class="card app-calendar-wrapper">
   <div class="row mb-2 g-0">
     <div class="card">

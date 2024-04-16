@@ -330,7 +330,7 @@ $('.datatables-leave-list tbody').on('click', '.confirm-action', function () {
       url: '/leave/request/action/'+desig_id,
       data:  {
         status:status,
-        remark:'Nill',
+        remark:'Nil',
         "_token": "{{ csrf_token() }}",
     },
 

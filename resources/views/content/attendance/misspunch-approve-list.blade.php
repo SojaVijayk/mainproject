@@ -343,7 +343,7 @@ $(function () {
           url: '/misspunch/action/'+desig_id,
           data:  {
             status:status,
-            remark:'Nill',
+            remark:'Nil',
             "_token": "{{ csrf_token() }}",
         },
 
