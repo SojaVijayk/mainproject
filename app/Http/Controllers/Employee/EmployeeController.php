@@ -36,6 +36,8 @@ class EmployeeController extends Controller
     $users = User::all();
     $userCount = $users->count();
     $verified = User::whereNotNull('email_verified_at')->get()->count();
+    $active = User::where('active',1)->get()->count();
+    $nonactive = User::where('active',0)->get()->count();
     $notVerified = User::whereNull('email_verified_at')->get()->count();
     $usersUnique = $users->unique(['email']);
     $userDuplicates = $users->diff($usersUnique)->count();
@@ -49,7 +51,8 @@ class EmployeeController extends Controller
     if(Auth::user()->user_role ==1){
       return view('content.employee.employee-management', [
         'totalUser' => $userCount,
-        'verified' => $verified,
+        'active' => $active,
+        'nonactive' => $nonactive,
         'notVerified' => $notVerified,
         'userDuplicates' => $userDuplicates,
         'designations' => $designations,
@@ -64,7 +67,8 @@ class EmployeeController extends Controller
       $pageConfigs = ['myLayout' => 'horizontal'];
       return view('content.employee.employee-management', [
         'totalUser' => $userCount,
-        'verified' => $verified,
+        'active' => $active,
+        'nonactive' => $nonactive,
         'notVerified' => $notVerified,
         'userDuplicates' => $userDuplicates,
         'designations' => $designations,
@@ -90,10 +94,11 @@ class EmployeeController extends Controller
     $userDuplicates = $users->diff($usersUnique)->count();
     DB::connection()->enableQueryLog();
     $list = User::with("roles")
-    ->select('users.*','employees.status','employees.id as employee_id','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','usertype_role.usertype_role')
+    ->select('users.*','employees.status','employees.id as employee_id','employees.contract_end_date','employees.employment_type','employment_types.employment_type as employment_type_name','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','usertype_role.usertype_role')
     ->join("employees","employees.user_id","=","users.id")
     ->join("usertype_role","usertype_role.id","=","users.user_role")
-    ->leftjoin("designations","designations.id","=","employees.designation")->get();
+    ->join("employment_types","employment_types.id","=","employees.employment_type")
+    ->leftjoin("designations","designations.id","=","employees.designation")->orderBy('employees.employment_type','DESC')->orderBy('employees.contract_end_date')->get();
       //  $queries = DB::getQueryLog();
       //   $last_query = end($queries);
       //   dd($queries);

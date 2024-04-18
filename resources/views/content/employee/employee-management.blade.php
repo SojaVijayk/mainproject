@@ -71,7 +71,7 @@
                         title: 'Active',
                         class: 'bg-label-success'
                     },
-                    2: {
+                    0: {
                         title: 'Inactive',
                         class: 'bg-label-secondary'
                     }
@@ -116,9 +116,13 @@
                         {
                             data: 'name'
                         },
-                        {
+                        {{--  {
                             data: 'usertype_role'
-                        },
+                        },  --}}
+
+                        {
+                          data:'employment_type'},
+
                         {
                             data: 'designation'
                         },
@@ -196,7 +200,7 @@
                                 return $row_output;
                             }
                         },
-                        {
+                        {{--  {
                             // User Role
                             targets: 2,
                             render: function(data, type, full, meta) {
@@ -211,7 +215,52 @@
                                 return "<span class='text-truncate d-flex align-items-center'>" +
                                     roleBadgeObj[$role] + $role + '</span>';
                             }
-                        },
+                        },  --}}
+                        {
+                          // Designation
+                          targets: 2,
+                          render: function(data, type, full, meta) {
+                              var $emp_type = full['employment_type_name'];
+                              var $expire =  full['contract_end_date'];
+                              var $badge;
+                              var $contract;
+                               var $today = new Date().toISOString().slice(0,10);
+
+
+
+                              if(full['employment_type'] > 1){
+
+                                if(full['contract_end_date'] !=null){
+                                  // Compare dates
+                                  if ($expire < $today) {
+                                    console.log($expire + " is greater than today's date.");
+                                    $badge = '<span class="badge  bg-label-danger">Expired</span>';
+                                    $contract = '<span class="badge  bg-label-warning">Expired on '+$expire+'</span>';
+                                } else {
+                                    console.log($expire + " is not greater than today's date.");
+                                    $badge = '<span class="badge  bg-label-success">Active</span>';
+                                    $contract = '<span class="badge  bg-label-warning">Expire on '+$expire+'</span>';
+                                }
+
+                              return '<span class="fw-semibold">' + $emp_type + '</span><br>'+$badge+'<br>'+$contract;
+
+                                }else{
+                                  $badge = '<span class="badge  bg-label-secondary">Contract period not updated</span>';
+                                  return '<span class="fw-semibold">' + $emp_type + '</span><br>'+$badge;
+
+                                }
+
+                              }else{
+
+
+                                return '<span class="fw-semibold">' + $emp_type + '</span>';
+                              }
+
+
+
+
+                          }
+                      },
                         {
                             // Designation
                             targets: 3,
@@ -286,9 +335,9 @@
                             }
                         }
                     ],
-                    order: [
+                    {{--  order: [
                         [1, 'desc']
-                    ],
+                    ],  --}}
                     dom: '<"row me-2"' +
                         '<"col-md-2"<"me-3"l>>' +
                         '<"col-md-10"<"dt-action-buttons text-xl-end text-lg-start text-md-end text-start d-flex align-items-center justify-content-end flex-md-row flex-column mb-3 mb-md-0"fB>>' +
@@ -1066,8 +1115,8 @@
                         <div class="content-left">
                             <span>Users</span>
                             <div class="d-flex align-items-center my-1">
-                                <h4 class="mb-0 me-2">6</h4>
-                                <span class="text-success">(+29%)</span>
+                                <h4 class="mb-0 me-2">{{$totalUser}}</h4>
+                                {{--  <span class="text-success">(+29%)</span>  --}}
                             </div>
                             <span>Total Users</span>
                         </div>
@@ -1085,8 +1134,8 @@
                         <div class="content-left">
                             <span>Inactive Users</span>
                             <div class="d-flex align-items-center my-1">
-                                <h4 class="mb-0 me-2">0</h4>
-                                <span class="text-success">(+18%)</span>
+                                <h4 class="mb-0 me-2">{{$nonactive}}</h4>
+                                {{--  <span class="text-success">(+18%)</span>  --}}
                             </div>
                             <span>Last week analytics </span>
                         </div>
@@ -1104,8 +1153,8 @@
                         <div class="content-left">
                             <span>Active Users</span>
                             <div class="d-flex align-items-center my-1">
-                                <h4 class="mb-0 me-2">6</h4>
-                                <span class="text-danger">(-14%)</span>
+                                <h4 class="mb-0 me-2">{{$active}}</h4>
+                                 {{--  <span class="text-danger">(-14%)</span>  --}}
                             </div>
                             <span>Last week analytics</span>
                         </div>
@@ -1123,8 +1172,8 @@
                         <div class="content-left">
                             <span>Employees</span>
                             <div class="d-flex align-items-center my-1">
-                                <h4 class="mb-0 me-2">6</h4>
-                                <span class="text-success">(+42%)</span>
+                                <h4 class="mb-0 me-2">{{$totalUser}}</h4>
+                                {{--  <span class="text-success">(+42%)</span>  --}}
                             </div>
                             <span>Last week analytics</span>
                         </div>
