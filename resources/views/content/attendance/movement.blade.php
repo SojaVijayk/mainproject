@@ -46,10 +46,10 @@ $(function () {
       });
       $(".timepicker").timepicker({
         step: 15 ,
-        disableTimeRanges: [
+        {{--  disableTimeRanges: [
           ["12am", "9:30am"],
           ["5:30pm", "12am"]
-        ]
+        ]  --}}
 
       });
   // ajax setup

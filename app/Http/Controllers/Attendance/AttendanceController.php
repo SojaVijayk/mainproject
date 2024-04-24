@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Attendance;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\AttendanceLog;
-use App\Models\Leave;
+use App\Models\LeaveRequestDetails;
+use App\Models\MissedPunch;
+use App\Models\Movement;
+use App\Models\Holiday;
 use App\Models\User;
 use App\Models\EmploymentType;
 use App\Models\Employee;
@@ -37,17 +40,64 @@ class AttendanceController extends Controller
       $to= $data->date;
 
       $DurationMinutes = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('Duration');
-      $LateBy = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('LateBy');
-      $EarlyBy = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('EarlyBy');
+      // $LateBy = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('LateBy');
+      // $EarlyBy = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->sum('EarlyBy');
       $grace=240;
-      $remaining = $grace-($LateBy+$EarlyBy);
+
       $durationHours = floor($DurationMinutes / 60) . " hours " . ($DurationMinutes % 60) . " minutes";
-      $LateByHours = floor($LateBy / 60) . " hours " . ($LateBy % 60) . " minutes";
-      $EarlyByHours = floor($EarlyBy / 60) . " hours " . ($EarlyBy % 60) . " minutes";
+      // $LateByHours = floor($LateBy / 60) . " hours " . ($LateBy % 60) . " minutes";
+      // $EarlyByHours = floor($EarlyBy / 60) . " hours " . ($EarlyBy % 60) . " minutes";
+
+      function generateDatesWithWeekday($start_date, $end_date) {
+        $dates = array();
+        $current_date = strtotime($start_date);
+        $end_date = strtotime($end_date);
+
+        while ($current_date <= $end_date) {
+            $dates[] = array(
+                'date' => date('Y-m-d', $current_date),
+                'weekday' => date('l', $current_date)
+            );
+            $current_date = strtotime('+1 day', $current_date);
+        }
+
+        return $dates;
+    }
+
+    // Example usage:
+    $start_date = $from;
+    $end_date = $to;
+    $date_range_array = generateDatesWithWeekday($start_date, $end_date);
+    // print_r($date_range);
+    $attendance_data = AttendanceLog::whereBetween('AttendanceLogs.date', [$from, $to])->where('AttendanceLogs.user_id',$id)->orderBy('date')->get();
+
+    $holidays= Holiday::whereBetween('holidays.date', [$from, $to])->get();
+    $leaves = LeaveRequestDetails::select('leave_request_details.leave_day_type','leave_request_details.user_id as leave_user_id','leave_request_details.date as leave_date',
+    'leave_request_details.status as leave_status','emp.name as leave_action_by_name','leaves.leave_type',)
+   ->leftjoin("employees as emp","emp.user_id","=","leave_request_details.action_by")
+   ->leftjoin("leaves","leaves.id","=","leave_request_details.leave_type_id")
+  ->where('leave_request_details.user_id',$id)
+  ->whereBetween('leave_request_details.date', [$from, $to])
+  ->orderBy('leave_request_details.user_id','DESC')->get();
+
+  $movements = Movement::select('movements.user_id as mov_user_id','movements.title','movements.type','movements.start_date','movements.start_time','movements.end_date','movements.end_time','movements.status as movement_status',
+  'emp_mov.name as movement_action_by_name','movements.remark','movements.location','movements.description')
+->leftjoin("employees as emp_mov","emp_mov.user_id","=","movements.action_by")
+->where('movements.user_id',$id)
+  ->whereBetween('movements.start_date', [$from, $to])
+  ->whereBetween('movements.end_date', [$from, $to])
+  ->orderBy('movements.user_id','DESC')->get();
+
+  $missedpunches = MissedPunch::select('missed_punches.user_id as miss_user_id','missed_punches.type as miss_type','missed_punches.date as miss_date','missed_punches.checkinTime','missed_punches.checkoutTime','missed_punches.status as miss_status',
+  'emp_miss.name as misspunch_action_by_name','missed_punches.description')
+->leftjoin("employees as emp_miss","emp_miss.user_id","=","missed_punches.action_by")
+->where('missed_punches.user_id',$id)
+  ->whereBetween('missed_punches.date', [$from, $to])
+  ->orderBy('missed_punches.user_id','DESC')->get();
 
 
-
-      return view('content.attendance.attendance',['pageConfigs'=> $pageConfigs],compact('durationHours','from','to','grace','remaining','LateBy','EarlyBy','DurationMinutes','LateByHours','EarlyByHours'));
+      return view('content.attendance.attendance',['pageConfigs'=> $pageConfigs],compact('durationHours','from','to','grace','DurationMinutes','attendance_data','date_range_array',
+    'holidays','leaves','movements','missedpunches'));
     }
     public function download(){
       return response()->download(public_path('storage/AttendanceRepot01-09-2023To30-09-2023.pdf'));
