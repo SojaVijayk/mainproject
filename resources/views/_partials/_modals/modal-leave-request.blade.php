@@ -52,7 +52,7 @@
             <input type="text"  id="bs-datepicker-multidate" placeholder="MM/DD/YYYY, MM/DD/YYYY" class="form-control" />
           </div>  --}}
 
-          <div class="mb-3 col-6">
+          <div class="mb-3 col-6 date-group">
             <label for="fromDate" class="form-label">From</label>
             <input type="text" class="form-control datepicker" id="fromDate" name="fromDate" placeholder="DD/MM/YYYY" class="form-control" />
 
@@ -61,7 +61,7 @@
 
 
 
-          <div class="mb-3 col-6">
+          <div class="mb-3 col-6 date-group">
             <label for="toDate" class="form-label">To</label>
             <input type="text" class="form-control datepicker" id="toDate" name="toDate" placeholder="DD/MM/YYYY" class="form-control" />
 
@@ -75,7 +75,7 @@
 
 
 
-          <div class="mb-3">
+          <div class="mb-3 remark-input">
             <label class="form-label" for="eventDescription">Remark</label>
             <textarea class="form-control" name="eventDescription" id="eventDescription"></textarea>
           </div>

@@ -52,6 +52,9 @@ $(function () {
       maxDate: new Date($('#date_end').val()),  --}}
       });
       $('.availability').hide();
+      $('.date-group').hide();
+      $('.remark-input').hide();
+      $('.submit-designation').prop("disabled", true);
       $('.message').hide();
       var start = new Date($('#date_start').val());
       var end = new Date($('#date_end').val());
@@ -71,17 +74,37 @@ $(function () {
 
         $('#fromDate').change(function(){
           console.log(start);
+          $('.remark-input').show();
           $("#dateList").empty();
 
-          $("#toDate").val('');
-            var sDate = $(this).datepicker("getDate");
-            var minDate = $(this).datepicker("getDate");
-            sDate.setDate(sDate.getDate()+7);
+          {{--  $("#toDate").val($(this).val());  --}}
+          {{--  $("#toDate").trigger("keyup");  --}}
 
-            $('#toDate').datepicker({
+          var leavetype_val =  $('#leaveType').val();
+          if(leavetype_val == 3){
+            var minDate = $(this).datepicker("getDate");// Example: Today's date
+          minDate.setDate(minDate.getDate() + 4 ); // Example: Set minimum date 7 days from now
+          $('#toDate').datepicker('setStartDate', minDate);
+          }
+          else{
+            $("#toDate").val($(this).val()).change();
+            {{--  var minDate = new Date(); // Example: Today's date  --}}
+            var minDate = $(this).datepicker("getDate"); // Example: Today's date
+            minDate.setDate(minDate.getDate());
+            $('#toDate').datepicker('setStartDate', minDate);
+          }
+
+
+
+          {{--  $("#toDate").focus();  --}}
+            {{--  var sDate = $(this).datepicker("getDate");
+            var minDate = $(this).datepicker("getDate");
+            sDate.setDate(sDate.getDate()+7);  --}}
+
+            {{--  $('#toDate').datepicker({
                 maxDate : sDate,
-                minDate : minDate,
-            });
+                minDate : $(this).val(),
+            });  --}}
         })
 
 
@@ -105,7 +128,7 @@ $(function () {
         {{--  var endDate = new Date($("#toDate").val());  --}}
         {{--  var startDate = start;
         var endDate = end;  --}}
-
+        $('.submit-designation').prop("disabled", false);
         let dateString = $("#fromDate").val();
       let [day, month, year] = dateString.split('/');
       const startDate = new Date(+year, +month - 1, +day)
@@ -160,6 +183,8 @@ $(function () {
       var id= $(this).val();
       if(id > 0){
         $('.availability').show();
+        $('.date-group').show();
+
 
 
         $('.total-leave').html($('#typeTotal'+id).val());
