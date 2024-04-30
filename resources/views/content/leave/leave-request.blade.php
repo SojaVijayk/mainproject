@@ -36,6 +36,7 @@ $(function () {
   var dataTablePermissions = $('.datatables-designation'),
     dt_permission,
     dateArray = [],
+    dateList = [];
     date_leave_type=[],
     permissionList = baseUrl + 'leave/request/list';
 
@@ -123,6 +124,11 @@ $(function () {
 
 
       $("#toDate").change(function () {
+        if (Array.isArray(dateList) && dateList.length) {
+          console.log("Array exists and is not empty");
+          dateList = [];
+          dateArray = [];
+      }
 
         {{--  var startDate = new Date($("#fromDate").val());  --}}
         {{--  var endDate = new Date($("#toDate").val());  --}}
@@ -135,7 +141,7 @@ $(function () {
       let dateString1 = $("#toDate").val();
       let [day1, month1, year1] = dateString1.split('/');
       const endDate = new Date(+year1, +month1 - 1, +day1)
-        var dateList = [];
+
         {{--  alert(startDate);  --}}
 
 
@@ -191,7 +197,7 @@ $(function () {
         $('.balance-leave').html($('#typeBalance'+id).val());
         $('.requested-leave').html($('#typeRequested'+id).val());
         $('.availed-leave').html($('#typeAvailed'+id).val());
-        if($('#typeBalance'+id).val() == 0){
+        if($('#typeBalance'+id).val() == 0 && id<=3){
           $('.message').show();
 
 
@@ -744,13 +750,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
           <div class="content-left">
             <span>{{$leave['leave_type']}}</span>
             <div class="d-flex align-items-center my-1">
-              <small>Available - </small><h4 class="mb-0 me-2">{{$leave['balance_credit']}}</h4>
+              <small>Available - </small><h4 class="mb-0 me-2">  @if($leave['leave_type_id'] <= 3 ) {{$leave['balance_credit']}} @endif</h4>
               <input type="hidden"  id="typeBalance{{$leave['leave_type_id']}}" value={{$leave['balance_credit']}} />
               <input type="hidden"  id="typeTotal{{$leave['leave_type_id']}}" value={{$leave['total_leaves_credit']}} />
               <input type="hidden"  id="typeRequested{{$leave['leave_type_id']}}" value={{$leave['pending_leave']}} />
               <input type="hidden"  id="typeAvailed{{$leave['leave_type_id']}}" value={{$leave['pending_leave']}} />
             </div>
-            <span>Total - {{$leave['total_leaves_credit']}}</span>
+            <span>Total -  @if($leave['leave_type_id'] <= 3 ) {{$leave['total_leaves_credit']}} @endif</span>
           </div>
           <span class="badge bg-label-primary rounded p-2">
             <i class="ti ti-user ti-sm"></i>

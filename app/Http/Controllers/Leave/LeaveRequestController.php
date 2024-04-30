@@ -299,7 +299,7 @@ class LeaveRequestController extends Controller
 
 // echo $date_start.' '.$date_end;exit;
 
-    if($request->input('duration') <=  $balance){
+    if($request->input('duration') <=  $balance || $request->input('leave_type_id') >3){
 
       $permission = LeaveRequest::create(['leave_type_id' => $request->input('leave_type_id'),
       'duration' => $request->input('duration'),
