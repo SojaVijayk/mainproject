@@ -1207,6 +1207,10 @@
                                     <td>
                                       @foreach ($holidays as $holiday)
                                           @if ($holiday->date == $item['date'])
+                                              @php
+                                                  $late_flag++;
+                                                  array_push($array_excemption_dates, $item['date']);
+                                              @endphp
                                               <span
                                                   class="badge bg-danger p-2 mb-1">{{ $holiday->description }}</span>
                                               <br>
