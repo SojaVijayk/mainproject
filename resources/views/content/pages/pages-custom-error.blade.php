@@ -17,7 +17,7 @@ $configData = Helper::appClasses();
 <!-- Error -->
 <div class="container-xxl container-p-y">
   <div class="misc-wrapper">
-    <h4 class="mb-1 mt-4">We apologize for the inconvenience, but it seems there was an error processing your request. Here's what went wrong:</h4>
+    <h4 class="mb-1 mt-4">We apologize for the inconvenience,<br> but it seems there was an error processing your request. Here's what went wrong:</h4>
     <p class="mb-4 mx-2">Oops! 😖 {{$message}}.</p>
     <a href="{{url('/')}}" class="btn btn-primary mb-4">Back to home</a>
     <div class="mt-4">
