@@ -30,7 +30,7 @@
                   <div class="content-left">
                     <span class="leave-type-name">Casual Leave</span>
                     <div class="d-flex align-items-center my-1">
-                      <h4 class="mb-0 me-2 leave-total-credit">21,459</h4>
+                      <h4 class="mb-0 me-2 leave-total-credit">Not found</h4>
 
                     </div>
                     <span>Total Credit</span>
@@ -49,7 +49,7 @@
                   <div class="content-left">
                     <span class="leave-type-name">Casual Leave</span>
                     <div class="d-flex align-items-center my-1">
-                      <h4 class="mb-0 me-2 leave-total-availed">21,459</h4>
+                      <h4 class="mb-0 me-2 leave-total-availed">Not found</h4>
 
                     </div>
                     <span>Total Availed</span>
@@ -68,7 +68,7 @@
                   <div class="content-left">
                     <span class="leave-type-name">Casual Leave</span>
                     <div class="d-flex align-items-center my-1">
-                      <h4 class="mb-0 me-2 leave-total-requested">21,459</h4>
+                      <h4 class="mb-0 me-2 leave-total-requested">Not found</h4>
 
                     </div>
                     <span>Total Requested</span>
@@ -87,7 +87,7 @@
                   <div class="content-left">
                     <span class="leave-type-name">Casual Leave</span>
                     <div class="d-flex align-items-center my-1">
-                      <h4 class="mb-0 me-2 leave-total-balance">21,459</h4>
+                      <h4 class="mb-0 me-2 leave-total-balance">Not found</h4>
 
                     </div>
                     <span>Total Balance</span>
