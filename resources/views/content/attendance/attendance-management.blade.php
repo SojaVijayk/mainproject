@@ -204,6 +204,37 @@ document.addEventListener('DOMContentLoaded', function (e) {
               }
           });
   });
+  $("body").on("click","#leave_report", function (e) {
+    e.preventDefault();
+    var  employeeList =  $("#user_list").val();
+    $.ajaxSetup({
+      headers: {
+          'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+      }
+  })
+  $.ajax({
+    type: "GET",
+
+    url: '/attendance/monitor/'+employeeList,
+    success: function (data) {
+
+      $('#ajaxResponse').html(data)
+    },
+    error: function(data){
+
+      Swal.fire({
+        icon: 'warning',
+        title: `Something Went wrong!`,
+        {{--  text: `Designation ${status} Successfully.`,  --}}
+        customClass: {
+          confirmButton: 'btn btn-warning'
+        }
+      });
+
+    }
+});
+
+  });
 
   $("body").on("click","#report", function (e) {
     e.preventDefault();
@@ -622,6 +653,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
           <li class="nav-item">
             <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-account" role="tab" aria-selected="false">Attendance Update</button>
           </li>
+          <li class="nav-item">
+            <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-leave" role="tab" aria-selected="false">Leave Details</button>
+          </li>
           @endcan
 
         </ul>
@@ -738,6 +772,41 @@ document.addEventListener('DOMContentLoaded', function (e) {
         </div>
 
       </div>
+
+
+      <div class="tab-pane fade  show" id="form-tabs-leave" role="tabpanel">
+
+          <div class="row g-3">
+
+            <div class="col-md-4 select2-primary">
+              <label class="form-label" for="employeeList">Employee</label>
+
+
+              <select id="user_list" class="selectpicker w-100" data-live-search="true" data-style="btn-default"  data-actions-box="true">
+                @foreach ($employees as $item)
+                <option value={{$item->user_id}}>{{$item->name}}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <div class="pt-4">
+                <button type="submit" id="leave_report"   class="btn btn-success me-sm-3 me-1">View</button>
+                <button type="reset" class="btn btn-label-secondary">Cancel</button>
+              </div>
+            </div>
+
+          </div>
+          {{--  <div class="pt-4">
+            <button type="submit" id="leave_report"   class="btn btn-primary me-sm-3 me-1">Generate</button>
+            <button type="reset" class="btn btn-label-secondary">Cancel</button>
+          </div>  --}}
+          <br>
+          <div id="ajaxResponse" class="m-2">
+            <p class="text-center text-dark">Please select an employee and click the "View" button to access detailed statistics, including current punching details, remaining grace period, and leave balance</p>
+          </div>
+      </div>
+
 
     </div>
   </div>

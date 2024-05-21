@@ -134,6 +134,9 @@ Route::get('/attendance', $controller_path . '\Attendance\AttendanceController@i
 // Route::post('/attendance/import', $controller_path . '\Attendance\AttendanceController@import')->name('attendance-import');
 Route::post('/attendance/import', $controller_path . '\Attendance\AttendanceLogController@import')->name('attendance-import');
 Route::get('/attendance-management', $controller_path . '\Attendance\AttendanceController@attendanceManagement')->name('attendance-hrView');
+
+Route::get('/attendance/monitor/{id}', $controller_path . '\Attendance\AttendanceController@attendanceMonitor')->name('attendance-Monitor');
+
 Route::get('/download', $controller_path . '\Attendance\AttendanceController@download')->name('attendance-download');
 Route::POST('/downloadBulk', $controller_path . '\Attendance\AttendanceLogController@downloadBulk1')->name('attendance-download-bulk');
 Route::get('/movement', $controller_path . '\Attendance\MovementController@index')->name('attendance-movement');

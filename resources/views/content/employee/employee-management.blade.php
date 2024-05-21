@@ -64,7 +64,8 @@
                 usersList = baseUrl + 'user/employee/list';
 
             select2 = $('.select2'),
-                userView = baseUrl + 'user/employee/view/account',
+                {{--  userView = baseUrl + 'user/employee/view/account',  --}}
+                 userView = '#',
 
                 statusObj = {
                     1: {
@@ -188,7 +189,7 @@
                                     '</div>' +
                                     '<div class="d-flex flex-column">' +
                                     '<a href="' +
-                                    userView + '/' + full['user_id'] +
+                                    userView + '/' + full['id'] +
                                     '" class="text-body text-truncate"><span class="fw-semibold">' +
                                     $name +
                                     '</span></a>' +
