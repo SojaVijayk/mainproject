@@ -645,16 +645,16 @@ document.addEventListener('DOMContentLoaded', function (e) {
     @endcan
     <div class="card mb-3">
       <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+        <ul class="nav nav-pills nav-fill  card-header-tabs" role="tablist">
           <li class="nav-item  ">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-personal" role="tab" aria-selected="true">Generate Attendance / Leave / Movement Report</button>
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-personal" role="tab" aria-selected="true"><i class="tf-icons ti ti-home ti-xs me-1"></i>Generate Attendance / Leave / Movement Report</button>
           </li>
           @can('attendance-management')
           <li class="nav-item">
-            <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-account" role="tab" aria-selected="false">Attendance Update</button>
+            <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-account" role="tab" aria-selected="false"><i class="tf-icons ti ti-calendar ti-xs me-1"></i>Attendance Import / Update</button>
           </li>
           <li class="nav-item">
-            <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-leave" role="tab" aria-selected="false">Employee Leave Monitor</button>
+            <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-leave" role="tab" aria-selected="false"><i class="tf-icons ti ti-user ti-xs me-1"></i>Employee Leave Monitor</button>
           </li>
           @endcan
 
@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             </div>
             <div class="pt-4">
-              <button type="submit" id="report"   class="btn btn-primary me-sm-3 me-1">Generate</button>
+              <button type="submit" id="report"   class="btn btn-success me-sm-3 me-1">Generate</button>
               <button type="reset" class="btn btn-label-secondary">Cancel</button>
             </div>
           {{--  </form>  --}}
@@ -764,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 </div>
               </div>
             <div class="pt-4">
-              <button type="submit" id="import" class="btn btn-primary me-sm-3 me-1">Import</button>
+              <button type="submit" id="import" class="btn btn-success me-sm-3 me-1">Import</button>
               <button type="reset" class="btn btn-label-secondary">Cancel</button>
 
             </div>
@@ -803,7 +803,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           </div>  --}}
           <br>
           <div id="ajaxResponse" class="m-2">
-            <p class="text-center text-dark">Please select an employee and click the "View" button to access detailed statistics, including current punching details, remaining grace period, and leave balance</p>
+            <p class="font-weight-bold text-dark">Please select an employee and click the "View" button to access detailed statistics, including current punching details, remaining grace period, and leave balance</p>
           </div>
       </div>
 
