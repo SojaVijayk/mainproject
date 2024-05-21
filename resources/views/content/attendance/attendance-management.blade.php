@@ -654,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
             <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-account" role="tab" aria-selected="false">Attendance Update</button>
           </li>
           <li class="nav-item">
-            <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-leave" role="tab" aria-selected="false">Leave Details</button>
+            <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-leave" role="tab" aria-selected="false">Employee Leave Monitor</button>
           </li>
           @endcan
 
