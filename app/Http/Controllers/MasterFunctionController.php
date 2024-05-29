@@ -257,8 +257,19 @@ class MasterFunctionController extends Controller
 
       $eligible_start_month_leave=0;
 
+      if($end_year ==  $start_year){
 
-      if($today_year ==   $start_year){
+        $period_start_date= $start_date;
+        $period_end_date= $end_date;
+
+        if($start_day <= 15 ){
+          $eligible_start_month_leave=1;
+        }
+
+      }
+
+
+      else if($today_year ==   $start_year && $end_year !=   $start_year){
         $period_start_date= $start_date;
         $period_end_date= $today_year.'-12-31';
 
@@ -306,13 +317,20 @@ class MasterFunctionController extends Controller
       $result1 = $this->calculateJobPeriod($employee->doj);
 
 
-      return [
-        'cl_start_date' => $period_start_date,
-        'cl_end_date' => $period_end_date,
-        'start_date' => $result1['start_date'],
-        'end_date' => $result1['end_date'],
-        'total_leave'=>   $total_leave
-    ];
+    //   return [
+    //     'cl_start_date' => $period_start_date,
+    //     'cl_end_date' => $period_end_date,
+    //     'start_date' => $result1['start_date'],
+    //     'end_date' => $result1['end_date'],
+    //     'total_leave'=>   $total_leave
+    // ];
+    return [
+      'cl_start_date' => $period_start_date,
+      'cl_end_date' => $period_end_date,
+      'start_date' =>  $employee->contract_start_date,
+      'end_date' => $employee->contract_end_date,
+      'total_leave'=>   $total_leave
+  ];
 
     }
 

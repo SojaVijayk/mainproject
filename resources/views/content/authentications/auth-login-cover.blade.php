@@ -140,9 +140,9 @@ $configData = Helper::appClasses();
             <i class="tf-icons fa-brands fa-facebook-f fs-5"></i>
           </a>
 
-          {{--  <a href="javascript:;" class="btn btn-icon btn-label-google-plus me-3">
-            <i class="tf-icons fa-brands fa-google fs-5"></i>
-          </a>  --}}
+          <a href="https://www.youtube.com/@cmdkerala/" class="btn btn-icon btn-label-google-plus me-3">
+            <i class="tf-icons fa-brands fa-youtube fs-5"></i>
+          </a>
 
           {{--  <a href="javascript:;" class="btn btn-icon btn-label-twitter">
             <i class="tf-icons fa-brands fa-twitter fs-5"></i>
