@@ -216,7 +216,7 @@ class AttendanceController extends Controller
        $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
      // Leave calculation Regular
        if(($leave_detail->leave_type_id == 2 || $leave_detail->leave_type_id == 3 || $leave_detail->leave_type_id == 1) && $employee_details->employment_type == 1){
-        $user_leave = DB::table('opening_leave_credits')->where('user_id',Auth::user()->id)->where('leave_type_id',$leave_detail->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
+        $user_leave = DB::table('opening_leave_credits')->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
        if( $user_leave){
         $opening = $user_leave->credit;
        }
@@ -267,7 +267,7 @@ class AttendanceController extends Controller
            $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
 
 
-        $user_leave = DB::table('opening_leave_credits')->where('user_id',Auth::user()->id)->where('leave_type_id',$leave_detail->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
+        $user_leave = DB::table('opening_leave_credits')->where('user_id',$employee_details->user_id)->where('leave_type_id',$leave_detail->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
        if( $user_leave){
         $opening = $user_leave->credit;
        }
