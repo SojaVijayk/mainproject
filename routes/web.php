@@ -180,7 +180,14 @@ Route::get('/misspunch/request-list', $controller_path . '\Attendance\MissedPunc
 Route::get('/misspunch/list', $controller_path . '\Attendance\MissedPunchController@misspunchList')->name('attendance-misspunch-list');
 Route::post('/misspunch/action/{id}', $controller_path . '\Attendance\MissedPunchController@action')->name('attendance-misspunch-action');
 Route::POST('/misspunch/downloadBulk', $controller_path . '\Attendance\MissedPunchController@downloadBulk')->name('attendance-misspunch-download-bulk');
-//
+//file Management
+Route::get('/officefiles', $controller_path . '\Employee\OfficeFilesController@index')->name('filemanagement-index');
+Route::get('/officefiles/list', $controller_path . '\Employee\OfficeFilesController@filesList')->name('attendance-movement-list');
+Route::post('/officefiles/store', $controller_path . '\Employee\OfficeFilesController@store')->name('filemanagement-store');
+Route::get('/officefiles/edit/{id}', $controller_path . '\Employee\OfficeFilesController@edit')->name('filemanagement-edit');
+Route::post('/officefiles/update/{id}', $controller_path . '\Employee\OfficeFilesController@update')->name('filemanagement-update');
+Route::get('/officefiles/delete/{id}', $controller_path . '\Employee\OfficeFilesController@destroy')->name('filemanagement-delete');
+
 //Employee login Routes
 //user view
 Route::get('/user/profile' , $controller_path . '\Employee\EmployeeController@profileView')->name('user-profile');

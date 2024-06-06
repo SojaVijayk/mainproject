@@ -119,7 +119,8 @@ class LeaveRequestController extends Controller
 
 
         $user_leave = DB::table('opening_leave_credits')->where('user_id',Auth::user()->id)->where('leave_type_id',$leave_detail->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
-       if( $user_leave){
+      //  print_r( $user_leave );exit;
+        if( $user_leave){
         $opening = $user_leave->credit;
        }
        else{
