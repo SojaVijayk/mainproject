@@ -37,9 +37,9 @@ class LeaveRequestController extends Controller
 
     $leave_types = Leave::orderBy('id','DESC')->get();
 
-    if($employee_details->contract_start_date == NULL && $employee_details->employment_type !=1  && $employee_details->employment_type !=3){
+    if(($employee_details->contract_start_date == NULL || $employee_details->contract_end_date < date('Y-m-d')) && $employee_details->employment_type !=1  && $employee_details->employment_type !=3){
       // return Redirect::back()->withErrors(['insufficient' => 'Contract Period Not Updated']);
-      $message = 'Contract Period Not Updated. Please contact our Human Resources (HR) department at hr@cmd.kereal.gov.in to update your contract period. Once this is done, you can proceed with your request as usual.';
+      $message = 'Contract Period Not Updated or Expired. Please contact our Human Resources (HR) department at hr@cmd.kereal.gov.in to update your contract period. Once this is done, you can proceed with your request as usual.';
       return view('content.pages.pages-custom-error',compact('message'),['pageConfigs'=> $pageConfigs]);
     }
 
