@@ -698,7 +698,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
       $("#submit_designation").data('id',data.designation.id);  --}}
     var tbody='';
     data.leave_list.leave_request_details.forEach((item, index) => {
-      tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
+      const converted_date = convertDateFormat(item.date);
+      console.log(converted_date);
+      tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+converted_date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
         '<td>'+(item.status == 0 ? '<span class="text-nowrap badge bg-label-secondary">Pending</span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ ''));
      })
     $(".datatables-leave-list #dataList").html(tbody);

@@ -406,7 +406,10 @@ else if(status== 2){
     success: function (data) {
       var tbody='';
       data.leave_list.leave_request_details.forEach((item, index) => {
-        tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
+
+        const converted_date = convertDateFormat(item.date);
+        console.log(converted_date);
+        tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+converted_date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
           '<td>'+(item.status == 0 ? '<span class="text-nowrap"><button class="btn btn-sm btn-success  me-2 confirm-action" data-status="1" data-id="'+item['id']+'"  >Approve</button><button class="btn btn-sm btn-danger  me-2 confirm-action" data-status="2" data-id="'+item['id']+'"  >Reject</button></span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ ''));
        })
       $(".datatables-leave-list #dataList").html(tbody);
@@ -476,7 +479,12 @@ else if(status== 2){
           $("#submit_designation").data('id',data.designation.id);  --}}
         var tbody='';
         data.leave_list.leave_request_details.forEach((item, index) => {
-          tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+item.date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
+
+          const converted_date = convertDateFormat(item.date);
+          console.log(converted_date);
+
+
+          tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+converted_date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
             '<td>'+(item.status == 0 ? '<span class="text-nowrap"><button class="btn btn-sm btn-success  me-2 confirm-action" data-status="1" data-id="'+item['id']+'"  >Approve</button><button class="btn btn-sm btn-danger  me-2 confirm-action" data-status="2" data-id="'+item['id']+'"  >Reject</button></span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ '</span>'));
            })
         $(".datatables-leave-list #dataList").html(tbody);
