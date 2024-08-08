@@ -42,7 +42,7 @@ class MovementController extends Controller
       $list = Movement::join("employees","employees.user_id","=","movements.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
-      ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name')->where('movements.user_id',$id)
+      ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),DB::raw("DATE_FORMAT(movements.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(movements.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('movements.user_id',$id)
       ->orderBy('movements.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
@@ -207,7 +207,7 @@ class MovementController extends Controller
       $list = Movement::join("employees","employees.user_id","=","movements.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
-      ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',)->where('employees.reporting_officer',$id)
+      ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),DB::raw("DATE_FORMAT(movements.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(movements.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('employees.reporting_officer',$id)
       ->orderBy('movements.status')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);

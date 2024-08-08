@@ -40,6 +40,16 @@ $(function () {
     date_leave_type=[],
     permissionList = baseUrl + 'leave/request/list';
 
+    function convertDateFormat(dateString) {
+      // Split the input date string by the hyphen
+      const [year, month, day] = dateString.split('-');
+
+      // Rearrange into the desired format
+      const formattedDate = `${day}-${month}-${year}`;
+
+      return formattedDate;
+  }
+
 
     $(".datepicker").datepicker({
       autoclose: true ,
@@ -275,7 +285,12 @@ $(function () {
           for (var i = 0; i < $leave_request_details.length; i++) {
             var val = $leave_request_details[i];
 
-            $output +=  '<span class="badge bg-label-dark m-1">'+$leave_request_details[i]['date']+'</span> <span class="badge  m-1 '+($leave_request_details[i]['leave_day_type'] == 1 ? 'bg-label-primary' : $leave_request_details[i]['leave_day_type'] == 2 ? 'bg-label-secondary' :  'bg-label-info')+'">'+($leave_request_details[i]['leave_day_type'] == 1 ? 'Full Day' : $leave_request_details[i]['leave_day_type'] == 2 ? 'FN' :  'AN')+'</span><br>';
+
+            const convertedDate = convertDateFormat($leave_request_details[i]['date']);
+            console.log(convertedDate);
+
+
+            $output +=  '<span class="badge bg-label-dark m-1">'+convertedDate+'</span> <span class="badge  m-1 '+($leave_request_details[i]['leave_day_type'] == 1 ? 'bg-label-primary' : $leave_request_details[i]['leave_day_type'] == 2 ? 'bg-label-secondary' :  'bg-label-info')+'">'+($leave_request_details[i]['leave_day_type'] == 1 ? 'Full Day' : $leave_request_details[i]['leave_day_type'] == 2 ? 'FN' :  'AN')+'</span><br>';
           }
           return '<span class="text-nowrap">' + $output + '</span>';
         }
@@ -295,7 +310,7 @@ $(function () {
           // Name
           targets: 4,
           render: function (data, type, full, meta) {
-            var $requested_at = full['requested_at'];
+            var $requested_at = full['formatted_requested_at'];
             return '<span class="text-nowrap">' + $requested_at + '</span>';
           }
         },
@@ -313,7 +328,7 @@ $(function () {
           targets: 6,
           render: function (data, type, full, meta) {
             var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
-            var $action_at = (full['action_at'] == null ? '' :full['action_at']);
+            var $action_at = (full['formatted_action_at'] == null ? '' :full['formatted_action_at']);
             return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'</span>';
           }
         },

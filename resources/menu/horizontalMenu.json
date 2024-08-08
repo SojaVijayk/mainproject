@@ -187,6 +187,35 @@
           "permission": "leave-request-approve"
         }
       ]
+    },
+    {
+      "name": "Projects Management",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "slug": "user-project",
+      "permission": "project-list",
+      "submenu": [
+        {
+          "url": "client/list",
+          "icon": "menu-icon tf-icons ti ti-users",
+          "name": "Create Client",
+          "slug": "client-list",
+          "permission": "client-create"
+        },
+        {
+          "url": "projects",
+          "icon": "menu-icon tf-icons ti ti-layers-intersect",
+          "name": "Create Project",
+          "slug": "client-projects",
+          "permission": "project-create"
+        },
+        {
+          "url": "/user/project/list",
+          "icon": "menu-icon tf-icons ti ti-chart-pie-2",
+          "name": "Project Management",
+          "slug": "user-project-list",
+          "permission": "project-list"
+        }
+      ]
     }
   ]
 }

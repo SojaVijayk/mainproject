@@ -140,7 +140,7 @@ $(function () {
           // Name
           targets: 6,
           render: function (data, type, full, meta) {
-            var $name = full['requested_at'];
+            var $name = full['formatted_requested_at'];
             return '<span class="text-nowrap">' + $name + '</span>';
           }
         },
@@ -158,7 +158,7 @@ $(function () {
           targets: 8,
           render: function (data, type, full, meta) {
             var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
-            var $action_at = (full['action_at'] == null ? '' :full['action_at']);
+            var $action_at = (full['formatted_action_at'] == null ? '' :full['formatted_action_at']);
             var $remark = (full['remark'] == null ? '' :full['remark']);
             return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'<br>'+$remark+'</span>';
 
