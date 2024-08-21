@@ -18,7 +18,8 @@
             <label class="form-label" for="eventLabel">Movement Type</label>
             <select class="select2 select-event-label form-select" id="eventLabel" name="eventLabel">
               {{--  <option data-label="primary" value="Field" selected>Field</option>  --}}
-              <option data-label="danger" value="Personal">Personal</option>
+              {{--  <option data-label="danger" value="Personal">Personal</option>  --}}
+              <option data-label="danger" value="Compensatory off">Compensatory off</option>
               {{--  <option data-label="warning" value="Meeting">Meeting</option>
               <option data-label="success" value="Training">Training</option>  --}}
               <option data-label="info" value="Official">Official</option>
