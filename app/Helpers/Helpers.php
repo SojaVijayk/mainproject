@@ -195,16 +195,16 @@ class Helpers
         $words = explode(' ', $name);
         if (count($words) >= 2) {
             return mb_strtoupper(
-                mb_substr($words[0], 0, 1, 'UTF-8') . 
-                mb_substr(end($words), 0, 1, 'UTF-8'), 
+                mb_substr($words[0], 0, 1, 'UTF-8') .
+                mb_substr(end($words), 0, 1, 'UTF-8'),
             'UTF-8');
         }
         /**
      * Make initials from a word with no spaces
      *
-   
+
      */
-        
+
         preg_match_all('#([A-Z]+)#', $name, $capitals);
         if (count($capitals[1]) >= 2) {
             return mb_substr(implode('', $capitals[1]), 0, 2, 'UTF-8');
@@ -212,8 +212,17 @@ class Helpers
         return mb_strtoupper(mb_substr($name, 0, 2, 'UTF-8'), 'UTF-8');
     }
 
-    
 
-    
-   
+
+      function maskEmail($email)
+      {
+          $email_parts = explode('@', $email);
+          $name_part = $email_parts[0];
+          $domain_part = '@' . $email_parts[1];
+
+          return substr($name_part, 0, 1) . str_repeat('*', strlen($name_part) - 1) . $domain_part;
+      }
+
+
+
 }

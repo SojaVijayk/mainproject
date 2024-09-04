@@ -31,6 +31,10 @@ Route::get('reset-password/{token}', $controller_path . '\Auth\ForgotPasswordCon
 Route::post('reset-password', $controller_path . '\Auth\ForgotPasswordController@submitResetPasswordForm')->name('reset.password.post');
 
 
+
+Route::get('/lms-certificate', $controller_path . '\LMS\CertificateController@index')->name('lms-certificate');
+Route::post('/request-lms-otp', $controller_path . '\LMS\CertificateController@sendOtp')->name('request.lms.otp');
+Route::post('/otp-verification', $controller_path . '\LMS\CertificateController@verifyOtp')->name('lms-otp-verify');
 //middlewear start
 Route::group(['middleware' => 'auth'], function() {
 

@@ -138,10 +138,6 @@ class LeaveRequestController extends Controller
 
 
 
-
-
-
-
     return view('content.leave.leave-request',compact('leave_types','leaves_total_credit_details','date_start','date_end','leaves_total_credit'),['pageConfigs'=> $pageConfigs]);
   }
 
