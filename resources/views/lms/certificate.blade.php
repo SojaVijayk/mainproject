@@ -4,7 +4,7 @@ $customizerHidden = 'customizer-hide';
 
 @extends('layouts/layoutMaster')
 
-@section('title', 'Verify Email Basic - Pages')
+@section('title', 'CMD LMS Certificate - Verify Email')
 
 @section('vendor-style')
 <!-- Vendor -->
