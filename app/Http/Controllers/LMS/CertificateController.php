@@ -32,8 +32,13 @@ class CertificateController extends Controller
 
     ]);
 
+
     $user = DB::table('lms_users')->where('email',$request->input('email'))->first();
     if($user){
+
+      $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+      DB::table('lms_users')->where('email', $user->email)->update(array('otp' => $otp));
+
 
       // return(new CertificateOtp([
       //   'name' => $user->name,
@@ -42,7 +47,7 @@ class CertificateController extends Controller
 
       Mail::to($user->email)->send(new CertificateOtp([
         'name' => $user->name,
-        'otp' => $user->otp,
+        'otp' => $otp,
    ]));
 
       $pageConfigs = ['myLayout' => 'blank'];
