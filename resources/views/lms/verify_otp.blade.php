@@ -15,6 +15,39 @@ $customizerHidden = 'customizer-hide';
 @section('page-style')
 <!-- Page -->
 <link rel="stylesheet" href="{{asset('assets/vendor/css/pages/page-auth.css')}}">
+<style>
+  #overlay{
+    position: fixed;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    height:100%;
+    display: none;
+    background: rgba(0,0,0,0.6);
+  }
+  .cv-spinner {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px #ddd solid;
+    border-top: 4px #2e93e6 solid;
+    border-radius: 50%;
+    animation: sp-anime 0.8s infinite linear;
+  }
+  @keyframes sp-anime {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  .is-hide{
+    display:none;
+  }
+</style>
 @endsection
 
 @section('vendor-script')
@@ -33,6 +66,7 @@ $customizerHidden = 'customizer-hide';
   $(document).ready(function() {
     $('#generate').click(function(e) {
 e.preventDefault();
+$("#overlay").fadeIn(300);　
   $.ajax({
     data: {
         email: $('#email').val(),
@@ -48,11 +82,17 @@ e.preventDefault();
     },
     beforeSend: function() {
         //
+
     },
     success: function(data) {
         var url = window.URL || window.webkitURL;
         var objectUrl = url.createObjectURL(data);
-        window.open(objectUrl);
+        var a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = "certificate-SSK-LTP.pdf";
+        document.body.appendChild(a);
+        a.click();
+        {{--  window.open(objectUrl);  --}}
     },
     error: function(data) {
       console.log(data);
@@ -74,9 +114,15 @@ e.preventDefault();
 
 @section('content')
 <div class="authentication-wrapper authentication-basic px-4">
+  <div id="overlay">
+    <div class="cv-spinner">
+      <span class="spinner"></span>
+    </div>
+  </div>
   <div class="authentication-inner py-4">
     <!--  Two Steps Verification -->
     <div class="card">
+
       <div class="card-body">
         <!-- Logo -->
         <div class="app-brand justify-content-center mb-4 mt-2">
