@@ -95,7 +95,10 @@ $("#overlay").fadeIn(300);　
         {{--  window.open(objectUrl);  --}}
     },
     error: function(data) {
-      console.log(data);
+      setTimeout(function(){
+        $("#overlay").fadeOut(300);
+      },500);
+      {{--  console.log(data);  --}}
       Swal.fire({
         title: 'Oh Sorry!',
         text: "Invalid OTP",
