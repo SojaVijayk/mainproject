@@ -64,6 +64,7 @@ $customizerHidden = 'customizer-hide';
 
 <script>
   $(document).ready(function() {
+    $(".thankyou").hide();
     $('#generate').click(function(e) {
 e.preventDefault();
 $("#overlay").fadeIn(300);　
@@ -92,9 +93,15 @@ $("#overlay").fadeIn(300);　
         a.download = "certificate-SSK-LTP.pdf";
         document.body.appendChild(a);
         a.click();
+        setTimeout(function(){
+          $("#overlay").fadeOut(300);
+        },500);
+        $(".main-block").hide();
+        $(".thankyou").show();
         {{--  window.open(objectUrl);  --}}
     },
     error: function(data) {
+        {{--  $("#overlay").hide();  --}}
       setTimeout(function(){
         $("#overlay").fadeOut(300);
       },500);
@@ -124,7 +131,14 @@ $("#overlay").fadeIn(300);　
   </div>
   <div class="authentication-inner py-4">
     <!--  Two Steps Verification -->
-    <div class="card">
+    <div class="thankyou">
+      <div class="card ">
+        <div class="card-body">
+          Congratulations! Your certificate has been successfully generated.
+        </div>
+      </div>
+    </div>
+    <div class="card main-block">
 
       <div class="card-body">
         <!-- Logo -->
