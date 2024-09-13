@@ -370,7 +370,7 @@
                                             <small class="text-muted">In Days</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <p class="mb-0">{{$total_working_days_be_employee}}</p>
+                                            <p class="mb-0">{{$total_working_days_by_employee}}</p>
 
                                         </div>
                                     </div>
@@ -401,7 +401,7 @@
                                             <small class="text-muted">In Minutes</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <p class="mb-0">{{round($DurationMinutes/$total_working_days_be_employee)}}</p>
+                                            <p class="mb-0">{{round($DurationMinutes/$total_working_days_by_employee)}}</p>
 
                                         </div>
                                     </div>
