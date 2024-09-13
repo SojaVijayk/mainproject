@@ -65,6 +65,9 @@
                                     $number_of_holdays = count($holidays);
                                     $number_of_leaves = count($leaves);
 
+                                    $total_working_days = $numberof_days-$number_of_holdays;
+                                    $total_working_days_by_employee = $numberof_days-($number_of_holdays+$number_of_leaves);
+
                                 @endphp
                                 @foreach ($date_range_array as $item)
                                     @php
@@ -335,7 +338,7 @@
                                             <small class="text-muted">In Days</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <p class="mb-0">{{$numberof_days-$number_of_holdays}}</p>
+                                            <p class="mb-0">{{$total_working_days}}</p>
 
                                         </div>
                                     </div>
@@ -367,7 +370,7 @@
                                             <small class="text-muted">In Days</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <p class="mb-0">{{$numberof_days - ($number_of_leaves+$number_of_holdays)}}</p>
+                                            <p class="mb-0">{{$total_working_days_be_employee}}</p>
 
                                         </div>
                                     </div>
@@ -398,7 +401,7 @@
                                             <small class="text-muted">In Minutes</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <p class="mb-0">{{round($DurationMinutes/$numberof_days - ($number_of_leaves+$number_of_holdays))}}</p>
+                                            <p class="mb-0">{{round($DurationMinutes/$total_working_days_be_employee))}}</p>
 
                                         </div>
                                     </div>
