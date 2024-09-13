@@ -185,7 +185,9 @@ $holidays= Holiday::whereBetween('holidays.date', [$from, $to])->get();
     // dd(\DB::getQueryLog());
 
     if($request->input('view_type') == 'html'){
-      return response()->json(["list"=>$attendance]);
+      return view('content.attendance.attendance-report-view',compact('attendance','dateRange','leaves','movements','missedpunches','employeedetails','holidays','from','to'));
+
+      // return response()->json(["list"=>$attendance]);
     }
     else if($request->input('view_type') == 'pdf'){
       $pdf = PDF::loadView('exports.attendance-export-pdf-date', compact('attendance','dateRange','leaves','movements','missedpunches','employeedetails','holidays','from','to'));

@@ -140,6 +140,7 @@ Route::post('/attendance/import', $controller_path . '\Attendance\AttendanceLogC
 Route::get('/attendance-management', $controller_path . '\Attendance\AttendanceController@attendanceManagement')->name('attendance-hrView');
 
 Route::get('/attendance/monitor/{id}', $controller_path . '\Attendance\AttendanceController@attendanceMonitor')->name('attendance-Monitor');
+Route::post('/attendance/monitor-report', $controller_path . '\Attendance\AttendanceController@attendanceMonitorReport')->name('attendance-Monitor');
 
 Route::get('/download', $controller_path . '\Attendance\AttendanceController@download')->name('attendance-download');
 Route::POST('/downloadBulk', $controller_path . '\Attendance\AttendanceLogController@downloadBulk1')->name('attendance-download-bulk');

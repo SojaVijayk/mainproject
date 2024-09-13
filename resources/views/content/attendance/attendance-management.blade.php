@@ -285,10 +285,56 @@ document.addEventListener('DOMContentLoaded', function (e) {
             }
         });
         }
+        else if(view_type == 'monitor'){
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'2',
+               view_type:view_type,
+               employeeList:employeeList,
+               "_token": "{{ csrf_token() }}",
+           },
+             url: '/attendance/monitor-report/',
+             type: 'POST',
+
+           success: function(data) {
+
+            $('#AttendanceReport').modal('show');
+            $(".datatables-leave-list #dataList").html(data);
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+        else if(view_type == 'html'){
+          $.ajax({
+            data:  {
+             fromDate:fromDate,
+               toDate:toDate,
+               type:'2',
+               view_type:view_type,
+               employeeList:employeeList,
+               "_token": "{{ csrf_token() }}",
+           },
+           url: `${baseUrl}downloadBulk`,
+             type: 'POST',
+
+           success: function(data) {
+
+            $('#AttendanceReport').modal('show');
+            $(".datatables-leave-list #dataList").html(data);
+           },
+           error: function(data) {
+               //
+           }
+       });
+
+        }
+
         else{
-
-
-
           $.ajax({
             data:  {
              fromDate:fromDate,
@@ -425,9 +471,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
         }
         else{
-
-
-
           $.ajax({
             data:  {
              fromDate:fromDate,
@@ -719,8 +762,15 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 <small class="text-light fw-medium d-block">View Type</small>
                 <div class="form-check form-check-inline mt-3">
                   <input class="form-check-input" type="radio" checked name="viewTypeOptinon" id="viewTypeOptinon" value="html" />
-                  <label class="form-check-label" for="inlineRadio1"><i class="ti ti-list ti-xs"></i> View</label>
+                  <label class="form-check-label" for="inlineRadio1"><i class="ti ti-list ti-xs"></i> Basic</label>
                 </div>
+
+                <div class="form-check form-check-inline mt-3">
+                  <input class="form-check-input" type="radio" checked name="viewTypeOptinon" id="viewTypeOptinon" value="monitor" />
+                  <label class="form-check-label" for="inlineRadio1"><i class="ti ti-list ti-xs"></i> Detailed</label>
+                </div>
+
+
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="viewTypeOptinon" id="viewTypeOptinon" value="pdf" />
                   <label class="form-check-label" for="inlineRadio2"><i class="ti ti-file-text"></i> PDF</label>
@@ -816,6 +866,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 <!-- Modal -->
 @include('_partials/_modals/modal-attendance')
+@include('_partials/_modals/modal-attendance-report')
 @include('_partials/_modals/modal-movement-report-view')
 @include('_partials/_modals/modal-misspunch-report-view')
 @include('_partials/_modals/modal-leave-report-view')
