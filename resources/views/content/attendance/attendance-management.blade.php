@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                employeeList:employeeList,
                "_token": "{{ csrf_token() }}",
            },
-             url: '/attendance/monitor-report/',
+             url: '/attendance/monitor-report',
              type: 'POST',
 
            success: function(data) {
