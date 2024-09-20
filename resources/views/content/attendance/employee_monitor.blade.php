@@ -62,6 +62,17 @@
 
                                     $array_excemption_dates=[];
 
+
+                                    $array_excemption_dates=[];
+                                    $numberof_days= count($date_range_array);
+                                    $number_of_holdays = count($holidays);
+                                    $number_of_leaves = count($leaves);
+
+                                    $total_working_days = $numberof_days-$number_of_holdays;
+                                    $total_working_days_by_employee = $numberof_days-($number_of_holdays+$number_of_leaves);
+
+
+
                                 @endphp
                                 @foreach ($date_range_array as $item)
                                     @php
@@ -86,6 +97,21 @@
                                             @if ($item['date'] == $data['date'])
                                                 @php
                                                     $flag++;
+                                                    $overTime=0;
+                                                    $minutes=0;
+                                                    $startTime = new DateTime($data['InTime']);
+                                                    $endTime = new DateTime($data['OutTime']);
+
+                                                    // Calculate the difference
+                                                    $interval = $startTime->diff($endTime);
+
+                                                    // Convert the difference to minutes
+                                                    $minutes = ($interval->h * 60) + $interval->i;
+                                                    $minutes += ($interval->d * 24 * 60);
+
+                                                    if($minutes >= 480){
+                                                        $overTime = ( $minutes - 480);
+                                                    }
                                                 @endphp
                                                 <td>
                                                     <span class="badge bg-label-success bg-glow text-sm">
@@ -100,7 +126,7 @@
                                                     {{ $data['OutTime'] }}
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-label-primary">{{ $data['Duration'] }} </span>
+                                                    <span class="badge bg-label-primary">{{ $minutes }} </span>
 
                                                 </td>
                                                 <td>
@@ -112,7 +138,7 @@
 
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-label-secondary">{{ $data['OverTime'] }} </span>
+                                                    <span class="badge bg-label-secondary">{{ $overTime }} </span>
 
                                                 </td>
                                             @endif
@@ -195,18 +221,34 @@
                                 $lateby = 0;
                                 $earlyby = 0;
                                 $remaining_grace = 0;
+                                $OT=0;
+                                $totalDuration=0;
                                 @endphp
                                 @foreach ($attendance_data as $data)
                                   @php
                                   $lateby = $lateby + $data['LateBy'];
                                   $earlyby = $earlyby + $data['EarlyBy'];
+                                  $startTime = new DateTime($data['InTime']);
+                                  $endTime = new DateTime($data['OutTime']);
+
+                                  // Calculate the difference
+                                  $interval = $startTime->diff($endTime);
+
+                                  // Convert the difference to minutes
+                                  $minutes = ($interval->h * 60) + $interval->i;
+                                  $minutes += ($interval->d * 24 * 60);
+
+                                  if($minutes >= 480){
+                                    $OT = $OT+( $minutes - 480);
+                                }
+                                $totalDuration =   $totalDuration + ($minutes)
                                   @endphp
                                 @foreach ($uniqueData as $item)
                                             @if ($item == $data['date'])
 
                                             @php
                                             $lateby = $lateby -$data['LateBy'];
-                                        $earlyby = $earlyby -$data['EarlyBy'];
+                                            $earlyby = $earlyby -$data['EarlyBy'];
                                             @endphp
 
                                             @endif
@@ -238,7 +280,7 @@
             <div id="accordionWithIcon-2" class="accordion-collapse collapse">
               <div class="accordion-body">
 
-                <div class="row">
+                {{--  <div class="row">
 
 
                   <!-- Orders -->
@@ -288,7 +330,229 @@
                           </div>
                       </div>
                   </div>
-              </div>
+              </div>  --}}
+
+
+              <div class="col-xl-12 col-md-12 order-2 order-lg-1">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="card-title mb-0">
+                            <h5 class="mb-0">Consolidation Report</h5>
+                            <small class="text-muted">Attendance</small>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn p-0" type="button" id="sourceVisits" data-bs-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                                <i class="ti ti-dots-vertical ti-sm text-muted"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-3 pb-1">
+                                <div class="d-flex align-items-start">
+                                    <div class="badge bg-label-primary p-2 me-3 rounded"><i class="ti ti-shadow ti-sm"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                        <div class="me-2">
+                                            <h6 class="mb-0">Total Number of Days</h6>
+                                            <small class="text-muted">In Days</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <p class="mb-0">{{ $numberof_days}}</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="mb-3 pb-1">
+                                <div class="d-flex align-items-start">
+                                    <div class="badge bg-label-secondary p-2 me-3 rounded"><i class="ti ti-globe ti-sm"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                        <div class="me-2">
+                                            <h6 class="mb-0">Total Working Days</h6>
+                                            <small class="text-muted">In Days</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <p class="mb-0">{{$total_working_days}}</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="mb-3 pb-1">
+                                <div class="d-flex align-items-start">
+                                    <div class="badge bg-label-warning p-2 me-3 rounded"><i class="ti ti-mail ti-sm"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                        <div class="me-2">
+                                            <h6 class="mb-0">Number of Leaves</h6>
+                                            <small class="text-muted">In Days</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <p class="mb-0">{{$number_of_leaves}}</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="mb-3 pb-1">
+                                <div class="d-flex align-items-start">
+                                    <div class="badge bg-label-primary p-2 me-3 rounded"><i
+                                            class="ti ti-external-link ti-sm"></i></div>
+                                    <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                        <div class="me-2">
+                                            <h6 class="mb-0">Net Working Days by the Employee</h6>
+                                            <small class="text-muted">In Days</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <p class="mb-0">{{$total_working_days_by_employee}}</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="mb-3 pb-1">
+                                <div class="d-flex align-items-start">
+                                    <div class="badge bg-label-success p-2 me-3 rounded"><i class="ti ti ti-clock ti-sm"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                        <div class="me-2">
+                                            <h6 class="mb-0">Total Work Hours</h6>
+                                            <small class="text-muted">In Minutes</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <p class="mb-0">{{$DurationMinutes}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="mb-2">
+                                <div class="d-flex align-items-start">
+                                    <div class="badge bg-label-primary p-2 me-3 rounded"><i class="ti ti ti-clock ti-sm"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                        <div class="me-2">
+                                            <h6 class="mb-0">Average Work Hours/Day</h6>
+                                            <small class="text-muted">In Minutes</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <p class="mb-0">{{round($DurationMinutes/$total_working_days_by_employee)}}</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="mb-2">
+                              <div class="d-flex align-items-start">
+                                  <div class="badge bg-label-danger p-2 me-3 rounded"><i class="ti ti-run ti-sm"></i>
+                                  </div>
+                                  <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                      <div class="me-2">
+                                          <h6 class="mb-0">Total Late Minutes</h6>
+                                          <small class="text-muted">In Minutes</small>
+                                      </div>
+                                      <div class="d-flex align-items-center">
+                                          <p class="mb-0">{{ $lateby }}</p>
+
+                                      </div>
+                                  </div>
+                              </div>
+                          </li>
+
+                          <li class="mb-2">
+                            <div class="d-flex align-items-start">
+                                <div class="badge bg-label-danger p-2 me-3 rounded"><i class="ti ti-run ti-sm"></i>
+                                </div>
+                                <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                    <div class="me-2">
+                                        <h6 class="mb-0">Total Early Exit</h6>
+                                        <small class="text-muted">In Minutes</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <p class="mb-0">{{ $earlyby }}</p>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="mb-2">
+                          <div class="d-flex align-items-start">
+                              <div class="badge bg-label-success p-2 me-3 rounded"><i class="ti ti-star ti-sm"></i>
+                              </div>
+                              <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                  <div class="me-2">
+                                      <h6 class="mb-0">Total Grace Period Avialable</h6>
+                                      <small class="text-muted">In Minutes</small>
+                                  </div>
+                                  <div class="d-flex align-items-center">
+                                      <p class="mb-0">{{ $grace }}</p>
+
+                                  </div>
+                              </div>
+                          </div>
+                      </li>
+
+                      <li class="mb-2">
+                        <div class="d-flex align-items-start">
+                            <div class="badge bg-label-warning p-2 me-3 rounded"><i class="ti ti-alert-triangle ti-sm"></i>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                <div class="me-2">
+                                    <h6 class="mb-0">Availed Grace Period</h6>
+                                    <small class="text-muted">In Minutes</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <p class="mb-0">{{ $earlyby+$lateby }}</p>
+
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="mb-2">
+                        <div class="d-flex align-items-start">
+                            <div class="badge bg-label-warning p-2 me-3 rounded"><i class="ti ti-alert-triangle ti-sm"></i>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                <div class="me-2">
+                                    <h6 class="mb-0">Balance Grace Period</h6>
+                                    <small class="text-muted">In Minutes</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <p class="mb-0">{{ $remaining }}</p>
+
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="mb-2">
+                      <div class="d-flex align-items-start">
+                          <div class="badge bg-label-warning p-2 me-3 rounded"><i class="ti ti ti-clock ti-sm"></i>
+                          </div>
+                          <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                              <div class="me-2">
+                                  <h6 class="mb-0">Total Over Time</h6>
+                                  <small class="text-muted">In Minutes</small>
+                              </div>
+                              <div class="d-flex align-items-center">
+                                  <p class="mb-0">{{$OT}}</p>
+
+                              </div>
+                          </div>
+                      </div>
+                  </li>
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
 
               </div>
             </div>

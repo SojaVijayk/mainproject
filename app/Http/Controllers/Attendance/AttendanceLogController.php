@@ -114,8 +114,16 @@ class AttendanceLogController extends Controller
 
     public function downloadBulk1(Request $request){
 
-      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
-      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
+      // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
+      // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
+
+      $var = $request->input('fromDate');
+      $datef = str_replace('/', '-', $var);
+      $from=  date('Y-m-d', strtotime($datef));
+
+      $var2 = $request->input('toDate');
+      $datet = str_replace('/', '-', $var2);
+      $to=  date('Y-m-d', strtotime($datet));
 
       if($request->input('type') == 1){
         $employees = [Auth::user()->id];

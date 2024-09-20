@@ -66,6 +66,7 @@ $(function () {
 
     $(".datepicker").datepicker({
       autoclose: true ,
+      format:'dd/mm/yyyy',
       });
        // Select2 Country
   var select2 = $('.select2');

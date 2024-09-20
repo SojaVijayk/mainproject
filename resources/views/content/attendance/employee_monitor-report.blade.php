@@ -93,6 +93,20 @@
                                             @if ($item['date'] == $data['date'])
                                                 @php
                                                     $flag++;
+                                                    $overTime=0;
+                                                    $startTime = new DateTime($data['InTime']);
+                                                    $endTime = new DateTime($data['OutTime']);
+
+                                                    // Calculate the difference
+                                                    $interval = $startTime->diff($endTime);
+
+                                                    // Convert the difference to minutes
+                                                    $minutes = ($interval->h * 60) + $interval->i;
+                                                    $minutes += ($interval->d * 24 * 60);
+
+                                                    if($minutes >= 480){
+                                                        $overTime = ( $minutes - 480);
+                                                    }
                                                 @endphp
                                                 <td>
                                                     <span class="badge bg-label-success bg-glow text-sm">
@@ -107,7 +121,7 @@
                                                     {{ $data['OutTime'] }}
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-label-primary">{{ $data['Duration'] }} </span>
+                                                    <span class="badge bg-label-primary">{{ $minutes }} </span>
 
                                                 </td>
                                                 <td>
@@ -119,7 +133,8 @@
 
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-label-secondary">{{ $data['OverTime'] }} </span>
+                                                    <span class="badge bg-label-secondary">{{ $overTime }} </span>
+
 
                                                 </td>
                                             @endif
@@ -202,18 +217,34 @@
                                 $lateby = 0;
                                 $earlyby = 0;
                                 $remaining_grace = 0;
+                                $OT=0;
+                                $totalDuration=0;
                                 @endphp
                                 @foreach ($attendance_data as $data)
                                   @php
                                   $lateby = $lateby + $data['LateBy'];
                                   $earlyby = $earlyby + $data['EarlyBy'];
+                                  $startTime = new DateTime($data['InTime']);
+                                  $endTime = new DateTime($data['OutTime']);
+
+                                  // Calculate the difference
+                                  $interval = $startTime->diff($endTime);
+
+                                  // Convert the difference to minutes
+                                  $minutes = ($interval->h * 60) + $interval->i;
+                                  $minutes += ($interval->d * 24 * 60);
+
+                                  if($minutes >= 480){
+                                    $OT = $OT+( $minutes - 480);
+                                }
+                                $totalDuration =   $totalDuration + ($minutes)
                                   @endphp
                                 @foreach ($uniqueData as $item)
                                             @if ($item == $data['date'])
 
                                             @php
                                             $lateby = $lateby -$data['LateBy'];
-                                        $earlyby = $earlyby -$data['EarlyBy'];
+                                            $earlyby = $earlyby -$data['EarlyBy'];
                                             @endphp
 
                                             @endif
@@ -386,7 +417,7 @@
                                             <small class="text-muted">In Minutes</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <p class="mb-0">{{$DurationMinutes}}</p>
+                                            <p class="mb-0">{{$totalDuration}}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -401,7 +432,7 @@
                                             <small class="text-muted">In Minutes</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <p class="mb-0">{{round($DurationMinutes/$total_working_days_by_employee)}}</p>
+                                            <p class="mb-0">{{round($totalDuration/$total_working_days_by_employee)}}</p>
 
                                         </div>
                                     </div>
@@ -465,7 +496,24 @@
                             </div>
                             <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
                                 <div class="me-2">
-                                    <h6 class="mb-0">Remaining Grace Period</h6>
+                                    <h6 class="mb-0">Availed Grace Period</h6>
+                                    <small class="text-muted">In Minutes</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <p class="mb-0">{{ $earlyby+$lateby }}</p>
+
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="mb-2">
+                        <div class="d-flex align-items-start">
+                            <div class="badge bg-label-warning p-2 me-3 rounded"><i class="ti ti-alert-triangle ti-sm"></i>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 flex-wrap gap-2">
+                                <div class="me-2">
+                                    <h6 class="mb-0">Balance Grace Period</h6>
                                     <small class="text-muted">In Minutes</small>
                                 </div>
                                 <div class="d-flex align-items-center">
@@ -486,7 +534,7 @@
                                   <small class="text-muted">In Minutes</small>
                               </div>
                               <div class="d-flex align-items-center">
-                                  <p class="mb-0">0</p>
+                                  <p class="mb-0">{{$OT}}</p>
 
                               </div>
                           </div>

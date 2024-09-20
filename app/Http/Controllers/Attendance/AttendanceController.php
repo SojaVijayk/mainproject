@@ -434,9 +434,25 @@ class AttendanceController extends Controller
     public function attendanceMonitorReport(Request $request)
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
-      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
-      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
-      $id = $request->input('employeeList');
+      // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
+      // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
+
+      $var = $request->input('fromDate');
+      $datef = str_replace('/', '-', $var);
+      $from=  date('Y-m-d', strtotime($datef));
+
+      $var2 = $request->input('toDate');
+      $datet = str_replace('/', '-', $var2);
+      $to=  date('Y-m-d', strtotime($datet));
+
+      // $id = $request->input('employeeList');
+
+      if($request->input('type') == 1){
+        $id = [Auth::user()->id];
+      }
+      else{
+        $id = $request->input('employeeList');
+      }
 
       // $from = date('Y-m-01');
       $leaveError=0;
