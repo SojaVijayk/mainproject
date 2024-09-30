@@ -118,13 +118,14 @@ $(function () {
         {
           // Name
           targets: 2,
+
           render: function (data, type, full, meta) {
             var $name = full['title'];
             var $location = full['location'];
             var $description = full['description'];
             var $type = full['type'];
             var $requested_at = full['formatted_requested_at'];
-            return '<span class="fw-semibold text-gray"> Title :</span> <span class="text-nowrap">' + $name + '</span><br><span class="fw-semibold text-gray"> Type :</span><span class=""> ' + $type + '</span><br><span class=" text-gray fw-semibold"> Location :</span><span class="text-nowrap"> ' + $location + '</span><br><span class="fw-semibold text-gray"> Des :</span><span class=""> ' + $description + '</span>'+
+            return '<span class="fw-semibold text-gray"> Title :</span> <span class="text-wrap">' + $name + '</span><br><span class="fw-semibold text-gray"> Type :</span><span class=""> ' + $type + '</span><br><span class=" text-gray fw-semibold"> Location :</span><span class="text-nowrap"> ' + $location + '</span><br><span class="fw-semibold text-gray"> Des :</span><span class=""> ' + $description + '</span>'+
             '<br><span class="fw-semibold text-gray"> requested_at :</span><span class=""> ' + $requested_at + '</span>';
           }
         },
@@ -132,6 +133,7 @@ $(function () {
         {
           // Name
           targets: 3,
+
           render: function (data, type, full, meta) {
             var $name = full['formatted_start_date'];
             var $time = full['start_time'];
