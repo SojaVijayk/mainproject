@@ -693,9 +693,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
           <li class="nav-item  ">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-personal" role="tab" aria-selected="true"><i class="tf-icons ti ti-home ti-xs me-1"></i>Generate Attendance / Leave / Movement Report</button>
           </li>
-          <li class="nav-item">
+          {{--  <li class="nav-item">
             <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-leave" role="tab" aria-selected="false"><i class="tf-icons ti ti-user ti-xs me-1"></i>Employee Leave Monitor</button>
-          </li>
+          </li>  --}}
           @can('attendance-management')
           <li class="nav-item">
             <button class="nav-link " data-bs-toggle="tab" data-bs-target="#form-tabs-account" role="tab" aria-selected="false"><i class="tf-icons ti ti-calendar ti-xs me-1"></i>Attendance Import / Update</button>
