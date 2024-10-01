@@ -432,7 +432,7 @@
                                             <small class="text-muted">In Minutes</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <p class="mb-0">{{round($totalDuration/$total_working_days_by_employee)}}</p>
+                                            <p class="mb-0">@if($totalDuration > 0) {{round($totalDuration/$total_working_days_by_employee)}} @endif</p>
 
                                         </div>
                                     </div>

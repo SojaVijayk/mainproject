@@ -161,6 +161,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
 (function () {
   // On edit permission click, update text
 
+  $("#reportType").change(function() {
+    $('input[name="viewTypeOptinon"]').prop('checked', false);
+    $('input[name="viewTypeOptinon"]:checked').val();
+    var $radios = $('input:radio[name=viewTypeOptinon]');
+    if($('#reportType').val() ==1){
+      $('.detailed-radio').show();
+      $radios.filter('[value=monitor]').prop('checked', true);
+    }
+    else{
+      $radios.filter('[value=html]').prop('checked', true);
+      $('.detailed-radio').hide();
+    }
+});
+
+
+
     $("body").on("click","#import", function (e) {
       e.preventDefault();
       $("#loading-overlay").show();
@@ -534,6 +550,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
         }
         else{
+          alert('');
 
 
 
@@ -766,8 +783,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   <label class="form-check-label" for="inlineRadio1"><i class="ti ti-list ti-xs"></i> Basic</label>
                 </div>
 
-                <div class="form-check form-check-inline mt-3">
-                  <input class="form-check-input" type="radio" checked name="viewTypeOptinon" id="viewTypeOptinon" value="monitor" />
+                <div class="form-check form-check-inline mt-3 detailed-radio">
+                  <input class="form-check-input" type="radio" name="viewTypeOptinon" id="viewTypeOptinon" value="monitor" />
                   <label class="form-check-label" for="inlineRadio1"><i class="ti ti-list ti-xs"></i> Detailed</label>
                 </div>
 
