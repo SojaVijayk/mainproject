@@ -65,63 +65,102 @@
       $('input[name="reservation"]').on('change', function() {
         if ($('input[name="reservation"]:checked').val() === 'Yes') {
             $('.res_category').show();
+            $('input[name="res_category"]').attr('required', true);
         } else {
             $('.res_category').hide();
+            $('input[name="res_category"]').attr('required', false);
         }
     });
 
+
+
     $('#submit').on('click', function(e){
       e.preventDefault();
+      if($("#reservation").val() == 'Yes'){
+        var selectedValue = $('input[name="res_category"]:checked').val();
+      }
+     else{
+      var selectedValue ='Nil'
+     }
 
-      var educations = $("input[name='education[]']").map(function(){ return $(this).val(); }).get(); // For array inputs
+      var reservation_selectedValue = $('input[name="reservation"]:checked').val();
 
-      $.ajax({
-          url: "/research-submit", // Change to your route
-          method: "POST",
-          {{--  data: $(this).serialize(), // Serialize the form data including normal and array inputs  --}}
-          data:   {
-            name : $("#name").val(),
-            email : $("#multicol-email").val(),
-            mobile : $("#mobile").val(),
-            institution : $("#institution").val(),
-            discipline : $("#discipline").val(),
-            programme : $("#programme").val(),
-            type : $("#type").val(),
-            education : educations,
-            qualification : $("#qualification").val(),
-            addl_qualification : $("#addl_qualification").val(),
-            reservation : $("#reservation").val(),
-            res_category : $("#res_category").val(),
-            physical_status : $("#physical_status").val(),
-            pro_qualification : $("#pro_qualification").val(),
-            "_token": "{{ csrf_token() }}", //
-          },
-          success: function(response) {
+     var error =0;
+      var educations = $("input[name='education[]']").map(function(){ return $(this).val()!='' ? $(this).val() : null; }).get(); // For array inputs
 
 
-            Swal.fire({
-              icon: 'success',
-              title: `Successfully Registerd!`,
-              html: response.message+'<br> <a class="btn btn-primary btn-sm text-white mt-2" url="'+response.url+'">Visit '+response.institute+' Registration</a>',
-              text: response.message+'<br> <a class="btn btn-primary btn-sm text-white mt-2" url="'+response.url+'">Visit '+response.institute+' Registration</a>',
-              customClass: {
-                confirmButton: 'btn btn-success'
-              }
-            });
-            window.location.href = response.url;
-          },
-          error: function(xhr) {
-              {{--  alert('Error: ' + xhr.responseText);  --}}
+      if (educations.length == 0 ) {
+        error= 1;
+     }
+     else{
+      error=0;
+     }
+     console.log('list'+educations);
+     console.log('length'+educations.length);
+     console.log('error'+error);
+
+
+        if(error == 0){
+          $.ajax({
+            url: "/research-submit", // Change to your route
+            method: "POST",
+            {{--  data: $(this).serialize(), // Serialize the form data including normal and array inputs  --}}
+            data:   {
+              name : $("#name").val(),
+              email : $("#multicol-email").val(),
+              mobile : $("#mobile").val(),
+              institution : $("#institution").val(),
+              discipline : $("#discipline").val(),
+              programme : $("#programme").val(),
+              type : $("#type").val(),
+              education : educations,
+              qualification : $("#qualification").val(),
+              addl_qualification : $("#addl_qualification").val(),
+              reservation : reservation_selectedValue,
+              res_category : selectedValue,
+              physical_status : $("#physical_status").val(),
+              pro_qualification : $("#pro_qualification").val(),
+              "_token": "{{ csrf_token() }}", //
+            },
+            success: function(response) {
+
+
               Swal.fire({
-                icon: 'warning',
-                title: `Can't Save Request!`,
-                text: xhr.responseText,
+                icon: 'success',
+                title: `Successfully Registerd!`,
+                html: response.message+'<br> <a class="btn btn-primary btn-sm text-white mt-2" url="'+response.url+'">Visit '+response.institute+' Registration</a>',
+                text: response.message+'<br> <a class="btn btn-primary btn-sm text-white mt-2" url="'+response.url+'">Visit '+response.institute+' Registration</a>',
                 customClass: {
                   confirmButton: 'btn btn-success'
                 }
-              })
-          }
-      });
+              });
+              window.location.href = response.url;
+            },
+            error: function(xhr) {
+              let errors = xhr.responseJSON.errors;
+                {{--  alert('Error: ' + xhr.responseText);  --}}
+                Swal.fire({
+                  icon: 'warning',
+                  title: `Can't Save Request!`,
+                  text: xhr.responseJSON.message,
+                  customClass: {
+                    confirmButton: 'btn btn-success'
+                  }
+                })
+            }
+        });
+        }
+        else{
+          Swal.fire({
+            icon: 'warning',
+            title: `Can't Save Request!`,
+            text: "Please Provide Educational Qualification",
+            customClass: {
+              confirmButton: 'btn btn-success'
+            }
+          })
+        }
+
   });
 
 
@@ -156,22 +195,22 @@
 
         <div class="row g-3">
           <div class="col-md-6">
-            <label for="name" class="form-label">Name of Scholar</label>
+            <label for="name" class="form-label">Name of Scholar *</label>
             <input type="text" required class="form-control" id="name" name="name" placeholder="Enter your name" autofocus>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="multicol-email">Email</label>
+            <label class="form-label" for="multicol-email">Email *</label>
             <div class="input-group input-group-merge">
               <input type="text" required id="multicol-email" name="multicol-email" class="form-control" placeholder="john.doe" aria-label="john.doe" aria-describedby="multicol-email2" />
               <span class="input-group-text" id="multicol-email2">@example.com</span>
             </div>
           </div>
           <div class="col-md-6">
-            <label for="name" class="form-label">Mobile Number</label>
+            <label for="name" class="form-label">Mobile Number *</label>
             <input type="text" required class="form-control" id="mobile" name="mobile" placeholder="Enter your Mobile Number" autofocus>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="centre">Institution</label>
+            <label class="form-label" for="centre">Institution *</label>
             <select class="select2 select-event-label form-select" required id="institution" name="institution">
               <option disabled selected>Select</option>
 
@@ -183,7 +222,7 @@
 
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label" for="discipline">Discipline Applied</label>
+            <label class="form-label" for="discipline">Discipline Applied *</label>
             <select class="select2 select-event-label form-select" required id="discipline" name="discipline">
               <option disabled selected>Select</option>
 
@@ -192,7 +231,7 @@
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="programme">Programmes Selected</label>
+            <label class="form-label" for="programme">Programmes Selected *</label>
             <select class="select2 select-event-label form-select" required id="programme" name="v">
               <option disabled selected>Select</option>
 
@@ -212,7 +251,7 @@
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="type">Full-Time/Part-Time</label>
+            <label class="form-label" for="type">Full-Time/Part-Time *</label>
             <select class="select2 select-event-label form-select" required id="type" name="type">
               <option disabled selected>Select</option>
 
@@ -221,12 +260,12 @@
             </select>
           </div>
           <div class="col-md-6" id="input-container">
-            <label for="name" class="form-label">Educational Qualification</label>
+            <label for="name" class="form-label">Educational Qualification *</label>
             <input type="text" class="form-control" id="education" required name="education[]" placeholder="Enter your educational qualification" autofocus>
             <button id="add-input" class=" btn btn-success btn-sm mt-2">Add New Education </button>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="qualification">Are you Qualified for</label>
+            <label class="form-label" for="qualification">Are you Qualified for *</label>
             <select class="select2 select-event-label form-select" required id="qualification" name="qualification">
               <option disabled selected>Select</option>
 
@@ -246,7 +285,7 @@
           </div>
           <div class="col-md-6">
             <label class="form-label d-block">  Do you belong to SC/ST/OBC (Non Creamy layer)/Differentially Abled/Economically Weaker Section
-              (EWS): Yes/No?</label>
+              (EWS): Yes/No? *</label>
             <div class="form-check form-check-inline mt-3">
                 <input class="form-check-input" type="radio" checked name="reservation"
                     id="reservation" value="Yes" />
@@ -263,7 +302,7 @@
           </div>
           <div class="col-md-6 res_category">
             <label class="form-label d-block">
-              Category</label>
+              Category *</label>
               <div class="form-check form-check-inline mt-3">
                   <input class="form-check-input" type="radio" checked name="res_category"
                       id="res_category" value="SC" />
@@ -293,7 +332,7 @@
         </div>
           </div>
           <div class="col-md-6">
-            <label class="form-label d-block">  Do you belong to Differentially Abled Yes/No?</label>
+            <label class="form-label d-block">  Do you belong to Differentially Abled Yes/No? *</label>
             <div class="form-check form-check-inline mt-3">
                 <input class="form-check-input" type="radio"  name="physical_status"
                     id="physical_status" value="Yes" />
@@ -310,7 +349,7 @@
 
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="pro_qualification">Professional Qualification</label>
+            <label class="form-label" for="pro_qualification">Professional Qualification *</label>
         <select class="select2 select-event-label form-select" required id="pro_qualification" name="pro_qualification">
           <option disabled selected>Select</option>
 

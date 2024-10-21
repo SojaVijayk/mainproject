@@ -91,6 +91,12 @@ class ResearchController extends Controller
         'discipline' => 'required|',
         'programme' => 'required|',
         'type' => 'required|',
+        'education' => 'required|',
+        'pro_qualification' => 'required|',
+        'reservation' => 'required|',
+        'physical_status' => 'required|',
+        'qualification' => 'required|',
+
 
 
     ]);
@@ -113,6 +119,13 @@ class ResearchController extends Controller
     );
     if($request->input('reservation') == 'Yes'){
       $values['res_category'] = $request->input('res_category');
+    }
+    else{
+      $values['res_category'] = 'Nil';
+    }
+
+    if($request->input('addl_qualification')){
+      $values['addl_qualification'] = $request->input('addl_qualification');
     }
 
    $result= DB::table('research_candidates')->insert($values);

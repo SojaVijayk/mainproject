@@ -40,7 +40,6 @@ Route::post('/otp-verification', $controller_path . '\LMS\CertificateController@
 //Research centre
 Route::get('/research', $controller_path . '\Research\ResearchController@index')->name('research-register');
 Route::post('/research-submit', $controller_path . '\Research\ResearchController@register')->name('research-save');
-Route::get('/register-confirmation', $controller_path . '\Research\ResearchController@index')->name('research-register');
 //middlewear start
 Route::group(['middleware' => 'auth'], function() {
 
