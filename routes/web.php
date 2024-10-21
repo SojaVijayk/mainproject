@@ -35,6 +35,12 @@ Route::post('reset-password', $controller_path . '\Auth\ForgotPasswordController
 Route::get('/lms-certificate', $controller_path . '\LMS\CertificateController@index')->name('lms-certificate');
 Route::post('/request-lms-otp', $controller_path . '\LMS\CertificateController@sendOtp')->name('request.lms.otp');
 Route::post('/otp-verification', $controller_path . '\LMS\CertificateController@verifyOtp')->name('lms-otp-verify');
+
+
+//Research centre
+Route::get('/research', $controller_path . '\Research\ResearchController@index')->name('research-register');
+Route::post('/research-submit', $controller_path . '\Research\ResearchController@register')->name('research-save');
+Route::get('/register-confirmation', $controller_path . '\Research\ResearchController@index')->name('research-register');
 //middlewear start
 Route::group(['middleware' => 'auth'], function() {
 
