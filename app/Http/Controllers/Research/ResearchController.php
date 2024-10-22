@@ -135,9 +135,17 @@ class ResearchController extends Controller
     'url' => 'https://aoap.amrita.edu/phd-24/index/','institute'=> $request->input('institution')], 200);
 
     }
-    else if($result && $request->input('institution') == 'CHRIST'){
+    else if($result && $request->input('institution') == 'CHRIST' && $request->input('discipline') == 'Management'){
+
       return response()->json(['message' => "Data submitted successfully for Ph.D. at CHRIST follow the link for complete your Application. URL :https://espro.christuniversity.in/Application/",
-      'url' => 'https://espro.christuniversity.in/Application/','institute'=> $request->input('institution')], 200);
+      'url' => 'https://christuniversity.in/academics/Main-Campus/school-of-business-and-management','institute'=> $request->input('institution')], 200);
+
+    }
+
+    else if($result && $request->input('institution') == 'CHRIST' && $request->input('discipline') == 'Social-Sciences'){
+
+      return response()->json(['message' => "Data submitted successfully for Ph.D. at CHRIST follow the link for complete your Application. URL :https://espro.christuniversity.in/Application/",
+      'url' => 'https://christuniversity.in/departments/main%20campus/school%20of%20social%20sciences/sociology%20and%20social%20work','institute'=> $request->input('institution')], 200);
 
     }
 

@@ -448,7 +448,7 @@
                       </div>
                       <div class="d-flex justify-content-between flex-wrap mb-2">
                         <div>
-                          <span>Applicant has to submit their application on Centre Portal (CHRIST (Deemed to be University), Bangalore/Amrita Vishwa Vidyapeetham, Amritapuri) -</span>
+                          <span>Applicant has to submit their Registration through Centre Portal (Amrita Vishwa Vidyapeetham, Amritapuri / CHRIST (Deemed to be University) Bangalore) -</span>
 
                         </div>
                         <div>
