@@ -258,6 +258,7 @@
               <option class="Amrita CHRIST" data-label="danger" value="Part-Time">Part-Time</option>
               {{--  <option class="CHRIST" data-label="danger" value="Full-Time">Full-Time</option>  --}}
             </select>
+            <div class="form-text text-primary"> (Note: CMD encourages only Part-Time Admission) </div>
           </div>
           <div class="col-md-6" id="input-container">
             <label for="name" class="form-label">Educational Qualification *</label>
@@ -284,7 +285,7 @@
             <input type="text" class="form-control" id="addl_qualification" name="addl_qualification" placeholder="Other National Level Test, Please Specify" autofocus>
           </div>
           <div class="col-md-6">
-            <label class="form-label d-block">  Do you belong to SC/ST/OBC (Non Creamy layer)/Differentially Abled/Economically Weaker Section
+            <label class="form-label d-block">  Do you belong to SC/ST/OBC (Non Creamy layer)/Economically Weaker Section
               (EWS): Yes/No? *</label>
             <div class="form-check form-check-inline mt-3">
                 <input class="form-check-input" type="radio" checked name="reservation"
