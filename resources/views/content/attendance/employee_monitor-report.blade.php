@@ -125,11 +125,11 @@
 
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-label-danger"> {{ $data['LateBy'] }}</span>
+                                                    <span class="badge bg-label-danger"> @if($minutes < 480) @if($data['EarlyBy'] == 0 && $data['LateBy'] > 0) {{480-$minutes}} @else {{  $data['LateBy'] }} @endif @endif </span>
 
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-label-danger"> {{ $data['EarlyBy'] }}</span>
+                                                    <span class="badge bg-label-danger">@if($minutes < 480) @if($data['LateBy'] == 0 && $data['EarlyBy'] > 0) {{480-$minutes}} @else {{ $data['EarlyBy'] }} @endif @endif</span>
 
                                                 </td>
                                                 <td>
@@ -222,8 +222,9 @@
                                 @endphp
                                 @foreach ($attendance_data as $data)
                                   @php
-                                  $lateby = $lateby + $data['LateBy'];
-                                  $earlyby = $earlyby + $data['EarlyBy'];
+
+
+
                                   $startTime = new DateTime($data['InTime']);
                                   $endTime = new DateTime($data['OutTime']);
 
@@ -234,6 +235,30 @@
                                   $minutes = ($interval->h * 60) + $interval->i;
                                   $minutes += ($interval->d * 24 * 60);
 
+                                  if($minutes < 480){
+
+                                    if($data['EarlyBy'] == 0 && $data['LateBy'] > 0){
+                                      $actual_lateby = 480-$minutes;
+                                    }
+                                    else{
+                                      $actual_lateby = $data['LateBy'];
+                                    }
+                                  //  $lateby = $lateby + $data['LateBy'];
+                                  $lateby = $lateby + $actual_lateby;
+
+                                  }
+                                  if($minutes < 480){
+                                    if($data['LateBy'] == 0 && $data['EarlyBy'] > 0){
+                                      $actual_earlyby = 480-$minutes;
+                                    }
+                                    else{
+                                      $actual_earlyby = $data['EarlyBy'];
+                                    }
+
+                                   // $earlyby = $earlyby + $data['EarlyBy'];
+                                    $earlyby = $earlyby + $actual_earlyby;
+                                  }
+
                                   if($minutes >= 480){
                                     $OT = $OT+( $minutes - 480);
                                 }
@@ -242,9 +267,47 @@
                                 @foreach ($uniqueData as $item)
                                             @if ($item == $data['date'])
 
+
                                             @php
-                                            $lateby = $lateby -$data['LateBy'];
-                                            $earlyby = $earlyby -$data['EarlyBy'];
+
+
+                                  $startTime = new DateTime($data['InTime']);
+                                  $endTime = new DateTime($data['OutTime']);
+
+                                  // Calculate the difference
+                                  $interval = $startTime->diff($endTime);
+
+                                  // Convert the difference to minutes
+                                  $minutes = ($interval->h * 60) + $interval->i;
+                                  $minutes += ($interval->d * 24 * 60);
+
+                                            if($minutes < 480){
+
+                                              if($data['EarlyBy'] == 0 && $data['LateBy'] > 0){
+                                                $actual_lateby = 480-$minutes;
+                                              }
+                                              else{
+                                                $actual_lateby = $data['LateBy'];
+                                              }
+                                            //  $lateby = $lateby + $data['LateBy'];
+                                            $lateby = $lateby - $actual_lateby;
+
+                                            }
+
+
+                                           // $lateby = $lateby -$data['LateBy'];
+                                           if($minutes < 480){
+                                            if($data['LateBy'] == 0 && $data['EarlyBy'] > 0){
+                                              $actual_earlyby = 480-$minutes;
+                                            }
+                                            else{
+                                              $actual_earlyby = $data['EarlyBy'];
+                                            }
+
+                                           // $earlyby = $earlyby + $data['EarlyBy'];
+                                            $earlyby = $earlyby - $actual_earlyby;
+                                          }
+                                           // $earlyby = $earlyby -$data['EarlyBy'];
                                             @endphp
 
                                             @endif
