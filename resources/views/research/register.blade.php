@@ -25,6 +25,16 @@
   $(document).ready(function() {
     $('.res_category').hide();
      $("#instructions").trigger('click');
+
+     $('#institution').change(function() {
+      var institution = $('#institution').val();
+      console.log('#discipline option.' + institution);
+
+      // Show only the options in #select3 that match the selected values of #select1 and #select2
+      $('#discipline option').hide();
+      $('#discipline option.' + institution).show(); // Show only matching options
+  });
+
       $('#discipline, #institution').change(function() {
 
           var discipline = $('#discipline').val();
@@ -99,7 +109,7 @@
      console.log('length'+educations.length);
      console.log('error'+error);
 
-
+{{--  alert($('input[name="physical_status"]:checked').val());exit;  --}}
         if(error == 0){
           $.ajax({
             url: "/research-submit", // Change to your route
@@ -118,7 +128,7 @@
               addl_qualification : $("#addl_qualification").val(),
               reservation : reservation_selectedValue,
               res_category : selectedValue,
-              physical_status : $("#physical_status").val(),
+              physical_status : $('input[name="physical_status"]:checked').val(),
               pro_qualification : $("#pro_qualification").val(),
               "_token": "{{ csrf_token() }}", //
             },
@@ -226,8 +236,8 @@
             <select class="select2 select-event-label form-select" required id="discipline" name="discipline">
               <option disabled selected>Select</option>
 
-              <option data-label="danger" value="Management">Management</option>
-              <option data-label="info" value="Social-Sciences">Social Sciences</option>
+              <option class="Amrita CHRIST" data-label="danger" value="Management">Management</option>
+              <option class="CHRIST" data-label="info" value="Social-Sciences">Social Sciences</option>
             </select>
           </div>
           <div class="col-md-6">

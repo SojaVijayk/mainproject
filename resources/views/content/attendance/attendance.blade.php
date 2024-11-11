@@ -1463,7 +1463,6 @@
                                                 }
                                                  // $earlyby = $earlyby -$data['EarlyBy'];
                                         @endphp
-
                                         @endif
                             @endforeach
                             @endforeach
