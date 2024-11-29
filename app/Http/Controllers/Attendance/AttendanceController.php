@@ -23,6 +23,7 @@ use App\Models\LeaveRequest;
 use App\Models\LeaveAssign;
 // use Barryvdh\DomPDF\Facade as PDF;
 // use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Carbon\Carbon;
 use PDF;
 use Illuminate\Support\Facades\DB;
 
@@ -87,8 +88,12 @@ class AttendanceController extends Controller
   'emp_mov.name as movement_action_by_name','movements.remark','movements.location','movements.description')
 ->leftjoin("employees as emp_mov","emp_mov.user_id","=","movements.action_by")
 ->where('movements.user_id',$id)
-  ->whereBetween('movements.start_date', [$from, $to])
-  ->whereBetween('movements.end_date', [$from, $to])
+->where(function ($query) use ($from, $to) {
+  $query->where('start_date', '<=', $to) // Database start is before or on the selected end
+        ->where('end_date', '>=', $from); // Database end is after or on the selected start
+})
+  // ->whereBetween('movements.start_date', [$from, $to])
+  // ->whereBetween('movements.end_date', [$from, $to])
   ->orderBy('movements.user_id','DESC')->get();
 
   $missedpunches = MissedPunch::select('missed_punches.user_id as miss_user_id','missed_punches.type as miss_type','missed_punches.date as miss_date','missed_punches.checkinTime','missed_punches.checkoutTime','missed_punches.status as miss_status',
@@ -437,13 +442,27 @@ class AttendanceController extends Controller
       // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
       // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
 
-      $var = $request->input('fromDate');
-      $datef = str_replace('/', '-', $var);
-      $from=  date('Y-m-d', strtotime($datef));
+      // $var = $request->input('fromDate');
+      // $datef = str_replace('/', '-', $var);
+      // $from=  date('Y-m-d', strtotime($datef));
 
-      $var2 = $request->input('toDate');
-      $datet = str_replace('/', '-', $var2);
-      $to=  date('Y-m-d', strtotime($datet));
+      // $var2 = $request->input('toDate');
+      // $datet = str_replace('/', '-', $var2);
+      // $to=  date('Y-m-d', strtotime($datet));
+
+      try {
+        $from = Carbon::createFromFormat('d/m/Y', $request->input('fromDate'))->format('Y-m-d');
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Invalid date format'], 400);
+    }
+
+    try {
+      $to = Carbon::createFromFormat('d/m/Y', $request->input('toDate'))->format('Y-m-d');
+
+  } catch (\Exception $e) {
+      return response()->json(['error' => 'Invalid date format'], 400);
+  }
 
       // $id = $request->input('employeeList');
 
@@ -512,8 +531,12 @@ class AttendanceController extends Controller
   'emp_mov.name as movement_action_by_name','movements.remark','movements.location','movements.description')
 ->leftjoin("employees as emp_mov","emp_mov.user_id","=","movements.action_by")
 ->where('movements.user_id',$id)
-  ->whereBetween('movements.start_date', [$from, $to])
-  ->whereBetween('movements.end_date', [$from, $to])
+  // ->whereBetween('movements.start_date', [$from, $to])
+  // ->whereBetween('movements.end_date', [$from, $to])
+  ->where(function ($query) use ($from, $to) {
+    $query->where('start_date', '<=', $to) // Database start is before or on the selected end
+          ->where('end_date', '>=', $from); // Database end is after or on the selected start
+})
   ->orderBy('movements.user_id','DESC')->get();
 
   $missedpunches = MissedPunch::select('missed_punches.user_id as miss_user_id','missed_punches.type as miss_type','missed_punches.date as miss_date','missed_punches.checkinTime','missed_punches.checkoutTime','missed_punches.status as miss_status',

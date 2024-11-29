@@ -42,7 +42,7 @@ $(function () {
 
     $(".datepicker").datepicker({
       autoclose: true ,
-      format:"dd-mm-yyyy"
+      dateFormat: 'yy-mm-dd'
       });
       $(".timepicker").timepicker({
         step: 15 ,
@@ -324,8 +324,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 
     $("#toDate").change(function () {
-      var startDate = $("#fromDate").val();
-      var endDate = $("#toDate").val();
+      {{--  var startDate = $("#fromDate").val();
+      var endDate = $("#toDate").val();  --}}
+
+      let startDate = new Date($('#fromDate').val());
+      let endDate = new Date($('#toDate').val());
+      console.log(startDate+'   '+endDate);
+
       if (startDate <= endDate) {
         //
       }

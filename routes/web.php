@@ -218,6 +218,23 @@ Route::get('/project/docs/{project_id}' , $controller_path . '\Project\ProjectDo
 
 
 
+//Booking
+Route::get('/eventbooking', $controller_path . '\eventBookingController@index')->name('event-booking');
+
+Route::post('/event/store', $controller_path . '\eventBookingController@store')->name('event-store');
+Route::get('/event/edit/{id}', $controller_path . '\eventBookingController@edit')->name('event-edit');
+Route::post('/event/update/{id}', $controller_path . '\eventBookingController@update')->name('event-update');
+Route::get('/event/delete/{id}', $controller_path . '\eventBookingController@destroy')->name('event-delete');
+
+
+Route::get('/eventbooking/list', $controller_path . '\eventBookingController@eventList')->name('event-list');
+Route::get('/events/loadBookingsAllVenue/{event_id}', $controller_path . '\eventBookingController@loadBookingsAllVenue')->name('event-list');
+
+
+Route::get('/getVenues', $controller_path . '\VenuesController@getVenues')->name('venues-list');
+Route::post('/venueAvailability', $controller_path . '\VenuesController@venueAvailability')->name('venues-list');
+
+
 });//middlewear end
 
 // Route::get('/dashboard/analytics', $controller_path . '\dashboard\Analytics@index')->name('dashboard-analytics');

@@ -65,7 +65,7 @@ $navbarDetached = ($navbarDetached ?? '');
             <ul class="dropdown-menu dropdown-menu-end">
               <li>
                 <a class="dropdown-item" href="{{url('lang/en')}}" data-language="en">
-                  {{--  <i class="fi fi-us fis rounded-circle me-1 fs-3"></i>  --}}
+                  <i class="fi fi-in fis rounded-circle me-1 fs-3"></i>
                   <span class="align-middle">English</span>
                 </a>
               </li>

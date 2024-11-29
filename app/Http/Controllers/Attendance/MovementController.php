@@ -258,8 +258,27 @@ class MovementController extends Controller
 
     public function downloadBulk(Request $request){
 
-      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
-      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
+      // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
+      // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
+
+
+      try {
+        $formattedDate_from = Carbon::createFromFormat('d/m/Y', $request->input('fromDate'))->format('Y-m-d');
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Invalid date format'], 400);
+    }
+
+    try {
+      $formattedDate_to = Carbon::createFromFormat('d/m/Y', $request->input('toDate'))->format('Y-m-d');
+
+  } catch (\Exception $e) {
+      return response()->json(['error' => 'Invalid date format'], 400);
+  }
+
+
+
+      // return $formattedDate_to;
 
       if($request->input('type') == 1){
         $employees = [Auth::user()->id];
@@ -275,8 +294,15 @@ class MovementController extends Controller
       // ->where('movements.user_id',$id)
       // ->orderBy('movements.status')->get();
       ->whereIn('movements.user_id',$employees)
-    ->whereBetween('movements.start_date', [$from, $to])
-    ->whereBetween('movements.end_date', [$from, $to])
+    // ->whereBetween('movements.start_date', [$formattedDate_from, $formattedDate_to])
+    // ->whereBetween('movements.end_date', [$formattedDate_from, $formattedDate_to])
+    ->where(function ($query) use ($formattedDate_from, $formattedDate_to) {
+      $query->where('start_date', '<=', $formattedDate_to) // Database start is before or on the selected end
+            ->where('end_date', '>=', $formattedDate_from); // Database end is after or on the selected start
+  })
+
+
+
     ->orderBy('movements.user_id','DESC')->get();
 
 
