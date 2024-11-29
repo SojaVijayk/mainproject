@@ -1255,9 +1255,7 @@
                                                     $minutes = ($interval->h * 60) + $interval->i;
                                                     $minutes += ($interval->d * 24 * 60);
 
-                                                    if($minutes >= 480){
-                                                        $overTime = ( $minutes - 480);
-                                                    }
+
                                             @endphp
                                             <td>
                                                 <span class="badge bg-label-success bg-glow text-sm">
@@ -1416,7 +1414,7 @@
                          //   }
 
 
-                            $totalDuration =   $totalDuration + $data['Duration'];
+                            $totalDuration =   $totalDuration + ($minutes)
                               @endphp
                             @foreach ($uniqueData as $item)
                                         @if ($item == $data['date'])
