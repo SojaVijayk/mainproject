@@ -70,13 +70,27 @@ class MovementController extends Controller
       // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('start_date'))));
       // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('end_date'))));
 
-      $var = $request->input('start_date');
-      $datef = str_replace('/', '-', $var);
-      $from=  date('Y-m-d', strtotime($datef));
+      // $var = $request->input('start_date');
+      // $datef = str_replace('/', '-', $var);
+      // $from=  date('Y-m-d', strtotime($datef));
 
-      $var2 = $request->input('end_date');
-      $datet = str_replace('/', '-', $var2);
-      $to=  date('Y-m-d', strtotime($datet));
+      // $var2 = $request->input('end_date');
+      // $datet = str_replace('/', '-', $var2);
+      // $to=  date('Y-m-d', strtotime($datet));
+
+      try {
+        $from = Carbon::createFromFormat('d/m/Y', $request->input('start_date'))->format('Y-m-d');
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Invalid date format'], 400);
+    }
+
+    try {
+      $to = Carbon::createFromFormat('d/m/Y', $request->input('end_date'))->format('Y-m-d');
+
+  } catch (\Exception $e) {
+      return response()->json(['error' => 'Invalid date format'], 400);
+  }
 
       $permission = Movement::create(['title' => $request->input('title'),'type' => $request->input('type')
       ,'start_date' => $from,'start_time' => $request->input('start_time'),'end_date' => $to,'end_time' => $request->input('end_time')
@@ -132,13 +146,27 @@ class MovementController extends Controller
       // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('start_date'))));
       // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('end_date'))));
 
-      $var = $request->input('start_date');
-      $datef = str_replace('/', '-', $var);
-      $from=  date('Y-m-d', strtotime($datef));
+      // $var = $request->input('start_date');
+      // $datef = str_replace('/', '-', $var);
+      // $from=  date('Y-m-d', strtotime($datef));
 
-      $var2 = $request->input('end_date');
-      $datet = str_replace('/', '-', $var2);
-      $to=  date('Y-m-d', strtotime($datet));
+      // $var2 = $request->input('end_date');
+      // $datet = str_replace('/', '-', $var2);
+      // $to=  date('Y-m-d', strtotime($datet));
+
+      try {
+        $from = Carbon::createFromFormat('d/m/Y', $request->input('start_date'))->format('Y-m-d');
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Invalid date format'], 400);
+    }
+
+    try {
+      $to = Carbon::createFromFormat('d/m/Y', $request->input('end_date'))->format('Y-m-d');
+
+  } catch (\Exception $e) {
+      return response()->json(['error' => 'Invalid date format'], 400);
+  }
 
       $designation = Movement::find($id);
 

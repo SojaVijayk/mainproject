@@ -42,7 +42,11 @@ $(function () {
 
     $(".datepicker").datepicker({
       autoclose: true ,
-      dateFormat: 'yy-mm-dd'
+      calendarWeeks: true,
+      clearBtn: true,
+      todayHighlight: true,
+      orientation: "auto right",
+      format:'dd/mm/yyyy',
       });
       $(".timepicker").timepicker({
         step: 15 ,
@@ -324,14 +328,41 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 
     $("#toDate").change(function () {
-      {{--  var startDate = $("#fromDate").val();
-      var endDate = $("#toDate").val();  --}}
+      var startDate = $("#fromDate").val();
+      var endDate = $("#toDate").val();
 
-      let startDate = new Date($('#fromDate').val());
-      let endDate = new Date($('#toDate').val());
+      {{--  let startDate = new Date($('#fromDate').val());
+      let endDate = new Date($('#toDate').val());  --}}
       console.log(startDate+'   '+endDate);
 
-      if (startDate <= endDate) {
+      function convertToISO(dateStr) {
+        const parts = dateStr.split('/');
+        return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+    }
+
+    const fromDateObj = convertToISO(startDate);
+    const toDateObj = convertToISO(endDate);
+
+    // Validate if "From Date" is earlier than "To Date"
+    if (fromDateObj > toDateObj) {
+      $("#toDate").val('');
+      $("#fromDate").val('');
+        Swal.fire({
+          title: 'From Date must be earlier than or equal to To Date.',
+          customClass: {
+            confirmButton: 'btn btn-warning'
+          },
+          buttonsStyling: false
+        });
+        $('#message').text('From Date must be earlier than or equal to To Date.');
+    } else {
+        $('#message').text('');
+        {{--  alert('Dates are valid!');  --}}
+    }
+
+
+
+      {{--  if (startDate <= endDate) {
         //
       }
       else{
@@ -343,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           },
           buttonsStyling: false
         });
-      }
+      }  --}}
     });
 
 
