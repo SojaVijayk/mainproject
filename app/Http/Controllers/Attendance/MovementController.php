@@ -43,7 +43,8 @@ class MovementController extends Controller
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
       ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),DB::raw("DATE_FORMAT(movements.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(movements.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('movements.user_id',$id)
-      ->orderBy('movements.status')->get();
+      ->orderBy('movements.status')
+      ->orderBy('movements.start_date', 'DESC')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
         //   dd($queries);
@@ -236,7 +237,8 @@ class MovementController extends Controller
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
       ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),DB::raw("DATE_FORMAT(movements.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(movements.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('employees.reporting_officer',$id)
-      ->orderBy('movements.status')->get();
+      ->orderBy('movements.status')
+      ->orderBy('movements.start_date', 'DESC')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
         //   dd($queries);

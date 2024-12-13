@@ -41,7 +41,8 @@ class MissedPunchController extends Controller
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","missed_punches.action_by")
       ->select('missed_punches.*',DB::raw("DATE_FORMAT(missed_punches.date, '%d-%b-%Y') as formatted_date"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(missed_punches.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(missed_punches.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('missed_punches.user_id',$id)
-      ->orderBy('missed_punches.status')->get();
+      ->orderBy('missed_punches.status')
+      ->orderBy('missed_punches.date', 'DESC')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
         //   dd($queries);
@@ -209,7 +210,8 @@ class MissedPunchController extends Controller
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","missed_punches.action_by")
       ->select('missed_punches.*',DB::raw("DATE_FORMAT(missed_punches.date, '%d-%b-%Y') as formatted_date"),DB::raw("DATE_FORMAT(missed_punches.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(missed_punches.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',)->where('employees.reporting_officer',$id)
-      ->orderBy('missed_punches.status')->get();
+      ->orderBy('missed_punches.status')
+      ->orderBy('missed_punches.date', 'DESC')->get();
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
         //   dd($queries);
