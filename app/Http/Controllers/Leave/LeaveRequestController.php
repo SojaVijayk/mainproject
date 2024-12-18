@@ -285,7 +285,7 @@ class LeaveRequestController extends Controller
     }
 
     //Leave Calculation Contract & Project staff
-    else if(($request->input('leave_type_id') == 1  && ($employee->employment_type == 2 ||  $employee->employment_type == 3))){
+    else if(($request->input('leave_type_id') == 1  && ($employee->employment_type == 2 ||  $employee->employment_type == 4))){
       $date_start = $date_result['cl_start_date'];
       $date_end = $date_result['cl_end_date'];
       // echo $employee_details->employment_type;
