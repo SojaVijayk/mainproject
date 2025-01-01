@@ -752,7 +752,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
   <div class="d-flex flex-column ps-1">
     <input type="hidden" id="date_start" value="{{$date_start}}" />
     <input type="hidden" id="date_end" value="{{$date_end}}" />
-    <p class="mb-0"> Leave Statistics for the period of {{$date_start}} TO {{$date_end}}</p>
+    <p class="mb-0"> Leave Statistics for the period of {{$date_start}} TO {{$date_end}}
+      @if($employment_type !=1)
+      <small> - (Casual Leave Statistics for the period of {{$cl_date_start}} TO {{$cl_date_end}})</small>
+      @endif
+    </p>
     <h5 class="alert-heading mb-2"></h5>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
     </button>

@@ -60,6 +60,11 @@ class LeaveRequestController extends Controller
 
     $date_start = $date_result['start_date'];
     $date_end = $date_result['end_date'];
+
+   $employment_type= $employee_details->employment_type;
+
+    $cl_date_start = $date_result['start_date'];
+    $cl_date_end = $date_result['end_date'];
     // echo $employee_details->employment_type;
     // print_r($date_result);exit();
 
@@ -111,6 +116,8 @@ class LeaveRequestController extends Controller
 
         $date_start = $date_result['cl_start_date'];
         $date_end = $date_result['cl_end_date'];
+        $cl_date_start = $date_result['cl_start_date'];
+        $cl_date_end = $date_result['cl_end_date'];
         // echo $employee_details->employment_type;
         // print_r($date_result);exit();
 
@@ -170,7 +177,7 @@ class LeaveRequestController extends Controller
 
 
 
-    return view('content.leave.leave-request',compact('leave_types','leaves_total_credit_details','date_start','date_end','leaves_total_credit'),['pageConfigs'=> $pageConfigs]);
+    return view('content.leave.leave-request',compact('leave_types','leaves_total_credit_details','date_start','date_end','cl_date_start','cl_date_end','leaves_total_credit','employment_type'),['pageConfigs'=> $pageConfigs]);
   }
 
   public function leaveList()
