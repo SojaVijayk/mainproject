@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Employee extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id','prefix','name','gender','employment_type','designation','mobile','empId','doj','email','address','country','state','district','	pincode','whatsapp','dob','pan','profile_pic','languages','bank_id','reporting_officer'];
+    protected $fillable = ['user_id','prefix','name','gender','employment_type','designation','mobile','empId','doj','email','address','country','state','district','	pincode','whatsapp','dob','pan','profile_pic','languages','bank_id','contract_end_date','contract_start_date','reporting_officer'];
     public function user()
   {
     return $this->belongsTo('App\User');

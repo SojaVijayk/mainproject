@@ -206,9 +206,6 @@
                     var calendarEl = document.getElementById('hallAvailabilityCalendar');
                     var calendar = new FullCalendar.Calendar(calendarEl, {
                       schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-                      {{--  plugins: ['resourceTimelineWeek'],  --}}
-                        {{--  schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',  --}}
-                        {{--  disableResizing: true,  --}}
                         eventDurationEditable: false,
                         editable: true,
                         {{--  draggable: true,  --}}
@@ -227,12 +224,12 @@
                         selectMirror: true,
                         selectable: true,
                         height: "auto",
-                        {{--  defaultView: 'customWeek',  --}}
-                        {{--  views: {
+                        {{--  defaultView: 'customWeek',
+                          views: {
                             customWeek: {
                                 type: 'resourceTimeline',
                                 duration: {
-                                    weeks: 1
+                                    days: 5
                                 },
                                 slotDuration: {
                                     days: 1

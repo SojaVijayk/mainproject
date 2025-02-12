@@ -758,6 +758,8 @@
                 var roles = $('#roles').val();
                var data_type =$(".data-submit").data('type');
                var data_id =$(".data-submit").data('id');
+               var contract_start_date = $('#contract_start_date').val();
+               var contract_end_date = $('#contract_end_date').val();
             if(data_type == 'new'){
               $.ajax({
 
@@ -772,6 +774,8 @@
                     usertype_role: usertype_role,
                     reporting_officer: reporting_officer,
                     roles: roles,
+                    contract_start_date:contract_start_date,
+                    contract_end_date:contract_end_date
 
                 },
                 url: `${baseUrl}user/employee/store`,
@@ -820,6 +824,8 @@
                     usertype_role: usertype_role,
                     reporting_officer: reporting_officer,
                     roles: roles,
+                    contract_start_date:contract_start_date,
+                    contract_end_date:contract_end_date
 
                 },
                 url: `${baseUrl}user/employee/update/`+data_id,
@@ -866,6 +872,14 @@
                     'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
                 }
             })
+
+            if($(this).val() != 1){
+              $('.contract').show();
+
+            }
+            else{
+              $('.contract').hide();
+            }
             $.ajax({
               type: "GET",
 
@@ -929,6 +943,9 @@
                         $('#doj').val(data.doj);
                         $('#usertype_role').val(data.user_role);
                         $('#reporting_officer').val(data.reporting_officer);
+                        $('#contract_start_date').val(data.contract_start_date);
+                        $('#contract_end_date').val(data.contract_end_date);
+
                         let roles = data.roles.map(a => a.id);
                         console.log(roles);
                         $('#roles').val(roles);
@@ -1268,6 +1285,17 @@
                             placeholder="MM/DD/YYYY" class="form-control" />
 
                     </div>
+                    <div class="mb-3 contract">
+                      <label for="fromDate" class="form-label">Contract start</label>
+                      <input type="text" class="form-control datepicker" id="contract_start_date" name="contract_start_date"
+                          placeholder="MM/DD/YYYY" class="form-control" />
+
+                    </div>
+                    <div class="mb-3 contract">
+                      <label for="fromDate" class="form-label">Contract End</label>
+                      <input type="text" class="form-control datepicker" id="contract_end_date" name="contract_end_date"
+                          placeholder="MM/DD/YYYY" class="form-control" />
+                  </div>
                     <div class="mb-3">
                         <label class="form-label" for="usertype_role">User Role</label>
                         <select id="usertype_role" name="usertype_role" class="form-select select2">

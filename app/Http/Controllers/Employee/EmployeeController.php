@@ -199,6 +199,14 @@ class EmployeeController extends Controller
           $user->assignRole($request->input('roles'));
 
           $doj = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('doj'))));
+          $contract_start_date =NULL;
+          if ($request->has('contract_start_date')) {
+            $contract_start_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('contract_start_date'))));
+          }
+          $contract_end_date =NULL;
+          if ($request->has('contract_end_date')) {
+            $contract_end_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('contract_end_date'))));
+          }
 
 
         $employee = Employee::create(
@@ -210,7 +218,9 @@ class EmployeeController extends Controller
           'email'=>$request->email,
           'designation'=>$request->designation,
           'employment_type'=>$request->employment_type,
-          'reporting_officer'=>$request->reporting_officer
+          'reporting_officer'=>$request->reporting_officer,
+          'contract_start_date'=>$contract_start_date,
+          'contract_end_date'=>$contract_end_date
 
           ,
           ]);
@@ -287,7 +297,14 @@ class EmployeeController extends Controller
       DB::table('model_has_roles')->where('model_id',$id)->delete();
       $user->assignRole($request->input('roles'));
         $doj = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('doj'))));
-
+        $contract_start_date =NULL;
+        if ($request->has('contract_start_date')) {
+          $contract_start_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('contract_start_date'))));
+        }
+        $contract_end_date =NULL;
+        if ($request->has('contract_end_date')) {
+          $contract_end_date = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('contract_end_date'))));
+        }
 
       $employee = Employee::where('user_id',$id)->update(
         [
@@ -298,7 +315,9 @@ class EmployeeController extends Controller
         'email'=>$request->email,
         'designation'=>$request->designation,
         'employment_type'=>$request->employment_type,
-        'reporting_officer'=>$request->reporting_officer
+        'reporting_officer'=>$request->reporting_officer,
+        'contract_start_date'=>$contract_start_date,
+        'contract_end_date'=>$contract_end_date
         ]);
 
 
@@ -371,7 +390,7 @@ class EmployeeController extends Controller
 
     // $users = User::where($where)->first();
     $users = User::with("roles")
-    ->select('users.*','employees.status','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','employees.employment_type','employees.designation as desig_id','employees.doj','employees.reporting_officer','designations.designation','usertype_role.usertype_role')
+    ->select('users.*','employees.status','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','employees.employment_type','employees.contract_end_date','employees.contract_start_date','employees.designation as desig_id','employees.doj','employees.reporting_officer','designations.designation','usertype_role.usertype_role')
     ->join("employees","employees.user_id","=","users.id")
     ->join("usertype_role","usertype_role.id","=","users.user_role")
     ->leftjoin("designations","designations.id","=","employees.designation")->where($where)->first();
