@@ -764,6 +764,15 @@ document.addEventListener('DOMContentLoaded', function (e) {
 </div>
 
   @foreach ($leaves_total_credit_details as $leave)
+  @if($leave['leave_type_id'] == 2 && $employment_type !=1)
+  @if($durationMonths < 11)
+  @php
+  $leave['balance_credit']=0;
+  $leave['total_leaves_credit']=0;
+
+  @endphp
+  @endif
+  @endif
   <div class="col-sm-6 col-xl-3">
     <div class="card">
       <div class="card-body">

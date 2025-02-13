@@ -63,8 +63,14 @@ class LeaveRequestController extends Controller
 
    $employment_type= $employee_details->employment_type;
 
-    $cl_date_start = $date_result['start_date'];
-    $cl_date_end = $date_result['end_date'];
+    $startDate = isset($date_result['start_date']) ? \Carbon\Carbon::parse($date_result['start_date']) : null;
+    $endDate = isset($date_result['end_date']) ? \Carbon\Carbon::parse($date_result['end_date']) : null;
+
+    // Check if both dates exist and calculate the duration
+    $durationMonths = ($startDate && $endDate) ? $startDate->diffInMonths($endDate) : null;
+
+    $cl_date_start = $date_result['cl_start_date'] ?? $date_result['start_date'];
+    $cl_date_end =  $date_result['cl_end_date'] ?? $date_result['end_date'];;
     // echo $employee_details->employment_type;
     // print_r($date_result);exit();
 
@@ -154,6 +160,32 @@ class LeaveRequestController extends Controller
         ];
 
       }
+      // else if(($leave_detail->leave_type_id == 2) && ($employee_details->employment_type == 2 || $employee_details->employment_type == 4)){
+
+      //   $user_leave = DB::table('opening_leave_credits')->where('user_id',Auth::user()->id)->where('leave_type_id',$leave_detail->leave_type_id)->where('leave_period_start',$date_start)->where('leave_period_end',$date_end)->first();
+      // //  print_r( $user_leave );exit;
+      //   if( $user_leave){
+      //   $opening = $user_leave->credit;
+      //  }
+      //  else{
+      //   $opening = $leave_detail->total_credit;exit;
+      //   $opening = $date_result['total_leave'];
+
+      //  }
+
+      //  $leave_balance = [
+      //   "leave_type"=>$leave_detail->leave_type,
+      //   "leave_type_id"=>$leave_detail->leave_type_id,
+      //   "total_leaves_credit"=>$date_result['total_leave'],
+      //   "availed_leave"=>$availed_leave,
+      //   "pending_leave"=>$pending_leave,
+      //   "balance_credit"=>($date_result['total_leave']-($availed_leave + $pending_leave))
+
+      // ];
+
+
+      // }
+
 
 
       else{
@@ -177,7 +209,7 @@ class LeaveRequestController extends Controller
 
 
 
-    return view('content.leave.leave-request',compact('leave_types','leaves_total_credit_details','date_start','date_end','cl_date_start','cl_date_end','leaves_total_credit','employment_type'),['pageConfigs'=> $pageConfigs]);
+    return view('content.leave.leave-request',compact('leave_types','leaves_total_credit_details','date_start','date_end','cl_date_start','cl_date_end','leaves_total_credit','employment_type','durationMonths'),['pageConfigs'=> $pageConfigs]);
   }
 
   public function leaveList()
