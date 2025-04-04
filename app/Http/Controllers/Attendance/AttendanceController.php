@@ -340,11 +340,11 @@ class AttendanceController extends Controller
 
       // print_r($team);exit;
       if($hr > 0 ){
-        $employees = Employee::orderBy('id','DESC')->get();
+        $employees = Employee::where('status',1)->orderBy('id','DESC')->get();
       }
       else if($team > 0){
 
-        $employees = Employee::where('employees.reporting_officer',$id)->orderBy('id','DESC')->get();
+        $employees = Employee::where('employees.reporting_officer',$id)->where('status',1)->orderBy('id','DESC')->get();
       }
 
       $pageConfigs = ['myLayout' => 'horizontal'];

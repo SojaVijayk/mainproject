@@ -806,8 +806,8 @@ class LeaveRequestController extends Controller
       return response()->json(["list"=>$list]);
     }
     else if($request->input('view_type') == 'pdf'){
-      // $pdf = PDF::loadView('exports.leave-export-pdf', compact('list'));
-      // return $pdf->download('leave.pdf');
+      $pdf = PDF::loadView('exports.leave-export-pdf', compact('list'));
+      return $pdf->download('leave.pdf');
 
     }
     else if($request->input('view_type') == 'excel'){
