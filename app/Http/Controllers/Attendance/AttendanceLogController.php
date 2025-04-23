@@ -166,7 +166,7 @@ class AttendanceLogController extends Controller
    ->leftjoin("leaves","leaves.id","=","leave_request_details.leave_type_id")
   ->whereIn('leave_request_details.user_id',$employees)
   ->whereBetween('leave_request_details.date', [$from, $to])
-  ->orderBy('leave_request_details.user_id','DESC')->get();
+  ->orderBy('leave_request_details.user_ids','DESC')->get();
 
   $movements = Movement::select('movements.user_id as mov_user_id','movements.title','movements.type','movements.start_date','movements.start_time','movements.end_date','movements.end_time','movements.status as movement_status',
   'emp_mov.name as movement_action_by_name','movements.remark','movements.location','movements.description')

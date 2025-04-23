@@ -261,8 +261,21 @@ class MissedPunchController extends Controller
 
     public function downloadBulk(Request $request){
 
-      $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
-      $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
+      // $from = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('fromDate'))));
+      // $to = date('Y-m-d', strtotime(str_replace('-', '/', $request->input('toDate'))));
+      try {
+        $from = Carbon::createFromFormat('d/m/Y', $request->input('fromDate'))->format('Y-m-d');
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Invalid date format'], 400);
+    }
+
+    try {
+      $to = Carbon::createFromFormat('d/m/Y', $request->input('toDate'))->format('Y-m-d');
+
+  } catch (\Exception $e) {
+      return response()->json(['error' => 'Invalid date format'], 400);
+  }
 
       if($request->input('type') == 1){
         $employees = [Auth::user()->id];
