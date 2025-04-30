@@ -34,6 +34,8 @@ $(function () {
       .find("input[type=checkbox], input[type=radio]")
          .prop("checked", "")
          .end();
+
+
   })
 
 
@@ -523,6 +525,9 @@ else if(status== 2){
 
 
     })
+    $('#leaveActionModal').on('hidden.bs.modal', function () {
+      location.reload();
+  });
 
 
 
