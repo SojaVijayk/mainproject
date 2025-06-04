@@ -3,6 +3,7 @@
     <div class="row ">
 
 
+
       <div class="col-md mb-4 mb-md-2">
         {{--  <small class="text-light fw-semibold">Accordion With Icon (Always Open)</small>  --}}
         <div class="accordion mt-3" id="accordionWithIcon">
@@ -10,7 +11,7 @@
             <h2 class="accordion-header d-flex align-items-center">
               <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-1" aria-expanded="true">
                 <i class="ti ti-calendar-event ti-xs me-2"></i>
-               Attendance Detailed Vew
+               Attendance Detailed Vew sss
               </button>
             </h2>
 

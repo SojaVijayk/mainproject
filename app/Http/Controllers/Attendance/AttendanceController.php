@@ -551,6 +551,7 @@ class AttendanceController extends Controller
 
 
     $employee_details=Employee::where('user_id',$id)->first();
+    $employeeName=$employee_details->name;
 
     $leave_types = Leave::orderBy('id','DESC')->get();
 
@@ -688,7 +689,7 @@ class AttendanceController extends Controller
 
 
 
-      return view('content.attendance.employee_monitor-report',['pageConfigs'=> $pageConfigs],compact('durationHours','from','to','grace','DurationMinutes','attendance_data','date_range_array',
+      return view('content.attendance.employee_monitor-report',['pageConfigs'=> $pageConfigs],compact('employee_details','durationHours','from','to','grace','DurationMinutes','attendance_data','date_range_array',
     'holidays','leaves','movements','missedpunches','leaveError','message','leave_types','leaves_total_credit_details','date_start','date_end','leaves_total_credit'));
     }
 

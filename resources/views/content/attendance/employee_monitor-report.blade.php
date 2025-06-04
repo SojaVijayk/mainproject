@@ -2,6 +2,10 @@
 
     <div class="row ">
 
+<div class="text-center mb-4">
+          <h3 class="mb-2 designation-title">{{$employee_details->name}}</h3>
+          {{--  <p class="text-muted">Designation you may use and assign to your users.</p>  --}}
+        </div>
 
       <div class="col-md mb-4 mb-md-2">
         {{--  <small class="text-light fw-semibold">Accordion With Icon (Always Open)</small>  --}}
