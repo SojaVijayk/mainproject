@@ -170,13 +170,23 @@ $(function () {
 
             // Display the dates
             $("#dateList").empty();
+             var Leave_selecetd = $('#leaveType').val();
 
             dateList.forEach(function (date) {
               var formated_date=formatDate(date);
               dateArray.push(formated_date);
-              var date_switch = '<label class="switch switch-danger"> <input value="1" type="radio" name="'+formated_date+'-radio"  class="switch-input '+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">Full Day</span></label><label class="switch switch-warning"><input type="radio" value="2"  name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"> <i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">FN</span></label><label class="switch switch-warning"><input value="3" type="radio" name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i></span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">AN</span></label>';
+              if(Leave_selecetd != '2'){
+                  var date_switch = '<label class="switch switch-danger"> <input value="1" type="radio" name="'+formated_date+'-radio"  class="switch-input '+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">Full Day</span></label><label class="switch switch-warning"><input type="radio" value="2"  name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"> <i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">FN</span></label><label class="switch switch-warning"><input value="3" type="radio" name="'+formated_date+'-radio" class="switch-input '+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i></span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">AN</span></label>';
                 var date_set = '<div class="row row-bordered g-0"><div class="col-sm-12 p-4"><div class="text-light small fw-medium mb-3">Type</div><div class="switches-stacked"><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">Full Day</span></label><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">FN</span></label><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio"  /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">AN</span></label></div></div>';
-                  $("#dateList").append("<li class='text-primary'>" + date.toDateString() +'<br><br>'+ date_switch+"</li><br>");
+
+              }
+              else{
+                  var date_switch = '<label class="switch switch-danger"> <input value="1" type="radio" name="'+formated_date+'-radio"  class="switch-input '+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"><i class="ti ti-check"></i> </span><span class="switch-off"><i class="ti ti-x"></i></span></span><span class="switch-label">Full Day</span></label>';
+                var date_set = '<div class="row row-bordered g-0"><div class="col-sm-12 p-4"><div class="text-light small fw-medium mb-3">Type</div><div class="switches-stacked"><label class="switch"><input type="radio" class="switch-input" name="'+formated_date+'-radio" checked /><span class="switch-toggle-slider"><span class="switch-on"></span><span class="switch-off"></span> </span><span class="switch-label">Full Day</span></label></div></div>';
+
+              }
+
+                $("#dateList").append("<li class='text-primary'>" + date.toDateString() +'<br><br>'+ date_switch+"</li><br>");
 
 
             });
@@ -197,6 +207,10 @@ $(function () {
 
     $('#leaveType').change(function(){
       var id= $(this).val();
+       $("#dateList").empty();
+       $("#fromDate").val('');
+        $("#toDate").val('');
+
       if(id > 0){
         $('.availability').show();
         $('.date-group').show();
