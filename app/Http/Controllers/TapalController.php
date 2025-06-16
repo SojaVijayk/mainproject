@@ -112,7 +112,7 @@ class TapalController extends Controller
 
         // Send email to assigned user
         $assignedUser = User::find($validated['assigned_user_id']);
-        Mail::to($assignedUser->email)->send(new TapalAssigned($tapal, $movement, Auth::user()));
+        Mail::to($assignedUser->email)->cc('it@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
 
         // Handle notification emails
         foreach ($validated['notify_users'] ?? [] as $userId) {
@@ -229,7 +229,7 @@ $pageConfigs = ['myLayout' => 'horizontal'];
 
         // Send email to assigned user
         $assignedUser = User::find($validated['assigned_user_id']);
-        Mail::to($assignedUser->email)->send(new TapalAssigned($tapal, $movement, Auth::user()));
+        Mail::to($assignedUser->email)->cc('it@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
 
         // Handle notification emails
         foreach ($validated['notify_users'] ?? [] as $userId) {
