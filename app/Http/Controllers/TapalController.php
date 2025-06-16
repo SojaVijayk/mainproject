@@ -54,7 +54,7 @@ class TapalController extends Controller
             'from_department' => 'nullable|string|max:255',
             'from_mobile' => 'nullable|string|max:20',
             'from_person_details' => 'nullable|string',
-            'ref_number' => 'nullable|string|max:100',
+            'ref_number' => 'nullable|string|max:1000',
             'letter_date' => 'nullable|date',
             'subject' => 'required|string|max:255',
             'description' => 'nullable|string',
