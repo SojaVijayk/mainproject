@@ -138,7 +138,7 @@ class TapalController extends Controller
     public function show(Tapal $tapal)
     {
         $this->authorize('view', $tapal);
-$pageConfigs = ['myLayout' => 'horizontal'];
+        $pageConfigs = ['myLayout' => 'horizontal'];
         $tapal->load(['attachments', 'movements.fromUser', 'movements.toUser', 'creator', 'currentHolder']);
         $users = User::where('id', '!=', Auth::id())->get();
         return view('tapals.show', compact('tapal', 'users'),['pageConfigs'=> $pageConfigs]);

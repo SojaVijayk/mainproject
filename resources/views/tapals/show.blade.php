@@ -111,7 +111,8 @@
         ->sortByDesc('created_at')
         ->first();
 
-        $lastMovement = $tapal->movements->last();
+     //   $lastMovement = $tapal->movements->last();
+         $lastMovement = $tapal->movements->where('is_assignment',1)->last();
 
 @endphp
 <div class="card">
