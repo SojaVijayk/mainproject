@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\TapalAssigned;
 use App\Mail\TapalNotification;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class TapalController extends Controller
 {
@@ -19,6 +20,9 @@ class TapalController extends Controller
 
     {
        $pageConfigs = ['myLayout' => 'horizontal'];
+      $user = auth()->user();
+       $stats = $this->getTapalStatistics($user);
+
         $tapals = Tapal::with(['creator', 'currentHolder'])
             ->where('created_by', Auth::id())
             ->orWhereHas('movements', function($query) {
@@ -27,7 +31,7 @@ class TapalController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('tapals.index', compact('tapals'),['pageConfigs'=> $pageConfigs]);
+        return view('tapals.index', compact('tapals','stats'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function create()
@@ -289,7 +293,7 @@ $pageConfigs = ['myLayout' => 'horizontal'];
         ->with('success', 'Tapal marked as completed!');
     }
 
-    public function tracing(Request $request)
+    public function tracingOLD(Request $request)
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
         $query = Tapal::query()->with(['creator', 'currentHolder', 'movements.fromUser', 'movements.toUser']);
@@ -318,11 +322,256 @@ $pageConfigs = ['myLayout' => 'horizontal'];
 
         return view('tapals.tracing', compact('tapals'),['pageConfigs'=> $pageConfigs]);
     }
+    public function tracing(Request $request)
+
+    {
+       $pageConfigs = ['myLayout' => 'horizontal'];
+        // Get filter parameters
+        $search = $request->input('search');
+        $userId = $request->input('user_id');
+        $status = $request->input('status');
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+
+        // Get statistics data
+        $stats = $this->getTracingStatistics($request);
+
+        // Get users for filter dropdown
+        $users = User::where('active', 1)->orderBy('name')->get();
+
+        // Query for tapals
+        $query = Tapal::with(['creator', 'currentHolder', 'movements.fromUser', 'movements.toUser']);
+
+        // Apply filters
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('tapal_number', 'like', "%$search%")
+                  ->orWhere('subject', 'like', "%$search%")
+                   ->orWhere('ref_number', 'like', "%{$search}%")
+                  ->orWhere('from_name', 'like', "%{$search}%")
+                  ->orWhere('from_address', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($userId) {
+            $query->where(function($q) use ($userId) {
+                $q->where('created_by', $userId)
+                  ->orWhereHas('movements', function($q) use ($userId) {
+                      $q->where('to_user_id', $userId)
+                      ->where('is_assignment', 1);
+                  });
+            });
+        }
+
+        if ($status) {
+            if ($status == 'Overdue') {
+                $query->whereHas('movements', function($q) {
+                    // $q->where('deadline', '<', now())
+                      $q->where(function($q) {
+                          $q->where('status', 'like', '%pending%')
+                            ->orWhere('status', 'like', '%Accepted%');
+                      });
+                });
+            } else {
+                $query->whereHas('movements', function($q) use ($status) {
+                    $q->where('status', 'like', "%$status%");
+                });
+            }
+        }
+
+        if ($fromDate && $fromDate!='') {
+            $query->whereDate('created_at', '>=', $fromDate);
+        }
+
+        if ($toDate && $toDate!='') {
+            $query->whereDate('created_at', '<=', $toDate);
+        }
+
+        $tapals = $query->latest()->paginate(25);
+
+        return view('tapals.tracing', compact('tapals', 'stats', 'users'),['pageConfigs'=> $pageConfigs]);
+    }
+
+    protected function getTracingStatistics(Request $request)
+    {
+        // Base query for all tapals (can be filtered by date range)
+        $baseQuery = Tapal::query();
+
+        if ($request->has('from_date') && $request->input('from_date') != '') {
+            $baseQuery->whereDate('created_at', '>=', $request->input('from_date'));
+        }
+
+        if ($request->has('to_date') && $request->input('to_date') != '') {
+            $baseQuery->whereDate('created_at', '<=', $request->input('to_date'));
+        }
+
+        // Total counts
+        $totalTapals = $baseQuery->count();
+        $totalPending = $this->getStatusCount($baseQuery, 'pending');
+        $totalCompleted = $this->getStatusCount($baseQuery, 'completed');
+        $totalInProgress = $this->getStatusCount($baseQuery, 'in progress');
+        $totalOverdue = $this->getOverdueCountTracing($baseQuery);
+
+        // Percentage calculations
+        $pendingPercentage = $totalTapals > 0 ? round(($totalPending / $totalTapals) * 100, 2) : 0;
+        $completedPercentage = $totalTapals > 0 ? round(($totalCompleted / $totalTapals) * 100, 2) : 0;
+        $overduePercentage = $totalPending > 0 ? round(($totalOverdue / $totalPending) * 100, 2) : 0;
+
+        // Top users by performance
+        // $topUsers = User::withCount([
+        //     'tapalMovements as pending_count' => function($query) {
+        //         $query->where(function($q) {
+        //             $q->where('status', 'like', '%pending%')
+        //               ->orWhere('status', 'like', '%in progress%');
+        //         });
+        //     },
+        //     'tapalMovements as completed_count' => function($query) {
+        //         $query->where('status', 'like', '%completed%');
+        //     }
+        // ])->orderByDesc('completed_count')
+        //   ->limit(5)
+        //   ->get();
+
+
+        return [
+            'total_tapals' => $totalTapals,
+            'total_pending' => $totalPending,
+            'total_completed' => $totalCompleted,
+            'total_in_progress' => $totalInProgress,
+            'total_overdue' => $totalOverdue,
+            'pending_percentage' => $pendingPercentage,
+            'completed_percentage' => $completedPercentage,
+            'overdue_percentage' => $overduePercentage
+
+        ];
+    }
+
+    protected function getStatusCount($query, $status)
+    {
+        $clone = clone $query;
+        return $clone->whereHas('movements', function($q) use ($status) {
+            $q->where('status', 'like', "%$status%");
+        })->count();
+    }
+    protected function getOverdueCountTracing($query)
+    {
+        $clone = clone $query;
+        return $clone->whereHas('movements', function($q) {
+            // $q->where('deadline', '<', now())
+              $q->where(function($q) {
+                  $q->where('status', 'like', '%pending%')
+                    ->orWhere('status', 'like', '%in progress%');
+              });
+        })->count();
+    }
 
     public function tracingShow(Tapal $tapal)
     {
        $pageConfigs = ['myLayout' => 'horizontal'];
         $tapal->load(['creator', 'currentHolder', 'movements.fromUser', 'movements.toUser', 'attachments']);
         return view('tapals.tracing_show', compact('tapal'),['pageConfigs'=> $pageConfigs]);
+    }
+
+     protected function getTapalStatistics($user)
+    {
+        $today = Carbon::today();
+        $monthStart = Carbon::now()->startOfMonth();
+        $yearStart = Carbon::now()->startOfYear();
+
+        // Base query for user's tapals
+        $userTapalsQuery = Tapal::where(function($query) use ($user) {
+            $query->where('current_holder_id', $user->id)
+                ->orWhereHas('movements', function($q) use ($user) {
+                    $q->where('to_user_id', $user->id);
+                });
+        });
+
+        // Counts for different time periods
+        $stats = [
+            'today_count' => $userTapalsQuery->whereDate('created_at', $today)->count(),
+            'today_completed' => $this->getCompletedCount($user, $today),
+
+            'month_count' => $userTapalsQuery->where('created_at', '>=', $monthStart)->count(),
+            'month_completed' => $this->getCompletedCount($user, $monthStart),
+
+            'year_count' => $userTapalsQuery->where('created_at', '>=', $yearStart)->count(),
+            'year_completed' => $this->getCompletedCount($user, $yearStart),
+
+            'pending_count' => $this->getPendingCount($user),
+            'completed_count' => $this->getCompletedCount($user),
+            'overdue_count' => $this->getOverdueCount($user),
+
+            'monthly_labels' => $this->getMonthlyLabels(),
+            'monthly_data' => $this->getMonthlyData($user),
+        ];
+
+        return $stats;
+    }
+
+    protected function getPendingCount($user)
+    {
+        return Tapal::whereHas('movements', function($query) use ($user) {
+            $query->where('to_user_id', $user->id)
+                ->where(function($q) {
+                    $q->where('status', 'like', '%Pending%')
+                      ->orWhere('status', 'like', '%Accepted%');
+                });
+        })->count();
+    }
+
+    protected function getCompletedCount($user, $since = null)
+    {
+        $query = Tapal::whereHas('movements', function($query) use ($user) {
+            $query->where('to_user_id', $user->id)
+                ->where('status', 'like', '%Completed%');
+        });
+
+        if ($since) {
+            $query->where('created_at', '>=', $since);
+        }
+
+        return $query->count();
+    }
+
+    protected function getOverdueCount($user)
+    {
+        return Tapal::whereHas('movements', function($query) use ($user) {
+            $query->where('to_user_id', $user->id)
+                // ->where('deadline', '<', now())
+                ->where(function($q) {
+                    $q->where('status', 'like', '%Pending%')
+                      ->orWhere('status', 'like', '%Accepted%');
+                });
+        })->count();
+    }
+
+    protected function getMonthlyLabels()
+    {
+        $labels = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $labels[] = now()->subMonths($i)->format('M Y');
+        }
+        return $labels;
+    }
+
+    protected function getMonthlyData($user)
+    {
+        $data = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $count = Tapal::where(function($query) use ($user) {
+                    $query->where('current_holder_id', $user->id)
+                        ->orWhereHas('movements', function($q) use ($user) {
+                            $q->where('to_user_id', $user->id);
+                        });
+                })
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->count();
+
+            $data[] = $count;
+        }
+        return $data;
     }
 }
