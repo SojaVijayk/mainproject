@@ -216,6 +216,28 @@
           "permission": "project-list"
         }
       ]
+    },
+    {
+      "name": "Tapals",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "tapals",
+      "permission": 1,
+      "submenu": [
+        {
+          "url": "/tapals",
+          "icon": "menu-icon tf-icons ti ti-user",
+          "name": "My Tapals",
+          "slug": "tapals",
+          "permission": 1
+        },
+        {
+          "url": "/tapal/tracing",
+          "icon": "menu-icon tf-icons ti ti-user",
+          "name": "Tapals Tracing",
+          "slug": "tapal-tracing",
+          "permission": "tapal-tracing"
+        }
+      ]
     }
   ]
 }

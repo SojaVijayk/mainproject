@@ -234,6 +234,58 @@ Route::get('/events/loadBookingsAllVenue/{event_id}', $controller_path . '\event
 Route::get('/getVenues', $controller_path . '\VenuesController@getVenues')->name('venues-list');
 Route::post('/venueAvailability', $controller_path . '\VenuesController@venueAvailability')->name('venues-list');
 
+ // Tapal Routes
+    // Route::resource('tapals', $controller_path .'\TapalController');
+    // List all tapals
+Route::get('tapals', $controller_path .'\TapalController@index')->name('tapals.index');
+
+// Show create form
+Route::get('tapals/create', $controller_path .'\TapalController@create')->name('tapals.create');
+
+// Store new tapal
+Route::post('tapals', $controller_path .'\TapalController@store')->name('tapals.store');
+
+// Show a specific tapal
+Route::get('tapals/{tapal}', $controller_path .'\TapalController@show')->name('tapals.show');
+
+// Show edit form
+Route::get('tapals/{tapal}/edit', $controller_path .'\TapalController@edit')->name('tapals.edit');
+
+// Update a tapal
+Route::put('tapals/{tapal}', $controller_path .'\TapalController@update')->name('tapals.update');
+
+// Delete a tapal
+Route::delete('tapals/{tapal}', $controller_path .'\TapalController@destroy')->name('tapals.destroy');
+
+    // Additional Tapal Routes
+    Route::post('/tapals/{tapal}/forward', $controller_path .'\TapalController@forward')->name('tapals.forward');
+    Route::post('/tapals/movements/{movement}/accept', $controller_path .'\TapalController@accept')->name('tapals.accept');
+    // Route::post('/tapals/movements/{movement}/complete', $controller_path .'\TapalController@complete')->name('tapals.complete');
+    Route::post('/tapals/movements/{movement}/complete', $controller_path .'\TapalController@complete')
+    ->name('tapals.complete');
+
+    // Tracing Routes
+
+     Route::get('tapal/tracing',$controller_path .'\TapalController@tracing')->name('tapals.tracing');
+    Route::get('/tapal/tracing/{tapal}', $controller_path .'\TapalController@tracingShow')->name('tapals.tracing.show');
+
+    Route::delete('/attachments/{attachment}', $controller_path .'\AttachmentController@destroy')->name('attachments.destroy');
+
+
+//  // Tapal Routes
+//     Route::resource('tapals', $controller_path .'\TapalController');
+
+//     // Additional Tapal Routes
+//     Route::post('/tapals/{tapal}/forward', $controller_path .'\TapalController@forward')->name('tapals.forward');
+//     Route::post('/tapals/movements/{movement}/accept', $controller_path .'\TapalController@accept')->name('tapals.accept');
+//     Route::post('/tapals/movements/{movement}/update-status', $controller_path .'\TapalController@updateStatus')->name('tapals.update-status');
+
+//     // Tracing Routes
+//     Route::get('/tapals/tracing', $controller_path .'\TapalController@tracing')->name('tapals.tracing');
+//     Route::get('/tapals/tracing/{tapal}', $controller_path .'\TapalController@tracingShow')->name('tapals.tracing.show');
+
+
+
 
 });//middlewear end
 
