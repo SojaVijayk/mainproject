@@ -30,6 +30,12 @@
 
 @section('page-script')
 <script>
+   $(document).ready(function() {
+         $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true
+        });
+        });
    document.addEventListener('DOMContentLoaded', function() {
         const inwardMode = document.getElementById('inward_mode');
         const mailFields = document.getElementById('mail_fields');
@@ -95,14 +101,14 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="inward_date">Inward Date*</label>
-                        <input type="date" name="inward_date" id="inward_date" class="form-control"
+                        <input type="text" name="inward_date" id="inward_date" class="form-control datepicker"
                                value="{{ $tapal->inward_date }}" required>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="received_date">Received Date*</label>
-                        <input type="date" name="received_date" id="received_date" class="form-control"
+                        <input type="text" name="received_date" id="received_date" class="form-control datepicker"
                                value="{{ $tapal->received_date }}" required>
                     </div>
                 </div>
@@ -165,7 +171,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="letter_date">Letter Date</label>
-                        <input type="date" name="letter_date" id="letter_date" class="form-control"
+                        <input type="text" name="letter_date" id="letter_date" class="form-control datepicker"
                                value="{{ $tapal->letter_date  }}">
                     </div>
                 </div>

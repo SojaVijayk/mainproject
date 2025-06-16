@@ -251,7 +251,7 @@
                     @foreach($tapals as $tapal)
                     @php
 
-                        $lastMovement = $tapal->movements->last();
+                        $lastMovement = $tapal->movements->where('is_assignment',1)->last();
                         $fromInfo = $tapal->type == 'inward' ?
                             ($tapal->inward_mode == 'By Mail' ? $tapal->mail_id : $tapal->from_name) :
                             $tapal->creator->name;

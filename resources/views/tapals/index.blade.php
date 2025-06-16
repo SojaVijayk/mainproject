@@ -231,7 +231,7 @@
                     <td>{{ $tapal->currentHolder ? $tapal->currentHolder->name : 'N/A' }}</td>
                     <td>
                         @php
-                            $lastMovement = $tapal->movements->last();
+                            $lastMovement = $tapal->movements->where('is_assignment',1)->last();
                         @endphp
                         @if($lastMovement)
                             {{ $lastMovement->status }}
@@ -244,7 +244,7 @@
                     </td>
                     <td>
                         <a href="{{ route('tapals.show', $tapal->id) }}" class="btn btn-sm btn-success">View</a>
-                        @if($tapal->created_by == Auth::id())
+                        @if($tapal->created_by == Auth::id() && $lastMovement->status != 'Accepted' && $lastMovement->status!= 'Completed')
                             <a href="{{ route('tapals.edit', $tapal->id) }}" class="btn btn-sm btn-primary">Edit</a>
                         @endif
                     </td>

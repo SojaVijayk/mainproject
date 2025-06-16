@@ -139,7 +139,7 @@
                 @endif
                 @if($userAssignment && $userAssignment->status !== 'Completed')
     <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#completeModal">
-        <i class="fas fa-check-circle"></i> Complete
+        <i class="fas fa-check-circle"></i> Take Action
     </button>
 
 <!-- Completion Modal -->

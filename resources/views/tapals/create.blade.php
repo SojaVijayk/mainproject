@@ -33,6 +33,10 @@
 {{--  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>  --}}
 <script>
     $(document).ready(function() {
+         $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true
+        });
         $('#inward_mode').change(function() {
             if ($(this).val() === 'By Mail') {
                 $('#mail_fields').show();
@@ -92,13 +96,13 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="inward_date">Inward Date*</label>
-                        <input type="date" name="inward_date" id="inward_date" class="form-control" required>
+                        <input type="text" name="inward_date" id="inward_date" class="form-control datepicker" required>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="received_date">Received Date*</label>
-                        <input type="date" name="received_date" id="received_date" class="form-control" required>
+                        <input type="text" name="received_date" id="received_date" class="form-control datepicker" required>
                     </div>
                 </div>
 </div>
@@ -155,7 +159,7 @@
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="letter_date">Letter Date</label>
-                        <input type="date" name="letter_date" id="letter_date" class="form-control">
+                        <input type="text" name="letter_date" id="letter_date" class="form-control datepicker">
                     </div>
                 </div>
                   <div class="col-md-6">
