@@ -101,6 +101,32 @@
 
 
     </div>
+    <div class="row mb-5">
+       <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
+                <span class=" me-2">Movement Status Repot</span>
+                <div class="card-header-elements">
+                  <span
+                    class="badge  rounded-pill {{$report > 0 ? 'bg-danger' : 'bg-secondary'}}">{{$report}}</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <a href="/movement/approve-list?report=1" class="btn btn-primary">View</a>
+                <p class="card-text pt-4"><small class="text-muted">Last updated 1 mins ago</small></p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" " src="https://lottie.host/573302e1-7a3c-4844-b6e8-00e9c20c9367/O43rezaDwA.json"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!--/ Notification -->
     @endcan
 

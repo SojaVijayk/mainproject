@@ -73,14 +73,15 @@ $(function () {
       columns: [
         // columns according to JSON
         { data: '' },
-        {{--  { data: 'designation' },  --}}
+
         { data: 'title' },
         { data: 'type' },
         {{--  { data: 'start_date' },
         { data: 'end_date' },  --}}
         { data: 'requested_at' },
         { data: 'status' },
-        { data: 'action_by' },
+        { data: 'action_by'},
+        { data: 'report'},
         { data: '' }
       ],
       columnDefs: [
@@ -96,15 +97,7 @@ $(function () {
           }
         },
 
-        {{--  {
-          // Name
-          targets: 1,
-          render: function (data, type, full, meta) {
-            var $name = full['name'];
-            var $designation = full['designation'];
-            return '<span class="text-nowrap">' + $name + '<br>' + $designation + '</span>';
-          }
-        },  --}}
+
         {
           // Name
           targets: 1,
@@ -169,7 +162,7 @@ $(function () {
           }
         },
         {
-          // Name
+          // action
           targets: 5,
           render: function (data, type, full, meta) {
             var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
@@ -179,6 +172,31 @@ $(function () {
 
           }
         },
+        {
+          // report
+          targets: 6,
+          render: function (data, type, full, meta) {
+            if(full['type'] == 'Official' && new Date(full['start_date']) >= new Date('2025-06-01')){
+                  if(full['report'] == '' || full['report'] == null){
+                    return ('<span class="text-nowrap"><button class="btn btn-secondary btn-sm  me-2 submit-report" data-id="'+full['id']+'" data-bs-target="#submitReportModal" data-bs-toggle="modal" data-bs-dismiss="modal">Submit Report</button> </span>');
+
+                  }
+                  else{
+                    return ('<span class="text-nowrap"><button class="btn btn-primary btn-sm  me-2 view-report" data-id="'+full['id']+'" data-bs-target="#viewReportModal" data-bs-toggle="modal" data-bs-dismiss="modal">View Report</button> </span>');
+
+                  }
+               }
+               else{
+                        return (
+                    '<span class="text-nowrap">N/A' +
+                    '</span>'
+                  );
+               }
+
+          }
+        },
+
+
 
         {
           // Actions
@@ -194,12 +212,11 @@ $(function () {
               );
             }
             else{
-              return (
-              '<span class="text-nowrap">' +
-              '</span>'
-            );
-            }
-
+                        return (
+                    '<span class="text-nowrap">' +
+                    '</span>'
+                  );
+               }
           }
         }
       ],
@@ -314,6 +331,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
   var designationEditList = document.querySelectorAll('.datatables-designation .edit-designation'),
     permissionAdd = document.querySelector('.add-new-designation'),
     designationSubmit = document.querySelector('.submit-designation'),
+     statusReportSubmit = document.querySelector('.submit-report'),
     designationTitle = document.querySelector('.designation-title');
 
     $('#DesignationModal').on('hidden.bs.modal', function (e) {
@@ -326,6 +344,16 @@ document.addEventListener('DOMContentLoaded', function (e) {
            .end();
     })
 
+
+$("#eventLabel").change(function () {
+  if($('#eventLabel').val() == 'Official'){
+    $('.eventReport').show();
+  }
+  else{
+    $('.eventReport').hide();
+  }
+
+});
 
     $("#toDate").change(function () {
       var startDate = $("#fromDate").val();
@@ -390,6 +418,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       var  end_time =  $("#toTime").val();
       var  location =  $("#eventLocation").val();
       var  description =  $("#eventDescription").val();
+       var  report =  $("#eventReport").val();
       var request_type =   $("#submit_designation").data('type');
       var desig_id =   $("#submit_designation").data('id');
 
@@ -407,6 +436,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               end_time:end_time,
               location:location,
               description:description,
+               report:report,
               "_token": "{{ csrf_token() }}",
           },
             url: `${baseUrl}movement/store`,
@@ -453,6 +483,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               end_time:end_time,
               location:location,
               description:description,
+               report:report,
 
               "_token": "{{ csrf_token() }}",
 
@@ -489,6 +520,51 @@ document.addEventListener('DOMContentLoaded', function (e) {
             }
           });
         }
+    }
+
+     statusReportSubmit.onclick = function () {
+
+      var  report =  $("#statusReport").val();
+      var movement_id = $(this).data('id');
+      {{--  var movement_id =   $("#submit_report").data('id');  --}}
+
+          $.ajax({
+            data:  {
+               report:report,
+              "_token": "{{ csrf_token() }}",
+          },
+            url: `${baseUrl}movement/submit-report/${movement_id}`,
+            type: 'POST',
+
+            success: function (status) {
+
+                $('#DesignationModal').modal('hide');
+              // sweetalert
+              Swal.fire({
+                icon: 'success',
+                title: `Successfully ${status}!`,
+                text: `Designation ${status} Successfully.`,
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              }).then((result) => {
+               window.location.reload();
+              });
+
+            },
+            error: function (err) {
+              $('#DesignationModal').modal('hide');
+              Swal.fire({
+                title: 'Oh Sorry!',
+                text: `${status}`,
+                icon: 'error',
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+            }
+          });
+
     }
 
 
@@ -551,6 +627,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           $("#toTime").val(data.designation.end_time);
           $("#eventLocation").val(data.designation.location);
           $("#eventDescription").val(data.designation.description);
+          $("#eventReport").val(data.designation.report);
 
           $("#submit_designation").data('id',data.designation.id);
 
@@ -565,6 +642,39 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
 
 
+    $('.datatables-designation tbody').on('click', '.submit-report', function () {
+
+        var desig_id = $(this).data('id');
+        $("#submit_report").attr('data-id',desig_id);
+         });
+
+
+          $('.datatables-designation tbody').on('click', '.view-report', function () {
+
+        var desig_id = $(this).data('id');
+        $("#submit_designation").attr('data-id',desig_id);
+        $.ajaxSetup({
+          headers: {
+              'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+          }
+      })
+      $.ajax({
+      type: "GET",
+      url: '/movement/edit/'+desig_id,
+      success: function (data) {
+        console.log(data);
+
+          $("#eventReportData").html(data.designation.report);
+          $("#eventReport_updated_at").html(data.designation.report_updated_at);
+
+      },
+      error: function(data){
+
+      }
+  });
+
+
+    });
 
 })();
 
@@ -603,6 +713,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           <th>Requested_at</th>
           <th>Status</th>
           <th>Action By</th>
+           <th>Report</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -614,5 +725,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
 <!-- Modal -->
 @include('_partials/_modals/modal-movement')
+@include('_partials/_modals/modal-movement-status-report-submit')
+@include('_partials/_modals/modal-movement-status-report-view')
+
 <!-- /Modal -->
 @endsection

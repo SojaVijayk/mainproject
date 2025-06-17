@@ -160,6 +160,7 @@ Route::get('/movement/approve-list', $controller_path . '\Attendance\MovementCon
 Route::get('/movement/request-list', $controller_path . '\Attendance\MovementController@requestList')->name('attendance-movement-request-list');
 Route::get('/movement/list', $controller_path . '\Attendance\MovementController@movementList')->name('attendance-movement-list');
 Route::post('/movement/action/{id}', $controller_path . '\Attendance\MovementController@action')->name('attendance-movement-action');
+Route::post('/movement/submit-report/{id}', $controller_path . '\Attendance\MovementController@reportSubmit')->name('attendance-movement-submit-report');
 Route::POST('/movement/downloadBulk', $controller_path . '\Attendance\MovementController@downloadBulk')->name('attendance-download-bulk');
 
 Route::get('/leave/request', $controller_path . '\Leave\LeaveRequestController@index')->name('attendance-leave-request');

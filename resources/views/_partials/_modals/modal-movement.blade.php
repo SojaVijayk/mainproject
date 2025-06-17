@@ -22,7 +22,7 @@
               <option data-label="danger" value="Compensatory off">Compensatory off</option>
               {{--  <option data-label="warning" value="Meeting">Meeting</option>
               <option data-label="success" value="Training">Training</option>  --}}
-              <option data-label="info" value="Official">Official</option>
+              <option data-label="info" value="Official" selected>Official</option>
             </select>
           </div>
           <div class="row">
@@ -57,6 +57,12 @@
           <div class="mb-3">
             <label class="form-label" for="eventDescription">Description</label>
             <textarea class="form-control" name="eventDescription" id="eventDescription"></textarea>
+          </div>
+
+
+           <div class="mb-3 eventReport">
+            <label class="form-label" for="eventReport">Report</label>
+            <textarea class="form-control" name="eventReport" id="eventReport"></textarea>
           </div>
 
           <div class="col-12 text-center demo-vertical-spacing">

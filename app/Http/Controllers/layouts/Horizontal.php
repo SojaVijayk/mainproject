@@ -25,10 +25,13 @@ class Horizontal extends Controller
     $pending_movement = Movement::join("employees","employees.user_id","=","movements.user_id")
     ->select('movements.*')->where('employees.reporting_officer',$id)->where('movements.status',0)->count();
 
+     $report = Movement::join("employees","employees.user_id","=","movements.user_id")
+    ->select('movements.*')->where('employees.reporting_officer',$id)->where('movements.report', '!=', null)->count();
+
     $pending_misspunch = MissedPunch::join("employees","employees.user_id","=","missed_punches.user_id")
       ->select('missed_punchess.*')->where('employees.reporting_officer',$id)->where('missed_punches.status',0)->count();
 
     // return view('content.dashboard.dashboards-analytics',['pageConfigs'=> $pageConfigs]);
-    return view('content.dashboard.dashboards-user',['pageConfigs'=> $pageConfigs],compact('pending_leave','pending_movement','pending_misspunch'));
+    return view('content.dashboard.dashboards-user',['pageConfigs'=> $pageConfigs],compact('pending_leave','pending_movement','pending_misspunch','report'));
   }
 }

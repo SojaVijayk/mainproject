@@ -92,10 +92,23 @@ class MovementController extends Controller
   } catch (\Exception $e) {
       return response()->json(['error' => 'Invalid date format'], 400);
   }
-
+    if($request->input('type') == 'Official'){
+       if ($request->has('report') && $request->input('report') != '') {
+        $report = $request->input('report');
+         $report_updated_at = $date;
+        }
+        else{
+          $report = NULL;
+          $report_updated_at = NULL;
+        }
+      }
+      else{
+        $report = NULL;
+        $report_updated_at = NULL;
+      }
       $permission = Movement::create(['title' => $request->input('title'),'type' => $request->input('type')
       ,'start_date' => $from,'start_time' => $request->input('start_time'),'end_date' => $to,'end_time' => $request->input('end_time')
-      ,'location' => $request->input('location'),'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date
+      ,'location' => $request->input('location'),'description' => $request->input('description'),'report' => $report,'report_updated_at' => $report_updated_at,'user_id' => $id,'status' => 0,'requested_at' => $date
     ]);
 
       if ($permission) {
@@ -168,6 +181,20 @@ class MovementController extends Controller
   } catch (\Exception $e) {
       return response()->json(['error' => 'Invalid date format'], 400);
   }
+       if($request->input('type') == 'Official'){
+       if ($request->has('report') && $request->input('report') != '') {
+        $report = $request->input('report');
+         $report_updated_at = $date;
+        }
+        else{
+          $report = NULL;
+          $report_updated_at = NULL;
+        }
+      }
+      else{
+        $report = NULL;
+        $report_updated_at = NULL;
+      }
 
       $designation = Movement::find($id);
 
@@ -180,6 +207,8 @@ class MovementController extends Controller
       $designation->end_time = $request->input('end_time');
       $designation->location = $request->input('location');
       $designation->description = $request->input('description');
+      $designation->report = $report;
+      $designation->report_updated_at = $report_updated_at;
       $designation->requested_at = $date;
       $designation->save();
 
@@ -204,7 +233,7 @@ class MovementController extends Controller
     }
 
 
-    public function approveList()
+    public function approveList(Request $request)
     {
 
 
@@ -221,24 +250,42 @@ class MovementController extends Controller
       ->select('movements.*')->where('employees.reporting_officer',$id)->where('movements.status',0)->count();
       $rejected =Movement::join("employees","employees.user_id","=","movements.user_id")
       ->select('movements.*')->where('employees.reporting_officer',$id)->where('movements.status',2)->count();
+       $report =Movement::join("employees","employees.user_id","=","movements.user_id")
+      ->select('movements.*')->where('employees.reporting_officer',$id)->where('movements.report', '!=', null)->count();
 // echo $pending;exit;
+       $pageConfigs = ['myLayout' => 'horizontal'];
+       if ($request->has('report')){
+        return view('content.attendance.movement-approve-list-with-report',compact('totalCount','approved','pending','rejected','report'),['pageConfigs'=> $pageConfigs]);
+
+       }
 
 
-
-      $pageConfigs = ['myLayout' => 'horizontal'];
-      return view('content.attendance.movement-approve-list',compact('totalCount','approved','pending','rejected'),['pageConfigs'=> $pageConfigs]);
+      return view('content.attendance.movement-approve-list',compact('totalCount','approved','pending','rejected','report'),['pageConfigs'=> $pageConfigs]);
     }
-    public function requestList()
+    public function requestList(Request $request)
     {
 
       $id= Auth::user()->id;
 
-      $list = Movement::join("employees","employees.user_id","=","movements.user_id")
+        if ($request->has('report')){
+          $list = Movement::join("employees","employees.user_id","=","movements.user_id")
+      ->leftjoin("designations","designations.id","=","employees.designation")
+      ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
+      ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),DB::raw("DATE_FORMAT(movements.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(movements.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('employees.reporting_officer',$id)
+      ->where('movements.report', '!=', null)
+      ->orderBy('movements.status')
+      ->orderBy('movements.start_date', 'DESC')->get();
+        }
+        else{
+           $list = Movement::join("employees","employees.user_id","=","movements.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("employees as emp","emp.user_id","=","movements.action_by")
       ->select('movements.*',DB::raw("DATE_FORMAT(movements.start_date, '%d-%b-%Y') as formatted_start_date"),DB::raw("DATE_FORMAT(movements.end_date, '%d-%b-%Y') as formatted_end_date"),DB::raw("DATE_FORMAT(movements.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),'employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(movements.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('employees.reporting_officer',$id)
       ->orderBy('movements.status')
       ->orderBy('movements.start_date', 'DESC')->get();
+        }
+
+
         //  $queries = DB::getQueryLog();
         //   $last_query = end($queries);
         //   dd($queries);
@@ -279,6 +326,28 @@ class MovementController extends Controller
         // Mail::to($user->email)->send(new LeaveRequestActionMail($mailData));
 
 
+        return response()->json('Updated');
+      } else {
+        return response()->json(['message' => "Internal Server Error"], 500);
+
+      }
+    }
+
+      public function reportSubmit(Request $request,  $id)
+    {
+        //
+        $this->validate($request, [
+          'report' => 'required',
+
+      ]);
+
+      $date= date('Y-m-d H:i:s');
+
+      $designation = Movement::find($id);
+      $designation->report = $request->input('report');
+      $designation->report_updated_at = $date;
+      $designation->save();
+      if ($designation) {
         return response()->json('Updated');
       } else {
         return response()->json(['message' => "Internal Server Error"], 500);

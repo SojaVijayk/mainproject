@@ -33,7 +33,7 @@ $(function () {
       1: { title: 'Active', class: 'bg-label-success' },
       2: { title: 'Inactive', class: 'bg-label-secondary' }
     };
-    permissionList = baseUrl + 'movement/request-list';
+    permissionList = baseUrl + 'movement/request-list?report=1';
 
   // ajax setup
   $.ajaxSetup({
