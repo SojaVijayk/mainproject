@@ -187,7 +187,7 @@
                 <div class="card-body">
                     <div class="form-group">
                         <label for="assigned_user_id">Assign To*</label>
-                        <select name="assigned_user_id" id="assigned_user_id" class="form-control" required>
+                        <select name="assigned_user_id[]" id="assigned_user_id" class="form-control select2" multiple required>
                             <option value="">Select User</option>
                             @foreach($users as $user)
                                 @if($user->id != Auth::id())

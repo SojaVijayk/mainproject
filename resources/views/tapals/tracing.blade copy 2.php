@@ -44,19 +44,19 @@
             new Chart(document.getElementById('statusChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Pending', 'Completed', 'Accepted', 'In Progress'],
+                    labels: ['Pending', 'Completed', 'Overdue', 'In Progress'],
                     datasets: [{
                         data: [
                             {{ $stats['total_pending'] }},
                             {{ $stats['total_completed'] }},
-                            {{ $stats['total_accepted'] ?? 0 }},
+                            {{ $stats['total_overdue'] }},
                             {{ $stats['total_in_progress'] }}
                         ],
                         backgroundColor: [
                             '#FFC107',
                             '#28A745',
-                            '#17A2B8',
-                            '#6C757D'
+                            '#DC3545',
+                            '#17A2B8'
                         ]
                     }]
                 },
@@ -70,11 +70,45 @@
                 }
             });
         }
+
+        {{--  if (document.getElementById('userPerformanceChart')) {
+            new Chart(document.getElementById('userPerformanceChart'), {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($stats['top_users']->pluck('name')) !!},
+                    datasets: [{
+                        label: 'Completed',
+                        data: {!! json_encode($stats['top_users']->pluck('completed_count')) !!},
+                        backgroundColor: '#28A745'
+                    }, {
+                        label: 'Pending',
+                        data: {!! json_encode($stats['top_users']->pluck('pending_count')) !!},
+                        backgroundColor: '#FFC107'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }  --}}
     });
 </script>
 @endsection
 
 @section('content')
+
+
+
+
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-0">Tapal Tracing</h5>
@@ -102,8 +136,8 @@
                         <select name="status" class="form-control">
                             <option value="">All Statuses</option>
                             <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="Accepted" {{ request('status') == 'Accepted' ? 'selected' : '' }}>Accepted</option>
-                            <option value="Completed" {{ request('status') == 'Completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="Completed" {{ request('status') == 'Accepted' ? 'selected' : '' }}>Accepted</option>
+                            <option value="Completed" {{ request('status') == 'Completed' ? 'selected' : '' }}>Action Takened</option>
                             <option value="Overdue" {{ request('status') == 'Overdue' ? 'selected' : '' }}>Overdue</option>
                         </select>
                     </div>
@@ -124,62 +158,79 @@
             </div>
         </form>
 
+
         <div class="row mb-4">
-            <!-- Summary Statistics -->
-            <div class="col-md-3 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Total Tapals</h5>
-                        <h2 class="mb-1">{{ $stats['total_tapals'] }}</h2>
-                        <small class="text-muted">All time</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Pending</h5>
-                        <h2 class="mb-1">{{ $stats['total_pending'] }}</h2>
-                        <small class="text-muted">{{ $stats['pending_percentage'] }}% of total</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Completed</h5>
-                        <h2 class="mb-1">{{ $stats['total_completed'] }}</h2>
-                        <small class="text-muted">{{ $stats['completed_percentage'] }}% of total</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Accepted</h5>
-                        <h2 class="mb-1">{{ $stats['total_accepted'] ?? 0 }}</h2>
-                        <small class="text-muted">{{ $stats['accepted_percentage'] ?? 0 }}% of total</small>
-                    </div>
-                </div>
+    <!-- Summary Statistics -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Total Tapals</h5>
+                <h2 class="mb-1">{{ $stats['total_tapals'] }}</h2>
+                <small class="text-muted">All time</small>
             </div>
         </div>
+    </div>
 
-        <!-- Charts Section -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Tapal Status Distribution</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="statusChart" height="250"></canvas>
-                    </div>
-                </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Pending</h5>
+                <h2 class="mb-1">{{ $stats['total_pending'] }}</h2>
+                <small class="text-muted">{{ $stats['pending_percentage'] }}% of total</small>
             </div>
         </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Completed</h5>
+                <h2 class="mb-1">{{ $stats['total_completed'] }}</h2>
+                <small class="text-muted">{{ $stats['completed_percentage'] }}% of total</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Overdue</h5>
+                <h2 class="mb-1">{{ $stats['total_overdue'] }}</h2>
+                <small class="text-muted">{{ $stats['overdue_percentage'] }}% of pending</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Charts Section -->
+    <div class="col-md-3 mb-2">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Tapal Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{--  <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Top Users Performance</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="userPerformanceChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+
+    --}}
+
+<div class="row mb-4">
+       <div class="col-md-12 mb-4">
+
 
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
@@ -190,19 +241,23 @@
                         <th>Type</th>
                         <th>From/To</th>
                         <th>Received Date</th>
-                        <th>Assigned To</th>
+                        <th>Current Holder</th>
                         <th>Status</th>
+
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($tapals as $tapal)
                     @php
-                        $lastMovement = $tapal->movements->sortByDesc('created_at')->first();
+
+                        $lastMovement = $tapal->movements->where('is_assignment',1)->last();
                         $fromInfo = $tapal->type == 'inward' ?
                             ($tapal->inward_mode == 'By Mail' ? $tapal->mail_id : $tapal->from_name) :
                             $tapal->creator->name;
                     @endphp
+
+
                     <tr>
                         <td>{{ $tapal->tapal_number }}</td>
                         <td>{{ $tapal->subject }}</td>
@@ -210,40 +265,30 @@
                         <td>{{ $fromInfo }}</td>
                         <td>{{ $tapal->received_date }}</td>
                         <td>
-                            @if($tapal->movements()->where('is_assignment', true)->count() > 0)
-                                <ul class="list-unstyled mb-0">
-                                     @foreach($tapal->assignments as $assignment)
-                            <li class="mt-2">
-                                {{ $assignment->toUser->name }}
-                                @if($assignment->completed_at != NULL)
-                                    <span class="badge bg-dark">Completed</span>
-                                     @elseif($assignment->is_accepted)
-                                    <span class="badge bg-success">Accepted</span>
-                                    @else
-                                    <span class="badge bg-warning">Pending</span>
-                                @endif
-                            </li>
-                        @endforeach
-                                </ul>
-                            @else
-                                <span class="text-muted">Not assigned</span>
-                            @endif
-                        </td>
+                          {{ $tapal->currentHolder->name ?? 'N/A' }}</td>
                         <td>
-                            @if($lastMovement)
-                                <span class="badge bg-{{
+                             @if($lastMovement)
+                                <span class="badge text-bg-{{
                                     $lastMovement->status == 'Completed' ? 'success' :
-                                    ($lastMovement->status == 'Accepted' ? 'info' :
+                                    ($lastMovement->status == 'Accepted' ? 'primary' :
                                     ($lastMovement->status == 'Pending' ? 'warning' : 'secondary'))
                                 }}">
                                     {{ $lastMovement->status }}
+                                    @if($lastMovement->status == 'Completed' && $lastMovement->completed_at)
+                                        <br><small>{{ $lastMovement->completed_at }}</small>
+                                    @endif
+                                     @if($lastMovement->status == 'Accepted' && $lastMovement->accepted_at)
+                                        <br><small>{{ $lastMovement->accepted_at }}</small>
+                                    @endif
                                 </span>
                             @endif
                         </td>
+
                         <td>
                             <a href="{{ route('tapals.tracing.show', $tapal->id) }}" class="btn btn-sm btn-info" title="View Details">
-                                <i class="fas fa-eye"></i>
+                                <i class="fas fa-search"></i>
                             </a>
+
                         </td>
                     </tr>
                     @endforeach
@@ -254,6 +299,14 @@
         <div class="mt-3">
             {{ $tapals->appends(request()->query())->links() }}
         </div>
+       </div>
+
+
+
+</div>
+
+
+
     </div>
 </div>
 @endsection

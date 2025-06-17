@@ -176,7 +176,7 @@
 
 <div class="row mb-4">
     <!-- Charts Section -->
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between">
                 <h5 class="mb-0">Tapal Status</h5>
@@ -187,7 +187,7 @@
         </div>
     </div>
 
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between">
                 <h5 class="mb-0">Monthly Trend</h5>
@@ -217,7 +217,7 @@
                     <th>Type</th>
                     <th>Created On</th>
                     <th>Current Holder</th>
-                    <th>Status</th>
+                    {{--  <th>Status</th>  --}}
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -228,8 +228,28 @@
                     <td>{{ $tapal->subject }}</td>
                     <td>{{ ucfirst($tapal->type) }}</td>
                     <td>{{ $tapal->created_at->format('d-M-Y') }}</td>
-                    <td>{{ $tapal->currentHolder ? $tapal->currentHolder->name : 'N/A' }}</td>
                     <td>
+                      {{--  {{ $tapal->currentHolder ? $tapal->currentHolder->name : 'N/A' }}  --}}
+                      @if($tapal->assignments()->count() > 0)
+                    <ul class="list-unstyled">
+                         @foreach($tapal->assignments as $assignment)
+                            <li class="mt-2">
+                                {{ $assignment->toUser->name }}
+                                @if($assignment->completed_at != NULL)
+                                    <span class="badge bg-dark">Completed</span>
+                                     @elseif($assignment->is_accepted)
+                                    <span class="badge bg-success">Accepted</span>
+                                    @else
+                                    <span class="badge bg-warning">Pending</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <span class="text-muted">Not assigned yet</span>
+                @endif
+                      </td>
+                    {{--  <td>
                         @php
                             $lastMovement = $tapal->movements->where('is_assignment',1)->last();
                         @endphp
@@ -241,10 +261,21 @@
                         @else
                             New
                         @endif
-                    </td>
+                    </td>  --}}
                     <td>
+                      @php
+
+    // Check if current user is the accepted primary holder
+    $isPrimaryHolder = $tapal->current_holder_id === Auth::id();
+
+    // Check if tapal has been accepted by anyone
+    $isAccepted = $tapal->movements()->where('is_accepted', true)->exists();
+
+    // Check if tapal is completed
+    $isCompleted = $tapal->movements()->where('status', 'Completed')->exists();
+                      @endphp
                         <a href="{{ route('tapals.show', $tapal->id) }}" class="btn btn-sm btn-success">View</a>
-                        @if($tapal->created_by == Auth::id() && $lastMovement->status != 'Accepted' && $lastMovement->status!= 'Completed')
+                        @if($tapal->created_by == Auth::id() && ! $isCompleted)
                             <a href="{{ route('tapals.edit', $tapal->id) }}" class="btn btn-sm btn-primary">Edit</a>
                         @endif
                     </td>

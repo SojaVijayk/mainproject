@@ -49,6 +49,37 @@ class Tapal extends Model
         return $this->belongsTo(User::class, 'current_holder_id');
     }
 
+public function assignments()
+{
+    return $this->hasMany(TapalMovement::class)->where('is_assignment', true);
+}
+    public function potentialAssignees()
+{
+    return $this->belongsToMany(User::class, 'tapal_movements', 'tapal_id', 'to_user_id')
+        ->wherePivot('is_primary', true)
+        ->wherePivot('is_accepted', false)
+        ->withPivot('status');
+}
+
+// Get the actual accepted user
+public function acceptedAssignee()
+{
+    return $this->belongsTo(User::class, 'current_holder_id');
+}
+
+// Check if current user can accept
+public function canAccept($userId)
+{
+    return $this->potentialAssignees()->where('to_user_id', $userId)->exists()
+           && !$this->acceptedAssignee;
+}
+public function isAccepted()
+{
+    return $this->current_holder_id !== null;
+}
+
+
+
     protected static function boot()
     {
         parent::boot();

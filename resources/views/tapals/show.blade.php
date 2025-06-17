@@ -92,7 +92,7 @@
     }
 </style>
 {{--  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>  --}}
-<script>
+
    <script>
     $(document).ready(function() {
         $('.select2').select2({
@@ -105,31 +105,55 @@
 
 @section('content')
 @php
-    $userAssignment = $tapal->movements
-        ->where('to_user_id', Auth::id())
-        ->where('is_assignment', true)
-        ->sortByDesc('created_at')
-        ->first();
 
      //   $lastMovement = $tapal->movements->last();
          $lastMovement = $tapal->movements->where('is_assignment',1)->last();
+
+          // Get all assignment movements for current user
+    $userAssignments = $tapal->movements()
+        ->where('to_user_id', Auth::id())
+        ->where('is_assignment', true)
+        ->get();
+
+    // Check if current user has any assignments
+    $hasAssignment = $userAssignments->count() > 0;
+
+    // Get the latest movement (for status display)
+    $lastMovement = $tapal->movements()->latest()->first();
+
+    // Check if current user is the accepted primary holder
+    $isPrimaryHolder = $tapal->current_holder_id === Auth::id();
+
+    // Check if tapal has been accepted by anyone
+    $isAccepted = $tapal->movements()->where('is_accepted', true)->exists();
+
+    // Check if tapal is completed
+    $isCompleted = $tapal->movements()->where('status', 'Completed')->exists();
 
 @endphp
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Tapal Details - {{ $tapal->tapal_number }}</h3>
         <div class="card-tools">
-            @if($tapal->created_by == Auth::id()  && $lastMovement->status != 'Completed')
+            @if($tapal->created_by == Auth::id()  && !$isCompleted)
                 <a href="{{ route('tapals.edit', $tapal->id) }}" class="btn btn-primary">
                     <i class="fas fa-edit"></i> Edit
                 </a>
             @endif
-            @if($tapal->current_holder_id == Auth::id() && $lastMovement->status != 'Completed')
+           {{-- Forward Button (for any assigned user) --}}
+            @if($hasAssignment && (!$isCompleted && !$isAccepted))
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#forwardModal">
                     <i class="fas fa-share"></i> Forward
                 </button>
-                @if($tapal->movements()->where('to_user_id', Auth::id())->where('status', 'Pending')->exists())
-                    <form action="{{ route('tapals.accept', $tapal->movements()->where('to_user_id', Auth::id())->latest()->first()->id) }}"
+            @endif
+
+                {{-- Accept Button (for any assigned user if not accepted yet) --}}
+            @if($hasAssignment && !$isAccepted)
+                {{--  <a href="{{ route('tapals.accept', $userAssignments->first()->id) }}"
+                   class="btn btn-info">
+                   <i class="fas fa-check"></i> Accept
+                </a>  --}}
+                <form action="{{ route('tapals.accept', $tapal->movements()->where('to_user_id', Auth::id())->latest()->first()->id) }}"
                           method="POST"
                           class="d-inline">
                         @csrf
@@ -137,17 +161,19 @@
                             <i class="fas fa-check"></i> Accept
                         </button>
                     </form>
-                @endif
-                @if($userAssignment && $userAssignment->status !== 'Completed')
-    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#completeModal">
-        <i class="fas fa-check-circle"></i> Take Action
-    </button>
+
+            @endif
+                {{-- Complete Button (for any assigned user) --}}
+            @if($hasAssignment && !$isCompleted && $isAccepted)
+                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#completeModal">
+                    <i class="fas fa-check-circle"></i> Take Action
+                </button>
 
 <!-- Completion Modal -->
  <div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="completeModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('tapals.complete', $userAssignment->id) }}" method="POST">
+                <form action="{{ route('tapals.complete', $userAssignments->first()->id) }}" method="POST">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title" id="completeModalLabel">Complete Tapal</h5>
@@ -169,10 +195,9 @@
             </div>
         </div>
     </div>
+@endif
 
 
-            @endif
-            @endif
         </div>
     </div>
     <div class="card-body">
@@ -234,7 +259,27 @@
                     </tr>
                     <tr>
                         <th>Current Holder</th>
-                        <td>{{ $tapal->currentHolder->name }}</td>
+                        <td>
+                          {{--  {{ $tapal->currentHolder->name }}  --}}
+                           @if($tapal->assignments()->count() > 0)
+                    <ul class="list-unstyled">
+                        @foreach($tapal->assignments as $assignment)
+                            <li class="mt-2">
+                                {{ $assignment->toUser->name }}
+                                @if($assignment->completed_at != NULL)
+                                    <span class="badge bg-dark">Completed</span>
+                                     @elseif($assignment->is_accepted)
+                                    <span class="badge bg-success">Accepted</span>
+                                    @else
+                                    <span class="badge bg-warning">Pending</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <span class="text-muted">Not assigned yet</span>
+                @endif
+                        </td>
                     </tr>
                     <tr>
                         <th>Status</th>

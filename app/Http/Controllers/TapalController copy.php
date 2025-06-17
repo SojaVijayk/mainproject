@@ -13,7 +13,6 @@ use App\Mail\TapalAssigned;
 use App\Mail\TapalNotification;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
-use DB;
 
 class TapalController extends Controller
 {
@@ -82,7 +81,7 @@ class TapalController extends Controller
             'letter_date' => $validated['letter_date'] ?? null,
             'subject' => $validated['subject'],
             'description' => $validated['description'] ?? null,
-            // 'current_holder_id' => $validated['assigned_user_id'],
+            'current_holder_id' => $validated['assigned_user_id'],
             'created_by' => Auth::id(),
         ]);
 
@@ -102,37 +101,18 @@ class TapalController extends Controller
         }
 
         // Create movement for assigned user
-        // $movement = TapalMovement::create([
-        //     'tapal_id' => $tapal->id,
-        //     'from_user_id' => Auth::id(),
-        //     'to_user_id' => $validated['assigned_user_id'],
-        //     'remarks' => $validated['assignment_remarks'] ?? null,
-        //     'is_assignment' => true,
-        //     'status' => 'Pending',
-        // ]);
-
-          $assignedUsers = (array)$validated['assigned_user_id'];
-
-    foreach ($assignedUsers as $userId) {
-    $movement = TapalMovement::create([
-        'tapal_id' => $tapal->id,
-        'from_user_id' => Auth::id(),
-        'to_user_id' => $userId,
-        'remarks' => $validated['assignment_remarks'] ?? null,
-        'is_assignment' => true,
-        'is_primary' => true, // All are marked as potential primary
-        'status' => 'Pending',
-    ]);
-
-    $assignedUser = User::find($userId);
-    Mail::to($assignedUser->email)->cc('mail@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
-  }
+        $movement = TapalMovement::create([
+            'tapal_id' => $tapal->id,
+            'from_user_id' => Auth::id(),
+            'to_user_id' => $validated['assigned_user_id'],
+            'remarks' => $validated['assignment_remarks'] ?? null,
+            'is_assignment' => true,
+            'status' => 'Pending',
+        ]);
 
         // Send email to assigned user
-        // $assignedUser = User::find($validated['assigned_user_id']);
-        // Mail::to($assignedUser->email)->cc('mail@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
-
-
+        $assignedUser = User::find($validated['assigned_user_id']);
+        Mail::to($assignedUser->email)->cc('mail@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
 
         // Handle notification emails
         foreach ($validated['notify_users'] ?? [] as $userId) {
@@ -147,7 +127,7 @@ class TapalController extends Controller
                 ]);
 
                 $notifyUser = User::find($userId);
-                 Mail::to($notifyUser->email)->send(new TapalNotification($tapal, $notification, Auth::user()));
+                Mail::to($notifyUser->email)->send(new TapalNotification($tapal, $notification, Auth::user()));
             }
         }
 
@@ -236,32 +216,20 @@ class TapalController extends Controller
 
         // Update current holder
         $tapal->update(['current_holder_id' => $validated['assigned_user_id']]);
-        TapalMovement::where('tapal_id', $tapal->id)->update([
-          'status' => 'Notified',
-          'is_primary' => false,
-          'is_assignment' => false,
+
+        // Create movement for assigned user
+        $movement = TapalMovement::create([
+            'tapal_id' => $tapal->id,
+            'from_user_id' => Auth::id(),
+            'to_user_id' => $validated['assigned_user_id'],
+            'remarks' => $validated['assignment_remarks'] ?? null,
+            'is_assignment' => true,
+            'status' => 'Pending',
         ]);
 
-        $assignedUsers = (array)$validated['assigned_user_id'];
-
-    foreach ($assignedUsers as $userId) {
-    $movement = TapalMovement::create([
-        'tapal_id' => $tapal->id,
-        'from_user_id' => Auth::id(),
-        'to_user_id' => $userId,
-        'remarks' => $validated['assignment_remarks'] ?? null,
-        'is_assignment' => true,
-        'is_primary' => true, // All are marked as potential primary
-        'status' => 'Pending',
-    ]);
-
-    $assignedUser = User::find($userId);
-    Mail::to($assignedUser->email)->cc('mail@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
-  }
-
         // Send email to assigned user
-        // $assignedUser = User::find($validated['assigned_user_id']);
-        // Mail::to($assignedUser->email)->cc('mail@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
+        $assignedUser = User::find($validated['assigned_user_id']);
+        Mail::to($assignedUser->email)->cc('mail@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
 
         // Handle notification emails
         foreach ($validated['notify_users'] ?? [] as $userId) {
@@ -276,7 +244,7 @@ class TapalController extends Controller
                 ]);
 
                 $notifyUser = User::find($userId);
-                 Mail::to($notifyUser->email)->send(new TapalNotification($tapal, $notification, Auth::user()));
+                Mail::to($notifyUser->email)->send(new TapalNotification($tapal, $notification, Auth::user()));
             }
         }
 
@@ -284,63 +252,18 @@ class TapalController extends Controller
             ->with('success', 'Tapal forwarded successfully!');
     }
 
-    // public function accept(TapalMovement $movement)
-    // {
-    //     $this->authorize('accept', $movement);
-
-    //     $movement->update([
-    //         'status' => 'Accepted',
-    //         'accepted_at' => now(),
-    //     ]);
-
-    //     return redirect()->route('tapals.show', $movement->tapal_id)
-    //         ->with('success', 'Tapal accepted successfully!');
-    // }
-
     public function accept(TapalMovement $movement)
-{
-    $this->authorize('accept', $movement);
+    {
+        $this->authorize('accept', $movement);
 
-    // Check if someone else already accepted
-    $alreadyAccepted = TapalMovement::where('tapal_id', $movement->tapal_id)
-        ->where('is_accepted', true)
-        ->exists();
-
-    if ($alreadyAccepted) {
-        // Mark this as secondary assignment
-        $movement->update([
-            'status' => 'Notified',
-            'is_primary' => false,
-            'accepted_at' => now()
-        ]);
-
-        return redirect()->back()
-            ->with('info', 'This tapal has already been accepted by another user. You have view-only access.');
-    }
-
-    // This is the first acceptance
-    DB::transaction(function() use ($movement) {
-        // Update the movement
         $movement->update([
             'status' => 'Accepted',
-            'is_accepted' => true,
-            'accepted_at' => now()
+            'accepted_at' => now(),
         ]);
 
-        // Update the tapal's current holder
-        $movement->tapal()->update([
-            'current_holder_id' => $movement->to_user_id
-        ]);
-
-        // Mark all other assignments as non-primary
-        TapalMovement::where('tapal_id', $movement->tapal_id)
-            ->where('id', '!=', $movement->id)
-            ->update(['is_primary' => false]);
-    });
-
-    return redirect()->route('tapals.show', $movement->tapal_id)
-        ->with('success', 'Tapal accepted successfully! You are now the primary holder.');
-}
+        return redirect()->route('tapals.show', $movement->tapal_id)
+            ->with('success', 'Tapal accepted successfully!');
+    }
 
     public function complete(Request $request, TapalMovement $movement)
     {
@@ -399,7 +322,7 @@ class TapalController extends Controller
 
         return view('tapals.tracing', compact('tapals'),['pageConfigs'=> $pageConfigs]);
     }
-    public function tracing1(Request $request)
+    public function tracing(Request $request)
 
     {
        $pageConfigs = ['myLayout' => 'horizontal'];
@@ -417,7 +340,6 @@ class TapalController extends Controller
         $users = User::where('active', 1)->orderBy('name')->get();
 
         // Query for tapals
-
         $query = Tapal::with(['creator', 'currentHolder', 'movements.fromUser', 'movements.toUser']);
 
         // Apply filters
@@ -471,7 +393,7 @@ class TapalController extends Controller
         return view('tapals.tracing', compact('tapals', 'stats', 'users'),['pageConfigs'=> $pageConfigs]);
     }
 
-    protected function getTracingStatistics1(Request $request)
+    protected function getTracingStatistics(Request $request)
     {
         // Base query for all tapals (can be filtered by date range)
         $baseQuery = Tapal::query();
@@ -525,151 +447,14 @@ class TapalController extends Controller
         ];
     }
 
-    protected function getStatusCount1($query, $status)
+    protected function getStatusCount($query, $status)
     {
         $clone = clone $query;
         return $clone->whereHas('movements', function($q) use ($status) {
             $q->where('status', 'like', "%$status%");
         })->count();
     }
-
-    public function tracing(Request $request)
-{
-    $pageConfigs = ['myLayout' => 'horizontal'];
-
-    // Get filter parameters
-    $search = $request->input('search');
-    $userId = $request->input('user_id');
-    $status = $request->input('status');
-    $fromDate = $request->input('from_date');
-    $toDate = $request->input('to_date');
-
-    // Get statistics data
-    $stats = $this->getTracingStatistics($request);
-
-    // Get users for filter dropdown
-    $users = User::where('active', 1)->orderBy('name')->get();
-
-    // Query for tapals
-    $query = Tapal::with(['creator', 'movements.fromUser', 'movements.toUser']);
-
-    // Apply filters
-    if ($search) {
-        $query->where(function($q) use ($search) {
-            $q->where('tapal_number', 'like', "%$search%")
-              ->orWhere('subject', 'like', "%$search%")
-              ->orWhere('ref_number', 'like', "%{$search}%")
-              ->orWhere('from_name', 'like', "%{$search}%")
-              ->orWhere('from_address', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%");
-        });
-    }
-
-    if ($userId) {
-        $query->where(function($q) use ($userId) {
-            $q->where('created_by', $userId)
-              ->orWhereHas('movements', function($q) use ($userId) {
-                  $q->where('to_user_id', $userId)
-                    ->where('is_assignment', true);
-              });
-        });
-    }
-
-    if ($status) {
-        if ($status == 'Overdue') {
-            $query->whereHas('movements', function($q) {
-                $q->where(function($q) {
-                    $q->where('status', 'Pending')
-                      ->orWhere('status', 'Accepted');
-                })
-                ->where('is_assignment', true);
-            });
-        } else {
-            $query->whereHas('movements', function($q) use ($status) {
-                $q->where('status', $status)
-                  ->where('is_assignment', true);
-            });
-        }
-    }
-
-    if ($fromDate && $fromDate != '') {
-        $query->whereDate('created_at', '>=', $fromDate);
-    }
-
-    if ($toDate && $toDate != '') {
-        $query->whereDate('created_at', '<=', $toDate);
-    }
-
-    $tapals = $query->orderBy('created_at', 'desc')->paginate(25);
-
-    return view('tapals.tracing', compact('tapals', 'stats', 'users'), ['pageConfigs' => $pageConfigs]);
-}
-
-  protected function getTracingStatistics(Request $request)
-{
-    // Base query for all tapals (can be filtered by date range)
-    $baseQuery = Tapal::query();
-
-    if ($request->has('from_date') && $request->input('from_date') != '') {
-        $baseQuery->whereDate('created_at', '>=', $request->input('from_date'));
-    }
-
-    if ($request->has('to_date') && $request->input('to_date') != '') {
-        $baseQuery->whereDate('created_at', '<=', $request->input('to_date'));
-    }
-
-    // Total counts
-    $totalTapals = $baseQuery->count();
-    $totalPending = $this->getStatusCount($baseQuery, 'Pending');
-    $totalCompleted = $this->getStatusCount($baseQuery, 'Completed');
-    $totalAccepted = $this->getStatusCount($baseQuery, 'Accepted');
-    $totalInProgress = $this->getStatusCount($baseQuery, 'In Progress');
-    $totalOverdue = $this->getOverdueCountTracing($baseQuery);
-
-    // Percentage calculations
-    $pendingPercentage = $totalTapals > 0 ? round(($totalPending / $totalTapals) * 100, 2) : 0;
-    $completedPercentage = $totalTapals > 0 ? round(($totalCompleted / $totalTapals) * 100, 2) : 0;
-    $acceptedPercentage = $totalTapals > 0 ? round(($totalAccepted / $totalTapals) * 100, 2) : 0;
-    $overduePercentage = $totalPending > 0 ? round(($totalOverdue / $totalPending) * 100, 2) : 0;
-
-    return [
-        'total_tapals' => $totalTapals,
-        'total_pending' => $totalPending,
-        'total_completed' => $totalCompleted,
-        'total_accepted' => $totalAccepted,
-        'total_in_progress' => $totalInProgress,
-        'total_overdue' => $totalOverdue,
-        'pending_percentage' => $pendingPercentage,
-        'completed_percentage' => $completedPercentage,
-        'accepted_percentage' => $acceptedPercentage,
-        'overdue_percentage' => $overduePercentage
-    ];
-}
-
-protected function getStatusCount($query, $status)
-{
-    $clone = clone $query;
-    return $clone->whereHas('movements', function($q) use ($status) {
-        $q->where('status', $status)
-          ->where('is_assignment', true);
-    })->count();
-}
-
-protected function getOverdueCountTracing($query)
-{
-    $clone = clone $query;
-    return $clone->whereHas('movements', function($q) {
-        $q->where(function($q) {
-            $q->where('status', 'Pending')
-              ->orWhere('status', 'Accepted');
-        })
-        ->where('is_assignment', true);
-    })->count();
-}
-
-
-
-    protected function getOverdueCountTracing1($query)
+    protected function getOverdueCountTracing($query)
     {
         $clone = clone $query;
         return $clone->whereHas('movements', function($q) {

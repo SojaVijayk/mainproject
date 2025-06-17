@@ -34,11 +34,22 @@ class TapalPolicy
 
     public function forward(User $user, Tapal $tapal)
     {
-        return $tapal->current_holder_id == $user->id;
+        // return $tapal->current_holder_id == $user->id;
+          return $tapal->created_by == $user->id ||
+               $tapal->movements()->where('is_assignment', true)->exists();
     }
     public function deleteAttachment(User $user, TapalAttachment $attachment)
     {
         // Only allow deletion if user created the tapal
         return $attachment->tapal->created_by == $user->id;
     }
+    public function accept(User $user, Tapal $tapal)
+{
+    return $tapal->canAccept($user->id);
+}
+
+public function complete(User $user, Tapal $tapal)
+{
+    return $tapal->current_holder_id === $user->id;
+}
 }

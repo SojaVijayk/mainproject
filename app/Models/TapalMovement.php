@@ -16,7 +16,9 @@ class TapalMovement extends Model
         'remarks',
         'status',
         'is_assignment',
+        'is_primary',
         'accepted_at',
+        'is_accepted',
         'completed_at'
     ];
 
@@ -33,5 +35,11 @@ class TapalMovement extends Model
     public function toUser()
     {
         return $this->belongsTo(User::class, 'to_user_id');
+
     }
+    public function scopePrimaryAssignments($query)
+{
+    return $query->where('is_assignment', true)
+                 ->where('is_primary', true);
+}
 }
