@@ -172,7 +172,7 @@ $(function () {
             if(full['type'] == 'Official' && new Date(full['start_date']) >= new Date('2025-06-01')){
                   if(full['report'] == '' || full['report'] == null){
                    return (
-                    '<span class="text-nowrap"> Not Updated' +
+                    '<span class="text-nowrap badge text-bg-danger"> Not Updated' +
                     '</span>'
                   );
                   }
