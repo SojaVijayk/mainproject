@@ -61,8 +61,8 @@
 
 
            <div class="mb-3 eventReport">
-            <label class="form-label" for="eventReport">Report</label>
-            <textarea class="form-control" name="eventReport" id="eventReport"></textarea>
+            <label class="form-label" for="eventReport">Report (Outcome of Meeting/Movement)</label>
+            <textarea class="form-control" name="eventReport" id="eventReport" placeholder="You can submit the report here, or save the request and submit the report later using the 'Submit Report' option."></textarea>
           </div>
 
           <div class="col-12 text-center demo-vertical-spacing">
