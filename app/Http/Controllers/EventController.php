@@ -108,9 +108,15 @@ class EventController extends Controller
         $conflicts = $this->checkVenueAvailability($request->venues, $request->start_date, $request->end_date);
 
         if (!empty($conflicts)) {
+            // return response()->json([
+            //     'error' => 'The following venues are already booked during this time: ' . implode(', ', $conflicts)
+            // ], 422);
             return response()->json([
-                'error' => 'The following venues are already booked during this time: ' . implode(', ', $conflicts)
-            ], 422);
+    'message' => 'The following venues are already booked during this time.',
+    'errors' => [
+        'venues' => ['The following venues are already booked: ' . implode(', ', $conflicts)]
+    ]
+], 422);
         }
     }
 
@@ -155,7 +161,7 @@ if ($request->coordinators) {
     }
 
     // Add new method to get available venues
-public function getAvailableVenuesForTime(Request $request)
+public function getAvailableVenuesForTimeOLD(Request $request)
 {
     $request->validate([
         'start_date' => 'required|date',
@@ -201,12 +207,98 @@ public function getAvailableVenuesForTime(Request $request)
     return response()->json($availableVenues->values());
 }
 
+public function getAvailableVenuesForTime(Request $request)
+{
+    // $validator = Validator::make($request->all(), [
+    //     'start_date' => 'required|date',
+    //     'end_date' => 'required|date|after:start_date',
+    //     'exclude_event' => 'nullable|exists:events,id'
+    // ]);
+     $request->validate([
+       'start_date' => 'required|date',
+        'end_date' => 'required|date|after:start_date',
+        'exclude_event' => 'nullable|exists:events,id'
+    ]);
+
+
+
+    try {
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+        $excludeEventId = $request->input('exclude_event');
+
+        // Get all active venues
+        $allVenues = Venue::where('status', 'active')
+            ->where('is_active', true)
+            ->get();
+
+        // Get conflicting events
+        $conflictingEvents = Event::where(function($query) use ($startDate, $endDate) {
+                $query->whereBetween('start_date', [$startDate, $endDate])
+                      ->orWhereBetween('end_date', [$startDate, $endDate])
+                      ->orWhere(function($query) use ($startDate, $endDate) {
+                          $query->where('start_date', '<', $startDate)
+                                ->where('end_date', '>', $endDate);
+                      });
+            })
+            ->whereHas('venues');
+
+        if ($excludeEventId) {
+            $conflictingEvents->where('id', '!=', $excludeEventId);
+        }
+
+        $bookedVenueIds = $conflictingEvents->get()
+            ->flatMap(function ($event) {
+                return $event->venues->pluck('id');
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
+        // Filter available venues
+        $availableVenues = $allVenues->reject(function ($venue) use ($bookedVenueIds) {
+            return in_array($venue->id, $bookedVenueIds);
+        });
+
+        return response()->json($availableVenues->values());
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error checking venue availability',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
         // Add these methods to check authorization
     private function canEditEvent(Event $event)
     {
-        return auth()->user()->id === $event->coordinator_id ||
-              auth()->user()->id === $event->faculty_id ||
-              auth()->user()->id === $event->user_id; // Assuming you have user_id as creator
+        // return auth()->user()->id === $event->coordinator_id ||
+        //       auth()->user()->id === $event->faculty_id ||
+        //       auth()->user()->id === 30 || //for administrative officer
+        //       auth()->user()->id === $event->user_id; // Assuming you have user_id as creator
+
+         // Check if user is admin (ID 30 is administrative officer)
+    if (auth()->user()->id === 30) {
+        return true;
+    }
+
+    // Check if user is the event creator
+    if (auth()->user()->id === $event->user_id) {
+        return true;
+    }
+
+    // Check if user is one of the coordinators
+    if ($event->coordinators->contains('id', auth()->id())) {
+        return true;
+    }
+
+    // Check if user is one of the faculties
+    if ($event->faculties->contains('id', auth()->id())) {
+        return true;
+    }
+
+    return false;
     }
    public function show(Event $event)
 {
@@ -351,6 +443,7 @@ if ($request->coordinators) {
         $venueTypes = VenueType::where('is_active', true)->get();
         $venues = Venue::where('is_active', true)->where('status', 'active')->get();
         $users = User::where('active',1)->get();
+        $faculties = User::where('active',1)->join("employees","employees.user_id","=","users.id")->whereIn('employees.designation',[2,7,9])->get();
 
         return response()->json([
             'eventTypes' => $eventTypes,
@@ -358,6 +451,7 @@ if ($request->coordinators) {
             'venueTypes' => $venueTypes,
             'venues' => $venues,
             'users' => $users,
+            'faculties' => $faculties,
         ]);
     }
 

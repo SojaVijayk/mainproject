@@ -7,8 +7,8 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css')}}">
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/formvalidation/dist/css/formValidation.min.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
-{{--
-<link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" /> --}}
+
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}" />
@@ -114,7 +114,7 @@
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
-{{-- <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script> --}}
+<script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
@@ -166,6 +166,8 @@
         var viewEventParticipants = $('#viewEventParticipants');
         var viewEventVenueType = $('#viewEventVenueType');
         var viewEventVenues = $('#viewEventVenues');
+          var viewEventExternalVenues = $('#viewEventExternalVenues');
+
         var viewEventExternalEntity = $('#viewEventExternalEntity');
         var viewEventExternalEntityContainer = $('#viewEventExternalEntityContainer');
         var viewEventCreator = $('#viewEventCreator');
@@ -200,21 +202,21 @@ endDate.change(function() {
 
     if (endDateTime <= startDateTime) {
         toastr.error('End time must be after start time');
-        const minEndTime = new Date(startDateTime.getTime() + 30 * 60000);
+        const minEndTime = new Date(startDateTime.getTime() + 5 * 60000);
         const minEndDateTime = formatDateLocal(minEndTime);
         $(this).val(minEndDateTime);
     }
 
     if (endDateTime < now) {
         toastr.error('End time cannot be in the past');
-        const minEndTime = new Date(now.getTime() + 30 * 60000);
+        const minEndTime = new Date(now.getTime() + 5 * 60000);
         const minEndDateTime = formatDateLocal(minEndTime);
         $(this).val(minEndDateTime);
     }
     updateAvailableVenues();
 });
 
-function updateAvailableVenues(callback) {
+function updateAvailableVenuesOLD(callback) {
     if (startDate.val() && endDate.val()) {
         $.ajax({
             url: '/venues/available',
@@ -308,6 +310,143 @@ function updateAvailableVenues(callback) {
     } else if (typeof callback === 'function') {
         callback();
     }
+}
+
+function updateAvailableVenues(callback) {
+    if (!startDate.val() || !endDate.val()) {
+        if (typeof callback === 'function') callback();
+        return;
+    }
+
+    // Validate time range first
+    const start = new Date(startDate.val());
+    const end = new Date(endDate.val());
+
+    if (end <= start) {
+        availableVenuesContainer.hide();
+        toastr.error('End time must be after start time');
+        if (typeof callback === 'function') callback();
+        return;
+    }
+
+    // Show loading state
+    availableVenuesList.html(`
+        <div class="col-12 text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Checking venue availability...</p>
+        </div>
+    `);
+    availableVenuesContainer.show();
+
+    $.ajax({
+        url: '/venues/available',
+        method: 'GET',
+        data: {
+            start_date: startDate.val(),
+            end_date: endDate.val(),
+            exclude_event: eventId.val() || null
+        },
+        success: function(venues) {
+            venuesSelect.empty();
+            availableVenuesList.empty();
+
+            if (venues.length > 0) {
+                // Add default option
+                venuesSelect.append($('<option>', {
+                    value: '',
+                    text: 'Select Venue(s)',
+                    disabled: true,
+                    selected: true
+                }));
+
+                // Populate both select dropdown and cards
+                $.each(venues, function(index, venue) {
+                    // Add to select dropdown
+                    venuesSelect.append($('<option>', {
+                        value: venue.id,
+                        text: venue.name,
+                        'data-capacity': venue.seating_capacity
+                    }));
+
+                    // Create venue card
+                    const amenities = venue.amenities
+                        ? venue.amenities.split(',').map(a => a.trim()).join(', ')
+                        : 'No amenities specified';
+
+                    const cardHtml = `
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 venue-card" data-venue-id="${venue.id}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${venue.name}</h5>
+                                    <p class="card-text">
+                                        <strong>Capacity:</strong> ${venue.seating_capacity}<br>
+                                        <strong>Amenities:</strong> ${amenities}<br>
+                                        <strong>Status:</strong> <span class="badge bg-success">${venue.status}</span>
+                                    </p>
+                                    <div class="form-check">
+                                        <input class="form-check-input venue-checkbox"
+                                               type="checkbox"
+                                               value="${venue.id}"
+                                               id="venue-${venue.id}"
+                                               ${venuesSelect.val()?.includes(venue.id) ? 'checked' : ''}>
+                                        <label class="form-check-label" for="venue-${venue.id}">
+                                            Select this venue
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    availableVenuesList.append(cardHtml);
+                });
+
+                // Highlight previously selected venues
+                const selectedVenues = venuesSelect.val() || [];
+                selectedVenues.forEach(venueId => {
+                    $(`#venue-${venueId}`).prop('checked', true);
+                    $(`.venue-card[data-venue-id="${venueId}"]`).addClass('border-primary');
+                });
+
+                availableVenuesContainer.show();
+            } else {
+                availableVenuesContainer.hide();
+                toastr.warning('No venues available for the selected time slot');
+            }
+        },
+        error: function(xhr) {
+            let errorMsg = 'Failed to load available venues';
+
+            if (xhr.responseJSON?.message) {
+                errorMsg = xhr.responseJSON.message;
+            } else if (xhr.status === 422 && xhr.responseJSON?.errors) {
+                errorMsg = Object.values(xhr.responseJSON.errors).join('<br>');
+            }
+
+            toastr.error(errorMsg);
+            availableVenuesContainer.hide();
+            console.error('Venue availability error:', xhr.responseText);
+        },
+        complete: function() {
+            if (typeof callback === 'function') callback();
+        }
+    });
+}
+
+// Add event listeners for real-time checking
+startDate.on('change.datetimepicker', debounce(updateAvailableVenues, 300));
+endDate.on('change.datetimepicker', debounce(updateAvailableVenues, 300));
+
+// Debounce function to prevent excessive API calls
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
 }
 
 // Handle venue selection from cards
@@ -445,7 +584,7 @@ function populateEventForm(event) {
     // Set minimum time for start and end dates
     const now = new Date();
     const currentDateTime = formatDateLocal(now);
-    const minEndTime = new Date(now.getTime() + 30 * 60000); // 30 minutes from now
+    const minEndTime = new Date(now.getTime() + 5 * 60000); // 30 minutes from now
     const minEndDateTime = formatDateLocal(minEndTime);
 
 
@@ -576,7 +715,7 @@ function formatDateLocal(date) {
 
                    const now = new Date();
             const currentDateTime = formatDateLocal(now);
-            const minEndTime = new Date(now.getTime() + 30 * 60000); // 30 minutes from now
+            const minEndTime = new Date(now.getTime() + 5 * 60000); // 30 minutes from now
             const minEndDateTime = formatDateLocal(minEndTime);
 
             // Set min attribute for start and end datetime inputs
@@ -590,7 +729,7 @@ function formatDateLocal(date) {
             const endLocal = formatDateLocal(new Date(end));
 
             // Create end date/time 30 minutes later
-            const endDateObj = new Date(start.getTime() + 30 * 60000);
+            const endDateObj = new Date(start.getTime() + 5 * 60000);
             const endLocalTime = formatDateLocal(endDateObj);
 
             // Ensure selected time is not in the past
@@ -646,9 +785,12 @@ function formatDateLocal(date) {
 
                 viewEventParticipants.text(event.participants_count);
                 viewEventVenueType.text(event.venue_type);
+
                 viewEventVenues.text(event.venues.map(v => v.name).join(', '));
                 viewEventCustomAmenities.text(event.custom_amenities_request || 'None');
-
+                if(event.external_venue){
+                  viewEventExternalVenues.text(event.external_venue+' -(External)');
+                }
                 if (event.external_entity) {
                     viewEventExternalEntity.text(event.external_entity);
                     viewEventExternalEntityContainer.show();
@@ -802,7 +944,7 @@ function formatDateLocal(date) {
 
             // Clear and populate faculties
             facultiesSelect.empty();
-            data.users.forEach(function(user) {
+            data.faculties.forEach(function(user) {
                 facultiesSelect.append(new Option(user.name, user.id));
             });
             facultiesSelect.trigger('change');
@@ -892,9 +1034,38 @@ function formatDateLocal(date) {
                 },
                 error: function(xhr) {
                     var errors = xhr.responseJSON.errors;
-                    $.each(errors, function(key, value) {
-                        toastr.error(value[0]);
+                       $.each(errors, function(key, value) {
+                        Swal.fire({
+                    title: value[0],
+                    customClass: {
+                      confirmButton: 'btn btn-warning'
+                    },
+                    buttonsStyling: false
+                  });
+
                     });
+                     updateAvailableVenues();
+                     {{--  if (xhr.responseJSON && xhr.responseJSON.message) {
+                   message = xhr.responseJSON.message;
+                }
+                     if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    for (const field in errors) {
+                        if (errors[field].length) {
+                            message += `<br>${errors[field][0]}`; // show only the first error
+                        }
+                    }
+                }
+                    Swal.fire({
+                    title: message,
+                    customClass: {
+                      confirmButton: 'btn btn-warning'
+                    },
+                    buttonsStyling: false
+                  });  --}}
+                    {{--  $.each(errors, function(key, value) {
+                        toastr.error(value[0]);
+                    });  --}}
                 },
                 complete: function() {
             // Hide loader when request is complete
@@ -1161,7 +1332,7 @@ function eventListItem(event, showCoordinators = false) {
           Event Type Legend
         </div>
         <div class="card-body mt-2">
-          {{-- <div class="d-flex flex-wrap gap-2"> --}}
+          <div class="d-flex flex-wrap gap-2">
             <div><span class="badge mt-2" style="background-color: #007bff;">Workshop</span></div>
             <div><span class="badge mt-2" style="background-color: #28a745;">Seminar</span></div>
             <div><span class="badge mt-2" style="background-color: #ffc107; color: #000;">Meeting</span></div>
@@ -1171,8 +1342,8 @@ function eventListItem(event, showCoordinators = false) {
             <div><span class="badge mt-2" style="background-color: #dc3545;">Recruitment</span></div>
             <div><span class="badge mt-2" style="background-color: #6610f2;">Discussion</span></div>
             {{-- <div><span class="badge mt-2" style="background-color: #6c757d;">Read-only</span></div> --}}
-            {{--
-          </div> --}}
+
+          </div>
         </div>
       </div>
 
@@ -1181,7 +1352,7 @@ function eventListItem(event, showCoordinators = false) {
     <!-- Right Column - Calendar -->
     <div class="col-md-8">
       <div class="card">
-        <div class="card-header">{{ __('Calendar') }}</div>
+        <div class="card-header">{{ __('Event Calendar') }}</div>
         <div class="card-body">
           <div id="calendar"></div>
         </div>
@@ -1233,7 +1404,7 @@ function eventListItem(event, showCoordinators = false) {
           @csrf
           <input type="hidden" id="eventId">
           <div class="form-group">
-            <label for="title">Event Title</label>
+            <label for="title">Event Title *</label>
             <input type="text" class="form-control" id="title" name="title" required>
           </div>
           <div class="form-group">
@@ -1242,28 +1413,30 @@ function eventListItem(event, showCoordinators = false) {
           </div>
           <div class="row">
             <div class="col-md-4">
+
               <div class="form-group">
-                <label for="start_date">Start Date & Time</label>
+                <label for="start_date">Start Date & Time *</label>
                 <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
               </div>
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="end_date">End Date & Time</label>
+                <label for="end_date">End Date & Time *</label>
                 <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
               </div>
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="participants_count">Number of Participants</label>
-                <input type="number" class="form-control" id="participants_count" name="participants_count" min="0">
+                <label for="participants_count">Number of Participants *</label>
+                <input type="number" class="form-control" id="participants_count" name="participants_count" min="0"
+                  required>
               </div>
             </div>
           </div>
           <div class="row">
             <div class="col-md-4">
               <div class="form-group">
-                <label for="event_type_id">Event Type</label>
+                <label for="event_type_id">Event Type *</label>
                 <select class="form-control" id="event_type_id" name="event_type_id" required>
                   <option value="">Select Event Type</option>
                 </select>
@@ -1271,7 +1444,7 @@ function eventListItem(event, showCoordinators = false) {
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="event_mode_id">Event Mode</label>
+                <label for="event_mode_id">Event Mode *</label>
                 <select class="form-control" id="event_mode_id" name="event_mode_id" required>
                   <option value="">Select Event Mode</option>
                 </select>
@@ -1279,7 +1452,7 @@ function eventListItem(event, showCoordinators = false) {
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label>Event Hosted By</label>
+                <label>Event Hosted By *</label>
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="event_category" id="cmd" value="CMD" checked>
                   <label class="form-check-label" for="cmd">
@@ -1297,7 +1470,7 @@ function eventListItem(event, showCoordinators = false) {
           </div>
           <div class="row">
             <div class="form-group">
-              <label for="coordinators">Coordinators</label>
+              <label for="coordinators">Coordinators *</label>
               <select class="form-control select2" id="coordinators" name="coordinators[]" multiple="multiple" required>
                 <!-- Options will be loaded dynamically -->
               </select>
@@ -1314,11 +1487,11 @@ function eventListItem(event, showCoordinators = false) {
 
 
           <div class="form-group" id="externalEntityGroup" style="display: none;">
-            <label for="external_entity">External Department/Organization/Person</label>
+            <label for="external_entity">External Department/Organization/Person *</label>
             <input type="text" class="form-control" id="external_entity" name="external_entity">
           </div>
           <div class="form-group">
-            <label for="venue_type_id">Venue Type</label>
+            <label for="venue_type_id">Venue Type *</label>
             <select class="form-control" id="venue_type_id" name="venue_type_id" required>
               <option value="">Select Venue Type</option>
             </select>
@@ -1330,8 +1503,13 @@ function eventListItem(event, showCoordinators = false) {
             </select>
           </div> --}}
           <!-- Venue Selection -->
+          {{-- <div id="floatingInputHelp" class="form-text  text-warning">Note: Changing the date or time will
+            clear selected
+            venues.
+            Please confirm them before choosing a venue.</div> --}}
+
           <div class="form-group" id="venueGroup" style="display: none;">
-            <label for="venues">Venues</label>
+            <label for="venues">Venues *</label>
             <select class="form-control select2" id="venues" name="venues[]" multiple="multiple">
               <option value="">Select Venue(s)</option>
             </select>
@@ -1354,6 +1532,8 @@ function eventListItem(event, showCoordinators = false) {
               placeholder="Specify any additional amenities you require"></textarea>
           </div>
           <div class="modal-footer">
+            <div id="floatingInputHelp" class="form-text  text-warning">Note: The venues chosen for booking will be
+              cleared if the date or time is changed. Before selecting a Venue, kindly confirm them.</div>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Save Event</button>
           </div>
@@ -1443,6 +1623,7 @@ function eventListItem(event, showCoordinators = false) {
               <div class="row mb-2">
                 <div class="col-4 text-muted">Venues:</div>
                 <div class="col-8"><span id="viewEventVenues"></span></div>
+                <div class="col-8"><span id="viewEventExternalVenues"></span></div>
               </div>
               <div class="row mb-2">
                 <div class="col-4 text-muted">Amenities:</div>
