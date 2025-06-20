@@ -23,6 +23,17 @@ class EventController extends Controller
 
     public function getEvents()
 {
+ $colorMap = [
+    'Workshop' => '#007bff',
+    'Seminar' => '#28a745',
+    'Meeting' => '#ffc107',
+    'Training' => '#17a2b8',
+    'Webinar' => '#6f42c1',
+    'Conference' => '#fd7e14',
+    'Recruitment' => '#dc3545',
+    'Discussion' => '#6610f2',
+    'Default' => '#20c997'
+];
     $events = Event::with([
             'eventType',
             'eventMode',
@@ -33,10 +44,14 @@ class EventController extends Controller
             'creator'
         ])
         ->get()
-        ->map(function ($event) {
+        ->map(function ($event) use ($colorMap) {
             $canEdit = auth()->user()->id === $event->user_id ||
                       $event->coordinators->contains(auth()->id()) ||
                       ($event->faculties && $event->faculties->contains(auth()->id()));
+            $eventType = $event->eventType->name ?? 'Default';
+            // $color = $canEdit ? ($colorMap[$eventType] ?? $colorMap['Default']) : '#6c757d';
+            $color =  ($colorMap[$eventType] ?? $colorMap['Default']) ;
+
 
             return [
                 'id' => $event->id,
@@ -57,7 +72,8 @@ class EventController extends Controller
                 'creator' => $event->creator->name,
                 'created_at' => $event->created_at->format('M j, Y g:i A'),
                 'canEdit' => $canEdit,
-                'color' => $canEdit ? null : '#6c757d'
+                // 'color' => $canEdit ? null : '#6c757d'
+                'color' => $color
             ];
         });
 
@@ -405,6 +421,324 @@ private function getAvailableVenues($startDate, $endDate)
         })
         ->get();
 }
+
+
+// public function getHallAvailability(Request $request)
+// {
+//     $filter = $request->input('filter', 'now');
+//     $date = $request->input('date');
+
+//     $now = Carbon::now();
+
+//     switch ($filter) {
+//         case 'today':
+//             $start = $now->copy()->startOfDay();
+//             $end = $now->copy()->endOfDay();
+//             break;
+//         case 'custom':
+//             if (!$date) {
+//                 return response()->json(['error' => 'Date parameter required'], 400);
+//             }
+//             $start = Carbon::parse($date)->startOfDay();
+//             $end = Carbon::parse($date)->endOfDay();
+//             break;
+//         case 'now':
+//         default:
+//             $start = $now;
+//             $end = $now->copy()->addHours(2);
+//             break;
+//     }
+
+//     // Get all active venues
+//     $allVenues = Venue::where('status', 'active')
+//         ->where('is_active', true)
+//         ->get();
+
+//     // Get booked venues and their events during this time
+//     $bookedEvents = Event::where(function($query) use ($start, $end) {
+//             $query->whereBetween('start_date', [$start, $end])
+//                   ->orWhereBetween('end_date', [$start, $end])
+//                   ->orWhere(function($query) use ($start, $end) {
+//                       $query->where('start_date', '<', $start)
+//                             ->where('end_date', '>', $end);
+//                   });
+//         })
+//         ->whereHas('venues')
+//         ->with(['venues'])
+//         ->get();
+
+//     // Get booked venue IDs
+//     $bookedVenueIds = $bookedEvents->flatMap(function ($event) {
+//         return $event->venues->pluck('id');
+//     })->unique()->toArray();
+
+//     // Available venues (not booked)
+//     $availableVenues = $allVenues->reject(function ($venue) use ($bookedVenueIds) {
+//         return in_array($venue->id, $bookedVenueIds);
+//     });
+
+//     // Format booked events for display
+//     $bookedVenues = [];
+//     foreach ($bookedEvents as $event) {
+//         foreach ($event->venues as $venue) {
+//             $bookedVenues[] = [
+//                 'title' => $event->title,
+//                 'start_date' => $event->start_date,
+//                 'end_date' => $event->end_date,
+//                 'venue_name' => $venue->name
+//             ];
+//         }
+//     }
+
+//     return response()->json([
+//         'availableVenues' => $availableVenues,
+//         'bookedVenues' => $bookedVenues
+//     ]);
+// }
+
+public function getHallAvailability(Request $request)
+{
+    $filter = $request->input('filter', 'now');
+    $date = $request->input('date');
+
+    $now = Carbon::now();
+
+    switch ($filter) {
+        case 'today':
+            $start = $now->copy()->startOfDay();
+            $end = $now->copy()->endOfDay();
+            break;
+        case 'custom':
+            if (!$date) {
+                return response()->json(['error' => 'Date parameter required'], 400);
+            }
+            $start = Carbon::parse($date)->startOfDay();
+            $end = Carbon::parse($date)->endOfDay();
+            break;
+        case 'now':
+        default:
+            $start = $now;
+            $end = $now->copy()->addHours(2);
+            break;
+    }
+
+    // Get all active venues
+    $allVenues = Venue::where('status', 'active')
+        ->where('is_active', true)
+        ->get();
+
+    // Get booked venues and their events during this time
+    $bookedEvents = Event::where(function($query) use ($start, $end) {
+            $query->whereBetween('start_date', [$start, $end])
+                  ->orWhereBetween('end_date', [$start, $end])
+                  ->orWhere(function($query) use ($start, $end) {
+                      $query->where('start_date', '<', $start)
+                            ->where('end_date', '>', $end);
+                  });
+        })
+        ->whereHas('venues')
+        ->with(['venues'])
+        ->get();
+
+    // Get booked venue IDs
+    $bookedVenueIds = $bookedEvents->flatMap(function ($event) {
+        return $event->venues->pluck('id');
+    })->unique()->toArray();
+
+    // Format available venues as array (not keyed by ID)
+    $availableVenues = $allVenues->reject(function ($venue) use ($bookedVenueIds) {
+        return in_array($venue->id, $bookedVenueIds);
+    })->values(); // Use values() to reset keys to sequential numbers
+
+    // Format booked events for display
+    $bookedVenues = [];
+    foreach ($bookedEvents as $event) {
+        foreach ($event->venues as $venue) {
+            $bookedVenues[] = [
+                'title' => $event->title,
+                'start_date' => $event->start_date,
+                'end_date' => $event->end_date,
+                'venue_name' => $venue->name
+            ];
+        }
+    }
+
+    return response()->json([
+        'availableVenues' => $availableVenues,
+        'bookedVenues' => $bookedVenues
+    ]);
+}
+
+// public function getMyEvents(Request $request)
+// {
+//     $filter = $request->input('filter', 'upcoming');
+//     $date = $request->input('date');
+//     $user = auth()->user();
+
+//     $query = Event::where('user_id', $user->id)
+//         ->orWhereHas('coordinators', function($q) use ($user) {
+//             $q->where('user_id', $user->id);
+//         })
+//         ->orWhereHas('faculties', function($q) use ($user) {
+//             $q->where('user_id', $user->id);
+//         })
+//         ->with(['eventType', 'venues', 'coordinators']);
+
+//     switch ($filter) {
+//         case 'today':
+//             $query->whereDate('start_date', Carbon::today());
+//             break;
+//         case 'custom':
+//             if (!$date) {
+//                 return response()->json(['error' => 'Date parameter required'], 400);
+//             }
+//             $query->whereDate('start_dates', Carbon::parse($date));
+//             break;
+//         case 'upcoming':
+//         default:
+//             $query->where('start_date', '>=', now());
+//             break;
+//     }
+
+//     $events = $query->orderBy('start_date')
+//         ->get()
+//         ->map(function ($event) {
+//             return [
+//                 'id' => $event->id,
+//                 'title' => $event->title,
+//                 'start_date' => $event->start_date,
+//                 'end_date' => $event->end_date,
+//                 'event_type' => $event->eventType->name,
+//                 'venue_names' => $event->venues->pluck('name'),
+//                 'coordinator_names' => $event->coordinators->pluck('name'),
+//                 'color' => $this->getEventColor($event->eventType->name)
+//             ];
+//         });
+
+//     return response()->json($events);
+// }
+public function getMyEvents(Request $request)
+{
+    $filter = $request->input('filter', 'upcoming');
+    $date = $request->input('date');
+    $user = auth()->user();
+
+    $query = Event::where('user_id', $user->id)
+        ->orWhereHas('coordinators', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })
+        ->orWhereHas('faculties', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })
+        ->with(['eventType', 'venues', 'coordinators']);
+
+    switch ($filter) {
+        case 'today':
+            $query->whereDate('start_date', Carbon::today())
+                ->orWhereDate('end_date', Carbon::today())
+                ->orWhere(function($q) {
+                    $q->where('start_date', '<', Carbon::today())
+                      ->where('end_date', '>', Carbon::today());
+                });
+            break;
+        case 'custom':
+            if (!$date) {
+                return response()->json(['error' => 'Date parameter required'], 400);
+            }
+            $customDate = Carbon::parse($date);
+            $query->where(function($q) use ($customDate) {
+                $q->whereDate('start_date', $customDate)
+                  ->orWhereDate('end_date', $customDate)
+                  ->orWhere(function($q) use ($customDate) {
+                      $q->where('start_date', '<', $customDate)
+                        ->where('end_date', '>', $customDate);
+                  });
+            });
+            break;
+        case 'upcoming':
+        default:
+            $query->where('end_date', '>=', now()); // Changed from start_date to end_date
+            break;
+    }
+
+    $events = $query->orderBy('start_date')
+        ->get()
+        ->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'start_date' => $event->start_date,
+                'end_date' => $event->end_date,
+                'event_type' => $event->eventType->name,
+                'venue_names' => $event->venues->pluck('name'),
+                'coordinator_names' => $event->coordinators->pluck('name'),
+                'color' => $this->getEventColor($event->eventType->name)
+            ];
+        });
+
+    return response()->json($events);
+}
+
+public function getUpcomingEvents(Request $request)
+{
+    $filter = $request->input('filter', 'upcoming');
+    $date = $request->input('date');
+
+    $query = Event::with(['eventType', 'venues', 'coordinators']);
+
+    switch ($filter) {
+        case 'today':
+            $query->whereDate('start_date', Carbon::today());
+            break;
+        case 'custom':
+            if (!$date) {
+                return response()->json(['error' => 'Date parameter required'], 400);
+            }
+            $query->whereDate('start_date', Carbon::parse($date));
+            break;
+        case 'upcoming':
+        default:
+            $query->where('start_date', '>=', now());
+            break;
+    }
+
+    $events = $query->orderBy('start_date')
+        ->limit(20)
+        ->get()
+        ->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'start_date' => $event->start_date,
+                'end_date' => $event->end_date,
+                'event_type' => $event->eventType->name,
+                'venue_names' => $event->venues->pluck('name'),
+                'coordinator_names' => $event->coordinators->pluck('name'),
+                'color' => $this->getEventColor($event->eventType->name)
+            ];
+        });
+
+    return response()->json($events);
+}
+
+private function getEventColor($eventType)
+{
+    $colorMap = [
+        'Workshop' => '#007bff',
+        'Seminar' => '#28a745',
+        'Meeting' => '#ffc107',
+        'Training' => '#17a2b8',
+        'Webinar' => '#6f42c1',
+        'Conference' => '#fd7e14',
+        'Recruitment' => '#dc3545',
+        'Discussion' => '#6610f2',
+        'Default' => '#20c997'
+    ];
+
+    return $colorMap[$eventType] ?? $colorMap['Default'];
+}
+
+
 
 
 }

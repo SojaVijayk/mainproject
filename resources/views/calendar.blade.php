@@ -1,4 +1,3 @@
-// resources/views/calendar.blade.php
 @extends('layouts/layoutMaster')
 
 @section('title', 'Venue Details')
@@ -8,10 +7,15 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css')}}">
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/formvalidation/dist/css/formValidation.min.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
-<link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
+{{--
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" /> --}}
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}" />
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
+
 
 
 @endsection
@@ -67,8 +71,40 @@
     border: 2px solid #28a745;
     background-color: #f8fff8;
   }
+
+  /* Fix fade look or semi-transparent toasts */
+  .toast {
+    opacity: 1 !important;
+    z-index: 1060 !important;
+    /* Ensure it's above modals */
+    background-color: rgba(32, 31, 31, 0.85) !important;
+    /* darker background for visibility */
+    color: white;
+  }
+
+  /* Optional: ensure toast container is positioned above everything */
+  #toast-container {
+    z-index: 1061 !important;
+  }
+
+  .loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+  }
+
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }
 </style>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 
 @endsection
 
@@ -78,7 +114,7 @@
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
+{{-- <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script> --}}
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
@@ -89,6 +125,7 @@
 
 @section('page-script')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
@@ -145,10 +182,35 @@ var venuesSelect = $('#venues');
 
 // Update date change handlers
 startDate.change(function() {
+  const startDateTime = new Date($(this).val());
+    const now = new Date();
+
+    if (startDateTime < now) {
+        toastr.error('Start time cannot be in the past');
+        const currentDateTime = formatDateLocal(now);
+        $(this).val(currentDateTime);
+    }
     updateAvailableVenues();
 });
 
 endDate.change(function() {
+   const startDateTime = new Date(startDate.val());
+    const endDateTime = new Date($(this).val());
+    const now = new Date();
+
+    if (endDateTime <= startDateTime) {
+        toastr.error('End time must be after start time');
+        const minEndTime = new Date(startDateTime.getTime() + 30 * 60000);
+        const minEndDateTime = formatDateLocal(minEndTime);
+        $(this).val(minEndDateTime);
+    }
+
+    if (endDateTime < now) {
+        toastr.error('End time cannot be in the past');
+        const minEndTime = new Date(now.getTime() + 30 * 60000);
+        const minEndDateTime = formatDateLocal(minEndTime);
+        $(this).val(minEndDateTime);
+    }
     updateAvailableVenues();
 });
 
@@ -216,7 +278,25 @@ function updateAvailableVenues(callback) {
                 }
             },
             error: function(xhr) {
-                toastr.error('Failed to load available venues');
+                {{--  if (xhr.responseJSON && xhr.responseJSON.message) {
+                   message = xhr.responseJSON.message;
+                }
+                toastr.error(message);  --}}
+
+                // Optionally, include specific field errors:
+                {{--  if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    for (const field in errors) {
+                        if (errors[field].length) {
+                            message += `<br>${errors[field][0]}`; // show only the first error
+                        }
+                    }
+                }  --}}
+
+
+
+
+                toastr.error('Failed to load available venues End time must be a time after Start time');
                 console.error('Error loading venues:', xhr.responseText);
 
                 // Execute callback even if there's an error
@@ -242,6 +322,7 @@ $(document).on('change', '.venue-checkbox', function() {
 // Initialize select2 for multiple selection
 $(document).ready(function() {
 
+
     console.log('Coordinators options:', $('#coordinators option'));
 console.log('Faculties options:', $('#faculties option'));
     coordinatorsSelect.select2({
@@ -260,7 +341,91 @@ console.log('Faculties options:', $('#faculties option'));
         placeholder: 'Select Venue(s)',
         multiple: true
     });
+
+
     loadFormData();
+
+    // Load dashboard sections after page loads
+    loadDashboardSections();
+
+    // Hall availability filter buttons
+     $('[data-my-events-filter]').click(function() {
+        $('[data-my-events-filter]').removeClass('active');
+        $(this).addClass('active');
+
+        const filter = $(this).data('my-events-filter');
+        if (filter === 'custom') {
+            $('#myEventsDatePicker').show();
+            const selectedDate = $('#myEventsDatePickerInput').val();
+            if (selectedDate) {
+                loadMyEvents(filter, selectedDate);
+            }
+        } else {
+            $('#myEventsDatePicker').hide();
+            loadMyEvents(filter);
+        }
+    });
+
+    // My Events date picker change
+    $('#myEventsDatePickerInput').change(function() {
+        if ($('[data-my-events-filter="custom"]').hasClass('active')) {
+            loadMyEvents('custom', $(this).val());
+        }
+    });
+
+    // Upcoming Events filter buttons
+    $('[data-upcoming-filter]').click(function() {
+        $('[data-upcoming-filter]').removeClass('active');
+        $(this).addClass('active');
+
+        const filter = $(this).data('upcoming-filter');
+        if (filter === 'custom') {
+            $('#upcomingEventsDatePicker').show();
+            const selectedDate = $('#upcomingEventsDatePickerInput').val();
+            if (selectedDate) {
+                loadUpcomingEvents(filter, selectedDate);
+            }
+        } else {
+            $('#upcomingEventsDatePicker').hide();
+            loadUpcomingEvents(filter);
+        }
+    });
+
+    // Upcoming Events date picker change
+    $('#upcomingEventsDatePickerInput').change(function() {
+        if ($('[data-upcoming-filter="custom"]').hasClass('active')) {
+            loadUpcomingEvents('custom', $(this).val());
+        }
+    });
+
+    $(document).on('click', '[data-time-filter]', function() {
+    $('[data-time-filter]').removeClass('active');
+    $(this).addClass('active');
+
+    const filter = $(this).data('time-filter');
+    if (filter === 'custom') {
+        $('#customDatePicker').show();
+        const selectedDate = $('#availabilityDatePicker').val();
+        if (selectedDate) {
+            loadHallAvailability(filter, selectedDate);
+        }
+    } else {
+        $('#customDatePicker').hide();
+        loadHallAvailability(filter);
+    }
+});
+
+// Handle date picker change for hall availability
+$('#availabilityDatePicker').change(function() {
+    if ($('[data-time-filter="custom"]').hasClass('active')) {
+        loadHallAvailability('custom', $(this).val());
+    }
+});
+
+
+
+
+
 });
 
 // Update event form in modal
@@ -277,17 +442,18 @@ function populateEventForm(event) {
     eventTypeId.val(event.event_type_id).trigger('change');
     eventModeId.val(event.event_mode_id);
 
-    {{--  // Set multiple coordinators
-    if (event.coordinators && event.coordinators.length > 0) {
-        var coordinatorIds = event.coordinators.map(c => c.id);
-        coordinatorsSelect.val(coordinatorIds).trigger('change');
-    }
+    // Set minimum time for start and end dates
+    const now = new Date();
+    const currentDateTime = formatDateLocal(now);
+    const minEndTime = new Date(now.getTime() + 30 * 60000); // 30 minutes from now
+    const minEndDateTime = formatDateLocal(minEndTime);
 
-    // Set multiple faculties
-    if (event.faculties && event.faculties.length > 0) {
-        var facultyIds = event.faculties.map(f => f.id);
-        facultiesSelect.val(facultyIds).trigger('change');
-    }  --}}
+
+
+    // Set min attribute for start and end datetime inputs
+    startDate.attr('min', currentDateTime);
+    endDate.attr('min', minEndDateTime);
+
       // Set multiple coordinators after a small delay to ensure Select2 is ready
         setTimeout(function() {
             if (event.coordinators && event.coordinators.length > 0) {
@@ -309,19 +475,7 @@ function populateEventForm(event) {
     externalEntity.val(event.external_entity);
     venueTypeId.val(event.venue_type_id).trigger('change');
 
-    // Set multiple venues
-    {{--  if (event.venues && event.venues.length > 0) {
-        var venueIds = event.venues.map(v => v.id);
-        venuesSelect.val(venueIds).trigger('change');
 
-        // Show selected venues in cards
-        updateAvailableVenues();
-        setTimeout(function() {
-            event.venues.forEach(function(venue) {
-                $('#venue-' + venue.id).prop('checked', true);
-            });
-        }, 500);
-    }  --}}
       // Set multiple venues - this is the key change
     if (event.venues && event.venues.length > 0) {
         // First load all available venues
@@ -352,7 +506,7 @@ function populateEventForm(event) {
     }
 }
 
-        function formatDateLocal(date) {
+function formatDateLocal(date) {
     const pad = (n) => n.toString().padStart(2, '0');
 
     const year = date.getFullYear();
@@ -391,9 +545,9 @@ function populateEventForm(event) {
                     canEdit: true
                 },
                 failure: function(error) {
-        toastr.error('Failed to load events');
-        console.error('Error loading events:', error);
-    }
+                toastr.error('Failed to load events');
+                console.error('Error loading events:', error);
+            }
             },
 
 
@@ -402,76 +556,154 @@ function populateEventForm(event) {
                 eventModal.modal('show');
                 {{--  startDate.val(info.startStr.substring(0, 16));
                 endDate.val(info.endStr.substring(0, 16));  --}}
-                const start = info.start;
+
+                //old code
+                {{--  const start = info.start;
                 const end = info.end || info.start;
+                const now = new Date();
+                start.setHours(now.getHours(), now.getMinutes(), 0, 0);
                 const startLocal = formatDateLocal(new Date(start));
                 const endLocal = formatDateLocal(new Date(end));
 
+                // Create end date/time 30 minutes later
+                const endDateObj = new Date(start.getTime() + 30 * 60000); // 30 mins = 1800000 ms
+                const endLocalTime = formatDateLocal(endDateObj);
+                endDate.val(endLocal);
+
+                    startDate.val(startLocal);
+                    endDate.val(endLocalTime);
+                   startDate.trigger('change');  --}}
+
+                   const now = new Date();
+            const currentDateTime = formatDateLocal(now);
+            const minEndTime = new Date(now.getTime() + 30 * 60000); // 30 minutes from now
+            const minEndDateTime = formatDateLocal(minEndTime);
+
+            // Set min attribute for start and end datetime inputs
+            startDate.attr('min', currentDateTime);
+            endDate.attr('min', minEndDateTime);
+
+            const start = info.start;
+            const end = info.end || info.start;
+            start.setHours(now.getHours(), now.getMinutes(), 0, 0);
+            const startLocal = formatDateLocal(new Date(start));
+            const endLocal = formatDateLocal(new Date(end));
+
+            // Create end date/time 30 minutes later
+            const endDateObj = new Date(start.getTime() + 30 * 60000);
+            const endLocalTime = formatDateLocal(endDateObj);
+
+            // Ensure selected time is not in the past
+            if (new Date(startLocal) < now) {
+                startDate.val(currentDateTime);
+            } else {
                 startDate.val(startLocal);
-                    endDate.val(startLocal);
-            },
+            }
+
+            if (new Date(endLocalTime) < minEndTime) {
+                endDate.val(minEndDateTime);
+            } else {
+                endDate.val(endLocalTime);
+            }
+
+            startDate.trigger('change');
+                    },
 
 
           eventClick: function(info) {
-    $.get('/events/' + info.event.id, function(event) {
-        if (event.can_edit) {
-            populateEventForm(event);
-        } else {
-            // Populate view modal
-            viewEventTitle.text(event.title);
-            viewEventType.text(event.event_type);
-            viewEventMode.text(event.event_mode);
-            viewEventStart.text(new Date(event.start_date).toLocaleString());
-            viewEventEnd.text(new Date(event.end_date).toLocaleString());
-
-            // Calculate duration
-            var start = new Date(event.start_date);
-            var end = new Date(event.end_date);
-            var diff = end - start;
-            var hours = Math.floor(diff / (1000 * 60 * 60));
-            var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            viewEventDuration.text(hours + " hours " + minutes + " minutes");
-            if (event.coordinators && event.coordinators.length > 0) {
-            viewEventCoordinators.text(event.coordinators.map(c => c.name).join(', '));
-            viewEventCoordinatorsContainer.show();
-            }else {
-                {{--  viewEventCoordinatorsContainer.hide();  --}}
-            }
-
-            if (event.faculties && event.faculties.length > 0) {
-                viewEventFaculties.text(event.faculties.map(f => f.name).join(', '));
-                viewEventFacultiesContainer.show();
+          $.get('/events/' + info.event.id, function(event) {
+            console.log(event.can_edit);
+            if (event.can_edit) {
+                populateEventForm(event);
             } else {
-                {{--  viewEventFacultiesContainer.hide();  --}}
+                // Populate view modal
+                viewEventTitle.text(event.title);
+                viewEventType.text(event.event_type);
+                viewEventMode.text(event.event_mode);
+                viewEventStart.text(new Date(event.start_date).toLocaleString());
+                viewEventEnd.text(new Date(event.end_date).toLocaleString());
+
+                // Calculate duration
+                var start = new Date(event.start_date);
+                var end = new Date(event.end_date);
+                var diff = end - start;
+                var hours = Math.floor(diff / (1000 * 60 * 60));
+                var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                viewEventDuration.text(hours + " hours " + minutes + " minutes");
+                if (event.coordinators && event.coordinators.length > 0) {
+                viewEventCoordinators.text(event.coordinators.map(c => c.name).join(', '));
+                viewEventCoordinatorsContainer.show();
+                }else {
+                    {{--  viewEventCoordinatorsContainer.hide();  --}}
+                }
+
+                if (event.faculties && event.faculties.length > 0) {
+                    viewEventFaculties.text(event.faculties.map(f => f.name).join(', '));
+                    viewEventFacultiesContainer.show();
+                } else {
+                    {{--  viewEventFacultiesContainer.hide();  --}}
+                }
+
+                viewEventParticipants.text(event.participants_count);
+                viewEventVenueType.text(event.venue_type);
+                viewEventVenues.text(event.venues.map(v => v.name).join(', '));
+                viewEventCustomAmenities.text(event.custom_amenities_request || 'None');
+
+                if (event.external_entity) {
+                    viewEventExternalEntity.text(event.external_entity);
+                    viewEventExternalEntityContainer.show();
+                } else {
+                    viewEventExternalEntityContainer.hide();
+                }
+
+                viewEventCreator.text(event.creator.name);
+                viewEventCreated.text(event.created_at);
+                viewEventDescription.text(event.description || 'No description provided');
+
+                viewEventModal.modal('show');
             }
+        }).fail(function() {
+            toastr.error('Failed to load event details');
+        });
+      },
+  eventDidMount: function(info) {
+    var startDateTime = info.event.start.toLocaleString();
+    var endDateTime = info.event.end ? info.event.end.toLocaleString() : '';
 
-            viewEventParticipants.text(event.participants_count);
-            viewEventVenueType.text(event.venue_type);
-            viewEventVenues.text(event.venues.map(v => v.name).join(', '));
-            viewEventCustomAmenities.text(event.custom_amenities_request || 'None');
-
-            if (event.external_entity) {
-                viewEventExternalEntity.text(event.external_entity);
-                viewEventExternalEntityContainer.show();
-            } else {
-                viewEventExternalEntityContainer.hide();
-            }
-
-            viewEventCreator.text(event.creator.name);
-            viewEventCreated.text(event.created_at);
-            viewEventDescription.text(event.description || 'No description provided');
-
-            viewEventModal.modal('show');
-        }
-    }).fail(function() {
-        toastr.error('Failed to load event details');
+    // Calculate duration for tooltip
+    var duration = '';
+    if (info.event.end) {
+        var diff = info.event.end - info.event.start;
+        var hours = Math.floor(diff / (1000 * 60 * 60));
+        var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        duration = `<strong>Duration:</strong> ${hours}h ${minutes}m<br>`;
+    }
+  $(info.el).tooltip({
+        title: `
+            <strong>${info.event.title}</strong><br>
+            <strong>Type:</strong> ${info.event.extendedProps.eventType}<br>
+            <strong>Mode:</strong> ${info.event.extendedProps.eventMode}<br>
+            <strong>Start:</strong> ${startDateTime}<br>
+            <strong>End:</strong> ${endDateTime}<br>
+            ${duration}
+            <strong>Coordinators:</strong> ${info.event.extendedProps.coordinators.join(', ')}<br>
+            ${info.event.extendedProps.faculties.length ? `<strong>Faculties:</strong> ${info.event.extendedProps.faculties.join(', ')}<br>` : ''}
+            <strong>Venues:</strong> ${info.event.extendedProps.venues.join(', ')}<br>
+            ${info.event.extendedProps.custom_amenities_request ? `<strong>Additional Amenities:</strong> ${info.event.extendedProps.custom_amenities_request}<br>` : ''}
+            <strong>Participants:</strong> ${info.event.extendedProps.participants_count}
+        `,
+        html: true,
+        placement: 'top',
+        container: 'body'
     });
+    if (!info.event.extendedProps.canEdit) {
+        $(info.el).addClass('fc-event-readonly');
+    }
 },
-
        eventRender: function(info) {
     // Format dates for tooltip
-    var startDate = info.event.start.toLocaleString();
-    var endDate = info.event.end ? info.event.end.toLocaleString() : '';
+    var startDateTime = info.event.start.toLocaleString();
+    var endDateTime = info.event.end ? info.event.end.toLocaleString() : '';
 
     // Calculate duration for tooltip
     var duration = '';
@@ -487,8 +719,8 @@ function populateEventForm(event) {
             <strong>${info.event.title}</strong><br>
             <strong>Type:</strong> ${info.event.extendedProps.eventType}<br>
             <strong>Mode:</strong> ${info.event.extendedProps.eventMode}<br>
-            <strong>Start:</strong> ${startDate}<br>
-            <strong>End:</strong> ${endDate}<br>
+            <strong>Start:</strong> ${startDateTime}<br>
+            <strong>End:</strong> ${endDateTime}<br>
             ${duration}
             <strong>Coordinators:</strong> ${info.event.extendedProps.coordinators.join(', ')}<br>
             ${info.event.extendedProps.faculties.length ? `<strong>Faculties:</strong> ${info.event.extendedProps.faculties.join(', ')}<br>` : ''}
@@ -644,7 +876,7 @@ function populateEventForm(event) {
         // Form submission
         eventForm.submit(function(e) {
             e.preventDefault();
-
+            $('.loader-overlay').show();
             var formData = $(this).serialize();
             var url = eventId.val() ? '/events/' + eventId.val() : '/events';
             var method = eventId.val() ? 'PUT' : 'POST';
@@ -663,7 +895,11 @@ function populateEventForm(event) {
                     $.each(errors, function(key, value) {
                         toastr.error(value[0]);
                     });
-                }
+                },
+                complete: function() {
+            // Hide loader when request is complete
+            $('.loader-overlay').hide();
+        }
             });
         });
 
@@ -685,23 +921,293 @@ function populateEventForm(event) {
     availableVenuesList.empty();
 }
 
+
+function loadDashboardSections() {
+    loadHallAvailability('now');
+    loadMyEvents('upcoming');
+    loadUpcomingEvents('upcoming');
+}
+
+// Hall Availability
+function loadHallAvailability(timeFilter, customDate = null) {
+    let url = '/hall-availability?filter=' + timeFilter;
+    if (customDate) {
+        url += '&date=' + customDate;
+    }
+
+    $('#hallAvailabilityContent').html(loadingSpinner());
+
+    $.get(url, function(data) {
+      $('#hallAvailabilityContent').empty();
+        let html = '';
+      console.log('Avialable'+data.availableVenues);
+        // Available venues section
+        if (data.availableVenues && data.availableVenues.length > 0) {
+            html += '<h6 class="mt-0">Available Venues</h6>';
+            html += '<div class="list-group mb-3">';
+            data.availableVenues.forEach(venue => {
+                html += `
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <h6 class="mb-1">${venue.name}</h6>
+                        <span class="badge bg-success">Available</span>
+                    </div>
+                    <small>Capacity: ${venue.seating_capacity}</small>
+                    <div class="mt-1">
+                        <small class="text-muted">Amenities: ${venue.amenities || 'None'}</small>
+                    </div>
+                </div>
+                `;
+            });
+            html += '</div>';
+        } else {
+            html += '<p class="text-muted">No venues available for the selected time.</p>';
+        }
+
+        // Booked venues section
+         console.log('booked'+data.bookedVenues.length);
+        if (data.bookedVenues && data.bookedVenues.length > 0) {
+            html += '<h6 class="mt-3">Booked Venues</h6>';
+            html += '<div class="list-group">';
+            data.bookedVenues.forEach(event => {
+                html += `
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <h6 class="mb-1">${event.venue_name}</h6>
+                        <span class="badge bg-danger">Booked</span>
+                    </div>
+                    <small>Event: ${event.title}</small>
+                    <div class="mt-1">
+                        <small class="text-muted">
+                            ${new Date(event.start_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} -
+                            ${new Date(event.end_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </small>
+                    </div>
+                </div>
+                `;
+            });
+            html += '</div>';
+        }
+
+        $('#hallAvailabilityContent').html(html);
+    }).fail(function() {
+        $('#hallAvailabilityContent').html('<p class="text-danger">Error loading hall availability data</p>');
+    });
+}
+// My Events
+function loadMyEvents(timeFilter, customDate = null) {
+    let url = '/my-events?filter=' + timeFilter;
+    if (customDate) {
+        url += '&date=' + customDate;
+    }
+
+    $('#myEventsContent').html(loadingSpinner());
+
+    $.get(url, function(data) {
+        let html = '';
+        if (data.length > 0) {
+            html += '<div class="list-group">';
+            data.forEach(event => {
+                html += eventListItem(event);
+            });
+            html += '</div>';
+        } else {
+            html = '<p class="text-muted">No events found.</p>';
+        }
+        $('#myEventsContent').html(html);
+    });
+}
+
+// Upcoming Events
+function loadUpcomingEvents(timeFilter, customDate = null) {
+    let url = '/upcoming-events?filter=' + timeFilter;
+    if (customDate) {
+        url += '&date=' + customDate;
+    }
+
+    $('#upcomingEventsContent').html(loadingSpinner());
+
+    $.get(url, function(data) {
+        let html = '';
+        if (data.length > 0) {
+            html += '<div class="list-group">';
+            data.forEach(event => {
+                html += eventListItem(event, true);
+            });
+            html += '</div>';
+        } else {
+            html = '<p class="text-muted">No events found.</p>';
+        }
+        $('#upcomingEventsContent').html(html);
+    });
+}
+
+// Helper functions
+function loadingSpinner() {
+    return `
+    <div class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    `;
+}
+
+function venueListItem(venue, status, badgeClass) {
+    return `
+    <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+            <h6 class="mb-1">${venue.name}</h6>
+            <span class="badge bg-${badgeClass}">${status}</span>
+        </div>
+        <small>Capacity: ${venue.seating_capacity}</small>
+        <div class="mt-1">
+            <small class="text-muted">Amenities: ${venue.amenities || 'None'}</small>
+        </div>
+    </div>
+    `;
+}
+
+function eventListItem(event, showCoordinators = false) {
+    const startTime = new Date(event.start_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    const endTime = new Date(event.end_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    let html = `
+    <a href="#" class="list-group-item list-group-item-action view-event" data-id="${event.id}">
+        <div class="d-flex justify-content-between">
+            <h6 class="mb-1">${event.title}</h6>
+            <span class="badge" style="background-color: ${event.color}">${event.event_type}</span>
+        </div>
+        <small>${event.venue_names.join(', ')}</small>
+        <div class="mt-1">
+            <small class="text-muted">
+                ${new Date(event.start_date).toLocaleDateString()} •
+                ${startTime} - ${endTime}
+            </small>
+        </div>
+    `;
+
+    if (showCoordinators && event.coordinator_names && event.coordinator_names.length > 0) {
+        html += `
+        <div class="mt-1">
+            <small>Coordinator: ${event.coordinator_names.join(', ')}</small>
+        </div>
+        `;
+    }
+
+    html += `</a>`;
+    return html;
+}
+
     });
 </script>
 @endsection
 
 @section('content')
 
-
 <div class="container">
-  <div class="row justify-content-center">
-    <div class="col-md-12">
+  <div class="row">
+    <!-- Left Column - Dashboard Sections -->
+    <div class="col-md-4">
+
+
+      <!-- Hall Availability Card -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5>Hall Availability</h5>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-secondary active" data-time-filter="now">Now</button>
+            <button class="btn btn-sm btn-outline-secondary" data-time-filter="today">Today</button>
+            <button class="btn btn-sm btn-outline-secondary" data-time-filter="custom">Custom Date</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="customDatePicker" class="mb-3" style="display: none;">
+            <input type="date" class="form-control" id="availabilityDatePicker">
+          </div>
+          <div id="hallAvailabilityContent">
+            <!-- Content will be loaded via AJAX -->
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Events Card -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5>My Events</h5>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-secondary active" data-my-events-filter="upcoming">Upcoming</button>
+            {{-- <button class="btn btn-sm btn-outline-secondary" data-my-events-filter="today">Today</button>
+            <button class="btn btn-sm btn-outline-secondary" data-my-events-filter="custom">Custom Date</button> --}}
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="myEventsDatePicker" class="mb-3" style="display: none;">
+            <input type="date" class="form-control" id="myEventsDatePickerInput">
+          </div>
+          <div id="myEventsContent">
+            <!-- Content will be loaded via AJAX -->
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          Event Type Legend
+        </div>
+        <div class="card-body mt-2">
+          {{-- <div class="d-flex flex-wrap gap-2"> --}}
+            <div><span class="badge mt-2" style="background-color: #007bff;">Workshop</span></div>
+            <div><span class="badge mt-2" style="background-color: #28a745;">Seminar</span></div>
+            <div><span class="badge mt-2" style="background-color: #ffc107; color: #000;">Meeting</span></div>
+            <div><span class="badge mt-2" style="background-color: #17a2b8;">Training</span></div>
+            <div><span class="badge mt-2" style="background-color: #6f42c1;">Webinar</span></div>
+            <div><span class="badge mt-2" style="background-color: #fd7e14;">Conference</span></div>
+            <div><span class="badge mt-2" style="background-color: #dc3545;">Recruitment</span></div>
+            <div><span class="badge mt-2" style="background-color: #6610f2;">Discussion</span></div>
+            {{-- <div><span class="badge mt-2" style="background-color: #6c757d;">Read-only</span></div> --}}
+            {{--
+          </div> --}}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column - Calendar -->
+    <div class="col-md-8">
       <div class="card">
         <div class="card-header">{{ __('Calendar') }}</div>
-
         <div class="card-body">
           <div id="calendar"></div>
         </div>
       </div>
+
+
+      <!-- Upcoming Events Card -->
+      <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5>Upcoming Events</h5>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-secondary active" data-upcoming-filter="upcoming">Upcoming</button>
+            <button class="btn btn-sm btn-outline-secondary" data-upcoming-filter="today">Today</button>
+            <button class="btn btn-sm btn-outline-secondary" data-upcoming-filter="custom">Custom Date</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="upcomingEventsDatePicker" class="mb-3" style="display: none;">
+            <input type="date" class="form-control" id="upcomingEventsDatePickerInput">
+          </div>
+          <div id="upcomingEventsContent">
+            <!-- Content will be loaded via AJAX -->
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -711,6 +1217,11 @@ function populateEventForm(event) {
   aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
     <div class="modal-content">
+      <div class="loader-overlay" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
       <div class="modal-header">
         <h5 class="modal-title" id="eventModalLabel">Hall Booking</h5>
         {{-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -852,84 +1363,134 @@ function populateEventForm(event) {
   </div>
 </div>
 
-<!-- View Event Modal -->
 <div class="modal fade" id="viewEventModal" tabindex="-1" role="dialog" aria-labelledby="viewEventModalLabel"
   aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="viewEventModalLabel">Event Details</h5>
-        {{-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button> --}}
+      <!-- Modal Header -->
+      <div class="modal-header bg-primary">
+        <h5 class="modal-title text-white fw-semibold" id="viewEventModalLabel">
+          <i class="far fa-calendar-alt me-2"></i>Event Details
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <h4 id="viewEventTitle"></h4>
-          </div>
-          <div class="col-md-6 text-right">
-            <span class="badge badge-secondary" id="viewEventType"></span>
-            <span class="badge badge-info" id="viewEventMode"></span>
+
+      <!-- Modal Body -->
+      <div class="modal-body p-4">
+        <!-- Title and Badges -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+          <h4 class="text-dark fw-semibold mb-0"><span id="viewEventTitle"></span></h4>
+          <div>
+            <span class="badge bg-success bg-opacity-10 text-white me-2" id="viewEventType"></span>
+            <span class="badge bg-dark bg-opacity-10 text-white" id="viewEventMode"></span>
           </div>
         </div>
 
+        <!-- Two Column Layout -->
         <div class="row">
+          <!-- Left Column -->
           <div class="col-md-6">
-            <div class="card mb-3">
-              <div class="card-header">Timing</div>
-              <div class="card-body">
-                <p><strong>Start:</strong> <span id="viewEventStart"></span></p>
-                <p><strong>End:</strong> <span id="viewEventEnd"></span></p>
-                <p><strong>Duration:</strong> <span id="viewEventDuration"></span></p>
+            <!-- Timing Section -->
+            <div class="mb-4">
+              <h6 class=" fw-semibold mb-3 border-bottom pb-2">
+                <i class="far text-success fa-clock me-2"></i>Timing
+              </h6>
+              <div class="row mb-2">
+                <div class="col-4 text-muted">Start:</div>
+                <div class="col-8"><span id="viewEventStart"></span></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-4 text-muted">End:</div>
+                <div class="col-8"><span id="viewEventEnd"></span></div>
+              </div>
+              <div class="row">
+                <div class="col-4 text-muted">Duration:</div>
+                <div class="col-8"><span id="viewEventDuration"></span></div>
               </div>
             </div>
 
-            <div class="card mb-3">
-              <div class="card-header">Participants</div>
-              <div class="card-body">
-                <p id="viewEventCoordinatorsContainer"><strong>Coordinators:</strong> <span
-                    id="viewEventCoordinators"></span></p>
-                <p id="viewEventFacultiesContainer"><strong>Faculties:</strong> <span id="viewEventFaculties"></span>
-                </p>
-                <p><strong>Participants Count:</strong> <span id="viewEventParticipants"></span></p>
+            <!-- Participants Section -->
+            <div class="mb-4">
+              <h6 class=" fw-semibold mb-3 border-bottom pb-2">
+                <i class="text-success fa-solid fa-users me-2"></i>Participants
+              </h6>
+              <div class="row mb-2">
+                <div class="col-4 text-muted">Coordinators:</div>
+                <div class="col-8"><span id="viewEventCoordinators"></span></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-4 text-muted">Faculties:</div>
+                <div class="col-8"><span id="viewEventFaculties"></span></div>
+              </div>
+              <div class="row">
+                <div class="col-4 text-muted">Count:</div>
+                <div class="col-8"><span id="viewEventParticipants"></span></div>
               </div>
             </div>
           </div>
 
+          <!-- Right Column -->
           <div class="col-md-6">
-            <div class="card mb-3">
-              <div class="card-header">Venue Details</div>
-              <div class="card-body">
-                <p><strong>Venue Type:</strong> <span id="viewEventVenueType"></span></p>
-                <p><strong>Venues:</strong> <span id="viewEventVenues"></span></p>
-                <p><strong>Additional Amenities Request:</strong> <span id="viewEventCustomAmenities"></span></p>
-                <p id="viewEventExternalEntityContainer"><strong>External Entity:</strong> <span
-                    id="viewEventExternalEntity"></span></p>
+            <!-- Venue Details -->
+            <div class="mb-4">
+              <h6 class=" fw-semibold mb-3 border-bottom pb-2">
+                <i class="text-success fa-solid fa-house me-2"></i>Venue Details
+              </h6>
+              <div class="row mb-2">
+                <div class="col-4 text-muted">Venue Type:</div>
+                <div class="col-8"><span id="viewEventVenueType"></span></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-4 text-muted">Venues:</div>
+                <div class="col-8"><span id="viewEventVenues"></span></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-4 text-muted">Amenities:</div>
+                <div class="col-8"><span id="viewEventCustomAmenities"></span></div>
+              </div>
+              <div class="row">
+                <div class="col-4 text-muted">External Entity:</div>
+                <div class="col-8"><span id="viewEventExternalEntity"></span></div>
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-header">Other Details</div>
-              <div class="card-body">
-                <p><strong>Created By:</strong> <span id="viewEventCreator"></span></p>
-                <p><strong>Created On:</strong> <span id="viewEventCreated"></span></p>
+            <!-- Other Details -->
+            <div class="mb-4">
+              <h6 class="d fw-semibold mb-3 border-bottom pb-2">
+
+                <i class="text-success fa-solid fa-square-info me-2"></i>Other Details
+              </h6>
+              <div class="row mb-2">
+                <div class="col-4 text-muted">Created By:</div>
+                <div class="col-8"><span id="viewEventCreator"></span></div>
+              </div>
+              <div class="row">
+                <div class="col-4 text-muted">Created On:</div>
+                <div class="col-8"><span id="viewEventCreated"></span></div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="card mt-3">
-          <div class="card-header">Description</div>
-          <div class="card-body">
-            <p id="viewEventDescription"></p>
+        <!-- Description -->
+        <div class="mt-4">
+          <h6 class=" fw-semibold mb-3 border-bottom pb-2">
+            <i class="far text-success fa-file-alt me-2"></i>Description
+          </h6>
+          <div class="p-3 bg-light rounded">
+            <span id="viewEventDescription"></span>
           </div>
         </div>
       </div>
+
+      <!-- Modal Footer -->
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i> Close
+        </button>
       </div>
     </div>
   </div>
 </div>
+
 @endsection

@@ -236,6 +236,11 @@ Route::get('/project/docs/{project_id}' , $controller_path . '\Project\ProjectDo
     Route::get('/events/{event}', [EventController::class, 'show']);
     Route::get('/venues/available', [EventController::class, 'getAvailableVenuesForTime']);
 
+    Route::get('/hall-availability', [EventController::class, 'getHallAvailability']);
+Route::get('/my-events', [EventController::class, 'getMyEvents']);
+Route::get('/upcoming-events', [EventController::class, 'getUpcomingEvents']);
+
+
  // Tapal Routes
     // Route::resource('tapals', $controller_path .'\TapalController');
     // List all tapals
