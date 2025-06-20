@@ -51,4 +51,18 @@ class User extends Authenticatable
   {
     return $this->hasOne('App\Employee');
   }
+  public function hostedBookings()
+{
+    return $this->hasMany(Booking::class, 'hosted_by');
+}
+
+public function coordinatedBookings()
+{
+    return $this->hasMany(Booking::class, 'coordinator_id');
+}
+
+public function bookingRequests()
+{
+    return $this->hasMany(BookingRequest::class, 'requested_by');
+}
 }

@@ -32,7 +32,7 @@
 
 @section('page-script')
 <script>
-    // Initialize charts
+  // Initialize charts
     document.addEventListener('DOMContentLoaded', function() {
         // Tapal Status Chart
         const statusCtx = document.getElementById('tapalStatusChart');
@@ -96,193 +96,193 @@
 
 @section('content')
 <div class="row mb-4">
- <!-- Statistics Cards -->
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fw-semibold d-block mb-1">Today's Tapals</span>
-                        <h3 class="card-title mb-2">{{ $stats['today_count'] }}</h3>
-                        <small class="text-success fw-semibold">{{ $stats['today_completed'] }} completed</small>
-                    </div>
-                    <div class="avatar">
-                        <span class="avatar-initial rounded bg-label-primary">
-                            <i class="bx bx-file"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
+  <!-- Statistics Cards -->
+  <div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="fw-semibold d-block mb-1">Today's Tapals</span>
+            <h3 class="card-title mb-2">{{ $stats['today_count'] }}</h3>
+            <small class="text-success fw-semibold">{{ $stats['today_completed'] }} completed</small>
+          </div>
+          <div class="avatar">
+            <span class="avatar-initial rounded bg-label-primary">
+              <i class="bx bx-file"></i>
+            </span>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fw-semibold d-block mb-1">This Month</span>
-                        <h3 class="card-title mb-2">{{ $stats['month_count'] }}</h3>
-                        <small class="text-success fw-semibold">{{ $stats['month_completed'] }} completed</small>
-                    </div>
-                    <div class="avatar">
-                        <span class="avatar-initial rounded bg-label-info">
-                            <i class="bx bx-calendar"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
+  <div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="fw-semibold d-block mb-1">This Month</span>
+            <h3 class="card-title mb-2">{{ $stats['month_count'] }}</h3>
+            <small class="text-success fw-semibold">{{ $stats['month_completed'] }} completed</small>
+          </div>
+          <div class="avatar">
+            <span class="avatar-initial rounded bg-label-info">
+              <i class="bx bx-calendar"></i>
+            </span>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fw-semibold d-block mb-1">This Year</span>
-                        <h3 class="card-title mb-2">{{ $stats['year_count'] }}</h3>
-                        <small class="text-success fw-semibold">{{ $stats['year_completed'] }} completed</small>
-                    </div>
-                    <div class="avatar">
-                        <span class="avatar-initial rounded bg-label-success">
-                            <i class="bx bx-stats"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
+  <div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="fw-semibold d-block mb-1">This Year</span>
+            <h3 class="card-title mb-2">{{ $stats['year_count'] }}</h3>
+            <small class="text-success fw-semibold">{{ $stats['year_completed'] }} completed</small>
+          </div>
+          <div class="avatar">
+            <span class="avatar-initial rounded bg-label-success">
+              <i class="bx bx-stats"></i>
+            </span>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fw-semibold d-block mb-1">Pending Tapals</span>
-                        <h3 class="card-title mb-2">{{ $stats['pending_count'] }}</h3>
-                        <small class="text-danger fw-semibold">{{ $stats['overdue_count'] }} overdue</small>
-                    </div>
-                    <div class="avatar">
-                        <span class="avatar-initial rounded bg-label-warning">
-                            <i class="bx bx-time"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
+  <div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="fw-semibold d-block mb-1">Pending Tapals</span>
+            <h3 class="card-title mb-2">{{ $stats['pending_count'] }}</h3>
+            <small class="text-danger fw-semibold">{{ $stats['overdue_count'] }} overdue</small>
+          </div>
+          <div class="avatar">
+            <span class="avatar-initial rounded bg-label-warning">
+              <i class="bx bx-time"></i>
+            </span>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <div class="row mb-4">
-    <!-- Charts Section -->
-    <div class="col-md-4 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between">
-                <h5 class="mb-0">Tapal Status</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="tapalStatusChart" class="chartjs" height="250"></canvas>
-            </div>
-        </div>
+  <!-- Charts Section -->
+  <div class="col-md-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between">
+        <h5 class="mb-0">Tapal Status</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="tapalStatusChart" class="chartjs" height="250"></canvas>
+      </div>
     </div>
+  </div>
 
-    <div class="col-md-4 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between">
-                <h5 class="mb-0">Monthly Trend</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="tapalTrendChart" class="chartjs" height="250"></canvas>
-            </div>
-        </div>
+  <div class="col-md-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between">
+        <h5 class="mb-0">Monthly Trend</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="tapalTrendChart" class="chartjs" height="250"></canvas>
+      </div>
     </div>
+  </div>
 </div>
 
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title">My Tapals</h3>
-        <div class="card-tools">
-          @if((auth()->user()->can('tapals.create')) || Auth::id()== 20 || Auth::id() == 1)
-            <a href="{{ route('tapals.create') }}" class="btn btn-primary">Create New Tapal</a>
-            @endif
-        </div>
+  <div class="card-header">
+    <h3 class="card-title">My Tapals</h3>
+    <div class="card-tools">
+      @if((auth()->user()->can('tapals.create')) || Auth::id()== 20 || Auth::id() == 1)
+      <a href="{{ route('tapals.create') }}" class="btn btn-primary">Create New Tapal</a>
+      @endif
     </div>
-    <div class="card-body">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Tapal No.</th>
-                    <th>Subject</th>
-                    <th>Type</th>
-                    <th>Created On</th>
-                    <th>Current Holder</th>
-                    {{--  <th>Status</th>  --}}
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($tapals as $tapal)
-                <tr>
-                    <td>{{ $tapal->tapal_number }}</td>
-                    <td>{{ $tapal->subject }}</td>
-                    <td>{{ ucfirst($tapal->type) }}</td>
-                    <td>{{ $tapal->created_at->format('d-M-Y') }}</td>
-                    <td>
-                      {{--  {{ $tapal->currentHolder ? $tapal->currentHolder->name : 'N/A' }}  --}}
-                      @if($tapal->assignments()->count() > 0)
-                    <ul class="list-unstyled">
-                         @foreach($tapal->assignments as $assignment)
-                            <li class="mt-2">
-                                {{ $assignment->toUser->name }}
-                                @if($assignment->completed_at != NULL)
-                                    <span class="badge bg-dark">Completed</span>
-                                     @elseif($assignment->is_accepted)
-                                    <span class="badge bg-success">Accepted</span>
-                                    @else
-                                    <span class="badge bg-warning">Pending</span>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
+  </div>
+  <div class="card-body">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Tapal No.</th>
+          <th>Subject</th>
+          <th>Type</th>
+          <th>Created On</th>
+          <th>Current Holder</th>
+          {{-- <th>Status</th> --}}
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach($tapals as $tapal)
+        <tr>
+          <td>{{ $tapal->tapal_number }}</td>
+          <td>{{ $tapal->subject }}</td>
+          <td>{{ ucfirst($tapal->type) }}</td>
+          <td>{{ $tapal->created_at->format('d-M-Y') }}</td>
+          <td>
+            {{-- {{ $tapal->currentHolder ? $tapal->currentHolder->name : 'N/A' }} --}}
+            @if($tapal->assignments()->count() > 0)
+            <ul class="list-unstyled">
+              @foreach($tapal->assignments as $assignment)
+              <li class="mt-2">
+                {{ $assignment->toUser->name }}
+                @if($assignment->completed_at != NULL)
+                <span class="badge bg-dark">Completed</span>
+                @elseif($assignment->is_accepted)
+                <span class="badge bg-success">Accepted</span>
                 @else
-                    <span class="text-muted">Not assigned yet</span>
+                <span class="badge bg-warning">Pending</span>
                 @endif
-                      </td>
-                    {{--  <td>
-                        @php
-                            $lastMovement = $tapal->movements->where('is_assignment',1)->last();
-                        @endphp
-                        @if($lastMovement)
-                            {{ $lastMovement->status }}
-                            @if($lastMovement->custom_status)
-                                ({{ $lastMovement->custom_status }})
-                            @endif
-                        @else
-                            New
-                        @endif
-                    </td>  --}}
-                    <td>
-                      @php
+              </li>
+              @endforeach
+            </ul>
+            @else
+            <span class="text-muted">Not assigned yet</span>
+            @endif
+          </td>
+          {{-- <td>
+            @php
+            $lastMovement = $tapal->movements->where('is_assignment',1)->last();
+            @endphp
+            @if($lastMovement)
+            {{ $lastMovement->status }}
+            @if($lastMovement->custom_status)
+            ({{ $lastMovement->custom_status }})
+            @endif
+            @else
+            New
+            @endif
+          </td> --}}
+          <td>
+            @php
 
-    // Check if current user is the accepted primary holder
-    $isPrimaryHolder = $tapal->current_holder_id === Auth::id();
+            // Check if current user is the accepted primary holder
+            $isPrimaryHolder = $tapal->current_holder_id === Auth::id();
 
-    // Check if tapal has been accepted by anyone
-    $isAccepted = $tapal->movements()->where('is_accepted', true)->exists();
+            // Check if tapal has been accepted by anyone
+            $isAccepted = $tapal->movements()->where('is_accepted', true)->exists();
 
-    // Check if tapal is completed
-    $isCompleted = $tapal->movements()->where('status', 'Completed')->exists();
-                      @endphp
-                        <a href="{{ route('tapals.show', $tapal->id) }}" class="btn btn-sm btn-success">View</a>
-                        @if($tapal->created_by == Auth::id() && ! $isCompleted)
-                            <a href="{{ route('tapals.edit', $tapal->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+            // Check if tapal is completed
+            $isCompleted = $tapal->movements()->where('status', 'Completed')->exists();
+            @endphp
+            <a href="{{ route('tapals.show', $tapal->id) }}" class="btn btn-sm btn-success">View</a>
+            @if($tapal->created_by == Auth::id() && ! $isCompleted)
+            <a href="{{ route('tapals.edit', $tapal->id) }}" class="btn btn-sm btn-primary">Edit</a>
+            @endif
+          </td>
+        </tr>
+        @endforeach
+      </tbody>
+    </table>
+  </div>
 </div>
 @endsection

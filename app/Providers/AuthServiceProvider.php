@@ -3,8 +3,10 @@
 namespace App\Providers;
 use App\Models\Tapal;
 use App\Models\TapalMovement;
+
 use App\Policies\TapalPolicy;
 use App\Policies\TapalMovementPolicy;
+
 
 // use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -19,6 +21,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Tapal::class => TapalPolicy::class,
     TapalMovement::class => TapalMovementPolicy::class,
+    Booking::class => BookingPolicy::class,
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
     ];
 

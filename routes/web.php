@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\laravel_example\UserManagement;
-
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\VenueController;
+use App\Http\Controllers\EventController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -217,23 +219,22 @@ Route::post('/project/employee/store' , $controller_path . '\Project\ProjectEmpl
 Route::get('/project/docs/{project_id}' , $controller_path . '\Project\ProjectDocumentController@index')->name('project-employee');
 
 
+// Route::resource('venues', VenueController::class);
 
 
-//Booking
-Route::get('/eventbooking', $controller_path . '\eventBookingController@index')->name('event-booking');
-
-Route::post('/event/store', $controller_path . '\eventBookingController@store')->name('event-store');
-Route::get('/event/edit/{id}', $controller_path . '\eventBookingController@edit')->name('event-edit');
-Route::post('/event/update/{id}', $controller_path . '\eventBookingController@update')->name('event-update');
-Route::get('/event/delete/{id}', $controller_path . '\eventBookingController@destroy')->name('event-delete');
 
 
-Route::get('/eventbooking/list', $controller_path . '\eventBookingController@eventList')->name('event-list');
-Route::get('/events/loadBookingsAllVenue/{event_id}', $controller_path . '\eventBookingController@loadBookingsAllVenue')->name('event-list');
 
 
-Route::get('/getVenues', $controller_path . '\VenuesController@getVenues')->name('venues-list');
-Route::post('/venueAvailability', $controller_path . '\VenuesController@venueAvailability')->name('venues-list');
+
+ Route::get('/calendar', [EventController::class, 'index'])->name('calendar');
+    Route::get('/events', [EventController::class, 'getEvents']);
+    Route::post('/events', [EventController::class, 'store']);
+    Route::put('/events/{event}', [EventController::class, 'update']);
+    Route::delete('/events/{event}', [EventController::class, 'destroy']);
+    Route::get('/events/form-data', [EventController::class, 'getFormData']);
+    Route::get('/events/{event}', [EventController::class, 'show']);
+    Route::get('/venues/available', [EventController::class, 'getAvailableVenuesForTime']);
 
  // Tapal Routes
     // Route::resource('tapals', $controller_path .'\TapalController');

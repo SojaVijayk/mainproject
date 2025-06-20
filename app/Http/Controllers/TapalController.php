@@ -335,7 +335,7 @@ class TapalController extends Controller
         // Mark all other assignments as non-primary
         TapalMovement::where('tapal_id', $movement->tapal_id)
             ->where('id', '!=', $movement->id)
-            ->update(['is_primary' => false]);
+            ->update(['is_primary' => false, 'status' => 'Notified', 'is_assignment' => false]);
     });
 
     return redirect()->route('tapals.show', $movement->tapal_id)
