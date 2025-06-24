@@ -38,7 +38,7 @@ class TapalController extends Controller
     public function create()
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
-        $users = User::where('id', '!=', Auth::id())->get();
+        $users = User::where('id', '!=', Auth::id())->where('active', 1)->orderBy('name')->get();
         return view('tapals.create', compact('users'),['pageConfigs'=> $pageConfigs]);
     }
 
@@ -160,7 +160,7 @@ class TapalController extends Controller
         $this->authorize('view', $tapal);
         $pageConfigs = ['myLayout' => 'horizontal'];
         $tapal->load(['attachments', 'movements.fromUser', 'movements.toUser', 'creator', 'currentHolder']);
-        $users = User::where('id', '!=', Auth::id())->get();
+        $users = User::where('id', '!=', Auth::id())->where('active', 1)->orderBy('name')->get();
         return view('tapals.show', compact('tapal', 'users'),['pageConfigs'=> $pageConfigs]);
     }
 
@@ -168,7 +168,7 @@ class TapalController extends Controller
     {$pageConfigs = ['myLayout' => 'horizontal'];
         $this->authorize('update', $tapal);
 
-        $users = User::where('id', '!=', Auth::id())->get();
+        $users = User::where('id', '!=', Auth::id())->where('active', 1)->orderBy('name')->get();
         return view('tapals.edit', compact('tapal', 'users'),['pageConfigs'=> $pageConfigs]);
     }
 

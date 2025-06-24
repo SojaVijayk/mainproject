@@ -81,7 +81,7 @@ class DocumentController extends Controller
         $pageConfigs = ['myLayout' => 'horizontal'];
         $documentTypes = DocumentType::where('is_active', true)->get();
         $codes = DocumentCode::with('user')->where('is_active', true)->get();
-        $users = User::where('active', true)->get();
+        $users = User::where('active', 1)->orderBy('name')->get();
 
         return view('documents.create', compact('documentTypes', 'codes', 'users'),['pageConfigs'=> $pageConfigs]);
     }
@@ -198,7 +198,7 @@ class DocumentController extends Controller
 
     $documentTypes = DocumentType::where('is_active', true)->get();
     $codes = DocumentCode::with('user')->where('is_active', true)->get();
-    $users = User::where('active', true)->get();
+    $users = User::where('active', 1)->orderBy('name')->get();
 
     return view('documents.edit', compact('document', 'documentTypes', 'codes', 'users'),['pageConfigs'=> $pageConfigs]);
 }
