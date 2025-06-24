@@ -1403,30 +1403,30 @@ function eventListItem(event, showCoordinators = false) {
         <form id="eventForm">
           @csrf
           <input type="hidden" id="eventId">
-          <div class="form-group">
+          <div class="form-group mt-2">
             <label for="title">Event Title *</label>
             <input type="text" class="form-control" id="title" name="title" required>
           </div>
-          <div class="form-group">
+          <div class="form-group mt-2">
             <label for="description">Description</label>
             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
           </div>
           <div class="row">
             <div class="col-md-4">
 
-              <div class="form-group">
+              <div class="form-group mt-2">
                 <label for="start_date">Start Date & Time *</label>
                 <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
               </div>
             </div>
             <div class="col-md-4">
-              <div class="form-group">
+              <div class="form-group mt-2">
                 <label for="end_date">End Date & Time *</label>
                 <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
               </div>
             </div>
             <div class="col-md-4">
-              <div class="form-group">
+              <div class="form-group mt-2">
                 <label for="participants_count">Number of Participants *</label>
                 <input type="number" class="form-control" id="participants_count" name="participants_count" min="0"
                   required>
@@ -1435,7 +1435,7 @@ function eventListItem(event, showCoordinators = false) {
           </div>
           <div class="row">
             <div class="col-md-4">
-              <div class="form-group">
+              <div class="form-group mt-2">
                 <label for="event_type_id">Event Type *</label>
                 <select class="form-control" id="event_type_id" name="event_type_id" required>
                   <option value="">Select Event Type</option>
@@ -1443,7 +1443,7 @@ function eventListItem(event, showCoordinators = false) {
               </div>
             </div>
             <div class="col-md-4">
-              <div class="form-group">
+              <div class="form-group mt-2">
                 <label for="event_mode_id">Event Mode *</label>
                 <select class="form-control" id="event_mode_id" name="event_mode_id" required>
                   <option value="">Select Event Mode</option>
@@ -1451,7 +1451,7 @@ function eventListItem(event, showCoordinators = false) {
               </div>
             </div>
             <div class="col-md-4">
-              <div class="form-group">
+              <div class="form-group mt-2">
                 <label>Event Hosted By *</label>
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="event_category" id="cmd" value="CMD" checked>
@@ -1469,7 +1469,7 @@ function eventListItem(event, showCoordinators = false) {
             </div>
           </div>
           <div class="row">
-            <div class="form-group">
+            <div class="form-group mt-2">
               <label for="coordinators">Coordinators *</label>
               <select class="form-control select2" id="coordinators" name="coordinators[]" multiple="multiple" required>
                 <!-- Options will be loaded dynamically -->
@@ -1477,7 +1477,7 @@ function eventListItem(event, showCoordinators = false) {
             </div>
 
             <!-- Faculty Field -->
-            <div class="form-group">
+            <div class="form-group mt-2">
               <label for="faculties">Concerned Faculty (if applicable)</label>
               <select class="form-control select2" id="faculties" name="faculties[]" multiple="multiple">
                 <!-- Options will be loaded dynamically -->
@@ -1486,11 +1486,11 @@ function eventListItem(event, showCoordinators = false) {
           </div>
 
 
-          <div class="form-group" id="externalEntityGroup" style="display: none;">
+          <div class="form-group mt-2" id="externalEntityGroup" style="display: none;">
             <label for="external_entity">External Department/Organization/Person *</label>
             <input type="text" class="form-control" id="external_entity" name="external_entity">
           </div>
-          <div class="form-group">
+          <div class="form-group mt-2">
             <label for="venue_type_id">Venue Type *</label>
             <select class="form-control" id="venue_type_id" name="venue_type_id" required>
               <option value="">Select Venue Type</option>
@@ -1508,7 +1508,7 @@ function eventListItem(event, showCoordinators = false) {
             venues.
             Please confirm them before choosing a venue.</div> --}}
 
-          <div class="form-group" id="venueGroup" style="display: none;">
+          <div class="form-group mt-2" id="venueGroup" style="display: none;">
             <label for="venues">Venues *</label>
             <select class="form-control select2" id="venues" name="venues[]" multiple="multiple">
               <option value="">Select Venue(s)</option>
@@ -1521,12 +1521,12 @@ function eventListItem(event, showCoordinators = false) {
               </div>
             </div>
           </div>
-          <div class="form-group" id="externalVenueGroup" style="display: none;">
+          <div class="form-group mt-2" id="externalVenueGroup" style="display: none;">
             <label for="external_venue">External Venue</label>
             <input type="text" class="form-control" id="external_venue" name="external_venue">
           </div>
 
-          <div class="form-group">
+          <div class="form-group mt-2">
             <label for="custom_amenities_request">Additional Amenities Request</label>
             <textarea class="form-control" id="custom_amenities_request" name="custom_amenities_request" rows="2"
               placeholder="Specify any additional amenities you require"></textarea>

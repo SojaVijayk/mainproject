@@ -219,23 +219,38 @@
     },
     {
       "name": "Tapals",
-      "icon": "menu-icon tf-icons ti ti-users",
+      "icon": "menu-icon tf-icons ti ti-comment",
       "slug": "tapals",
       "permission": 1,
       "submenu": [
         {
           "url": "/tapals",
-          "icon": "menu-icon tf-icons ti ti-user",
+          "icon": "menu-icon tf-icons ti ti-comment",
           "name": "My Tapals",
           "slug": "tapals",
           "permission": 1
         },
         {
           "url": "/tapal/tracing",
-          "icon": "menu-icon tf-icons ti ti-user",
+          "icon": "menu-icon tf-icons ti ti-search",
           "name": "Tapals Tracing",
           "slug": "tapal-tracing",
           "permission": "tapal-tracing"
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "icon": "menu-icon tf-icons ti ti-calendar",
+      "slug": "calendar",
+      "permission": 1,
+      "submenu": [
+        {
+          "url": "/calendar",
+          "icon": "menu-icon tf-icons ti ti-home",
+          "name": "Hall Booking",
+          "slug": "calendar",
+          "permission": 1
         }
       ]
     }
