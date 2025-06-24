@@ -77,10 +77,10 @@
             </div>
           </div>
 
-          {{-- @if($showFullDetails) --}}
-          @if($document->status == 'created' && (auth()->user()->id === $document->user_id ||
+          @if($showFullDetails)
+          {{-- @if($document->status == 'created' && (auth()->user()->id === $document->user_id ||
           auth()->user()->id === $document->authorized_person_id ||
-          auth()->user()->id === $document->code->user_id))
+          auth()->user()->id === $document->code->user_id)) --}}
           <div class="row mb-3">
             <label class="col-md-4 col-form-label text-md-end">To Address Details</label>
             <div class="col-md-6">
@@ -234,7 +234,7 @@
 
 
           @else
-          <div class="alert alert-info">
+          <div class="alert alert-primary">
             You don't have permission to view all details of this document.
           </div>
           @endif

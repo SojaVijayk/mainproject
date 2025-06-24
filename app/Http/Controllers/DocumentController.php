@@ -178,6 +178,7 @@ class DocumentController extends Controller
     {
         $pageConfigs = ['myLayout' => 'horizontal'];
         $showFullDetails = $this->canViewFullDetails($document);
+        // echo $showFullDetails;exit;
         return view('documents.show', compact('document', 'showFullDetails'),['pageConfigs'=> $pageConfigs]);
     }
 
