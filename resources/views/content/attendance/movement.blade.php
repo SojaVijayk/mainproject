@@ -23,7 +23,7 @@
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}" ></script>
+<script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/moment/moment.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/jquery-timepicker/jquery-timepicker.js')}}"></script>
 
@@ -32,9 +32,7 @@
 
 @section('page-script')
 <script>
-
-
-$(function () {
+  $(function () {
   var dataTablePermissions = $('.datatables-designation'),
     dt_permission,
     permissionList = baseUrl + 'movement/list';
@@ -599,6 +597,11 @@ $("#eventLabel").change(function () {
     dt_permission.row($(this).parents('tr')).remove().draw();
   });
 
+
+  function formatDateToDMY(dateString) {
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
+}
     // Edit Record
     $('.datatables-designation tbody').on('click', '.edit-designation', function () {
 
@@ -621,9 +624,9 @@ $("#eventLabel").change(function () {
         console.log(data);
           $("#eventTitle").val(data.designation.title);
           $("#eventLabel").val(data.designation.type);
-          $("#fromDate").val(data.designation.start_date);
+          $("#fromDate").val(formatDateToDMY(data.designation.start_date));
           $("#fromTime").val(data.designation.start_time);
-          $("#toDate").val(data.designation.end_date);
+          $("#toDate").val(formatDateToDMY(data.designation.end_date));
           $("#toTime").val(data.designation.end_time);
           $("#eventLocation").val(data.designation.location);
           $("#eventDescription").val(data.designation.description);
@@ -704,16 +707,16 @@ $("#eventLabel").change(function () {
       <thead>
         <tr>
           <th></th>
-          {{--  <th>User</th>  --}}
+          {{-- <th>User</th> --}}
 
           <th>Movement Details</th>
           <th>Type</th>
-          {{--  <th>From</th>
-          <th>To</th>  --}}
+          {{-- <th>From</th>
+          <th>To</th> --}}
           <th>Requested_at</th>
           <th>Status</th>
           <th>Action By</th>
-           <th>Report</th>
+          <th>Report</th>
           <th>Actions</th>
         </tr>
       </thead>

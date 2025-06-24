@@ -155,14 +155,14 @@ $isCompleted = $tapal->movements()->where('status', 'Completed')->exists();
       </button>
       @endif
 
-      @if($hasAssignment && (!$isCompleted))
+      @if($hasAssignment)
       <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#shareModal">
         <i class="fas fa-share"></i> Share
       </button>
       @endif
 
       {{-- Accept Button (for any assigned user if not accepted yet) --}}
-      @if($hasAssignment && !$isAccepted)
+      @if($hasAssignment && !$isAccepted && !$isCompleted)
       {{-- <a href="{{ route('tapals.accept', $userAssignments->first()->id) }}" class="btn btn-info">
         <i class="fas fa-check"></i> Accept
       </a> --}}
