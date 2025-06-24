@@ -253,6 +253,21 @@
           "permission": 1
         }
       ]
+    },
+    {
+      "name": "Documents",
+      "icon": "menu-icon tf-icons ti ti-calendar",
+      "slug": "documents",
+      "permission": 1,
+      "submenu": [
+        {
+          "url": "/documents",
+          "icon": "menu-icon tf-icons ti ti-home",
+          "name": "Generate Document Number",
+          "slug": "documents",
+          "permission": 1
+        }
+      ]
     }
   ]
 }

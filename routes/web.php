@@ -5,6 +5,8 @@ use App\Http\Controllers\laravel_example\UserManagement;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\DocumentController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -266,6 +268,7 @@ Route::delete('tapals/{tapal}', $controller_path .'\TapalController@destroy')->n
 
     // Additional Tapal Routes
     Route::post('/tapals/{tapal}/forward', $controller_path .'\TapalController@forward')->name('tapals.forward');
+    Route::post('/tapals/{tapal}/share', $controller_path .'\TapalController@share')->name('tapals.share');
     Route::post('/tapals/movements/{movement}/accept', $controller_path .'\TapalController@accept')->name('tapals.accept');
     // Route::post('/tapals/movements/{movement}/complete', $controller_path .'\TapalController@complete')->name('tapals.complete');
     Route::post('/tapals/movements/{movement}/complete', $controller_path .'\TapalController@complete')
@@ -278,20 +281,18 @@ Route::delete('tapals/{tapal}', $controller_path .'\TapalController@destroy')->n
 
     Route::delete('/attachments/{attachment}', $controller_path .'\AttachmentController@destroy')->name('attachments.destroy');
 
+//Document Number
+Route::resource('documents', DocumentController::class);
 
-//  // Tapal Routes
-//     Route::resource('tapals', $controller_path .'\TapalController');
+    Route::post('/{document}/upload', [DocumentController::class, 'uploadAttachment'])->name('documents.upload');
+    Route::post('/{document}/confirm', [DocumentController::class, 'confirmDocument'])->name('documents.confirm');
+    Route::post('/{document}/cancel', [DocumentController::class, 'cancelDocument'])->name('documents.cancel');
+    Route::get('/attachment/{attachment}/download', [DocumentController::class, 'downloadAttachment'])->name('documents.attachment.download');
+    Route::post('/generate-preview', [DocumentController::class, 'generateNumberPreview'])->name('documents.generate.preview');
+    Route::delete('/documents/{document}/attachment/{attachment}', [DocumentController::class, 'removeAttachment'])
+    ->name('documents.attachment.remove');
 
-//     // Additional Tapal Routes
-//     Route::post('/tapals/{tapal}/forward', $controller_path .'\TapalController@forward')->name('tapals.forward');
-//     Route::post('/tapals/movements/{movement}/accept', $controller_path .'\TapalController@accept')->name('tapals.accept');
-//     Route::post('/tapals/movements/{movement}/update-status', $controller_path .'\TapalController@updateStatus')->name('tapals.update-status');
-
-//     // Tracing Routes
-//     Route::get('/tapals/tracing', $controller_path .'\TapalController@tracing')->name('tapals.tracing');
-//     Route::get('/tapals/tracing/{tapal}', $controller_path .'\TapalController@tracingShow')->name('tapals.tracing.show');
-
-
+//end
 
 
 });//middlewear end

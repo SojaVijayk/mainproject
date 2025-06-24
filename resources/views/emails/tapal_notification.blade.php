@@ -6,7 +6,7 @@
 **Sent By:** {{ $sender->name }}
 **Date:** {{ now()->format('d-M-Y H:i') }}
 
-**Note:** This is for your information only
+**Note:** This is for your information.
 
 @component('mail::button', ['url' => route('tapals.show', $tapal->id)])
 View Tapal Details

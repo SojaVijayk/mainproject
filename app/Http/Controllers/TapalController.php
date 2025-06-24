@@ -257,11 +257,8 @@ class TapalController extends Controller
 
     $assignedUser = User::find($userId);
     Mail::to($assignedUser->email)->cc('mail@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
-  }
+    }
 
-        // Send email to assigned user
-        // $assignedUser = User::find($validated['assigned_user_id']);
-        // Mail::to($assignedUser->email)->cc('mail@cmd.kerala.gov.in')->send(new TapalAssigned($tapal, $movement, Auth::user()));
 
         // Handle notification emails
         foreach ($validated['notify_users'] ?? [] as $userId) {
@@ -284,18 +281,44 @@ class TapalController extends Controller
             ->with('success', 'Tapal forwarded successfully!');
     }
 
-    // public function accept(TapalMovement $movement)
-    // {
-    //     $this->authorize('accept', $movement);
+    public function share(Request $request, Tapal $tapal)
+    {
+        $this->authorize('forward', $tapal);
 
-    //     $movement->update([
-    //         'status' => 'Accepted',
-    //         'accepted_at' => now(),
-    //     ]);
+        $validated = $request->validate([
+            'notify_users' => 'nullable|array',
+            'share_users.*' => 'exists:users,id',
+            'remarks' => 'nullable|string',
+        ]);
 
-    //     return redirect()->route('tapals.show', $movement->tapal_id)
-    //         ->with('success', 'Tapal accepted successfully!');
-    // }
+        $userAssignments = $tapal->movements()
+        ->where('is_assignment', true)
+        ->get();
+
+        // Handle notification emails
+        foreach ($validated['share_users'] ?? [] as $userId) {
+             $alreadyAssigned = $userAssignments->contains('to_user_id', $userId);
+               if (!$alreadyAssigned) {
+            // if ($userId != $validated['assigned_user_id']) {
+                $notification = TapalMovement::create([
+                    'tapal_id' => $tapal->id,
+                    'from_user_id' => Auth::id(),
+                    'to_user_id' => $userId,
+                    'remarks' => $validated['remarks'],
+                    'is_assignment' => false,
+                    'status' => 'Notified',
+                ]);
+
+                $notifyUser = User::find($userId);
+                 Mail::to($notifyUser->email)->send(new TapalNotification($tapal, $notification, Auth::user()));
+            }
+        }
+
+        return redirect()->route('tapals.show', $tapal->id)
+            ->with('success', 'Tapal forwarded successfully!');
+    }
+
+
 
     public function accept(TapalMovement $movement)
 {
