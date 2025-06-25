@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use DB;
 
 class DocumentController extends Controller
 {
@@ -129,17 +130,31 @@ class DocumentController extends Controller
             'to_address_details' => 'required|string|max:500',
             'subject' => 'required|string|max:255',
             'project_details' => 'nullable|string|max:255',
-            'sequence_number' => 'required|integer|min:1',
-            'year' => 'required|digits:4',
+            // 'sequence_number' => 'required|integer|min:1',
+            // 'year' => 'required|digits:4',
         ]);
 
-        // Generate the document number
-        $code = DocumentCode::find($validated['code_id']);
 
+// Start a database transaction
+    return DB::transaction(function () use ($validated) {
+        // Get the code with the user information
+        $code = DocumentCode::with('user')->findOrFail($validated['code_id']);
+        $year = date('Y');
+
+        // Get the next sequence number with locking to prevent duplicates
+        $lastDocument = Document::where('number_type', $validated['number_type'])
+            ->where('year', $year)
+            ->lockForUpdate() // This locks the rows for the transaction
+            ->orderBy('sequence_number', 'desc')
+            ->first();
+
+        $nextSequence = $lastDocument ? $lastDocument->sequence_number + 1 : 1;
+
+        // Generate the document number
         if ($validated['number_type'] === 'DS') {
-            $documentNumber = "No.CMD/DS/{$code->code}/{$validated['sequence_number']}/{$validated['year']}";
+            $documentNumber = "No.CMD/DS/{$code->code}/{$nextSequence}/{$year}";
         } else {
-            $documentNumber = "No.CMD/{$validated['sequence_number']}/{$code->code}/{$validated['year']}";
+            $documentNumber = "No.CMD/{$nextSequence}/{$code->code}/{$year}";
         }
 
         // Check for duplicate
@@ -158,8 +173,8 @@ class DocumentController extends Controller
             'to_address_details' => $validated['to_address_details'],
             'subject' => $validated['subject'],
             'project_details' => $validated['project_details'],
-            'sequence_number' => $validated['sequence_number'],
-            'year' => $validated['year'],
+            'sequence_number' => $nextSequence,
+            'year' => $year,
             'status' => 'created',
         ]);
 
@@ -171,7 +186,9 @@ class DocumentController extends Controller
             'details' => 'Document number generated'
         ]);
 
-        return redirect()->route('documents.show', $document)->with('success', 'Document number generated successfully.');
+        return redirect()->route('documents.show', $document)
+            ->with('success', 'Document number generated successfully.');
+    });
     }
 
     public function show(Document $document)

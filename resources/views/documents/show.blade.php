@@ -197,7 +197,7 @@
 
 
 
-          @if($document->status == 'created')
+          @if($document->status == 'created' && $document->attachments->count() == 0)
           <hr>
           <h5>Upload Attachment</h5>
           <form method="POST" action="{{ route('documents.upload', $document) }}" enctype="multipart/form-data">

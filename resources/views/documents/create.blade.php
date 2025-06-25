@@ -46,6 +46,7 @@
     const documentType = document.getElementById('document_type_id');
     const codeId = document.getElementById('code_id');
     const previewDiv = document.getElementById('numberPreview');
+    const DocumentNumberPreview = document.getElementById('DocumentNumberPreview');
     const sequenceNumber = document.getElementById('sequence_number');
     const yearInput = document.getElementById('year');
 
@@ -69,7 +70,7 @@
         })
         .then(response => response.json())
         .then(data => {
-            previewDiv.textContent = data.preview;
+            DocumentNumberPreview.textContent = data.preview;
             sequenceNumber.value = data.sequence_number;
             yearInput.value = data.year;
         })
@@ -219,7 +220,10 @@
             <div class="row mb-3">
               <div class="col-md-8 offset-md-4">
                 <div class="alert alert-primary" id="numberPreview">
+
                   Document number will appear here after you fill the required fields and click Preview.
+                  <hr>
+                  <span id="DocumentNumberPreview"></span>
                   <div id="floatingInputHelp" class="form-text  text-warning">Note: the preview is merely for reference;
                     the actual number will be issued after it has been successfully submitted..</div>
                 </div>
