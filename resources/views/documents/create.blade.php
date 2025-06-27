@@ -94,11 +94,11 @@
             @csrf
 
             <div class="row mb-3">
-              <label for="number_type" class="col-md-4 col-form-label text-md-end">Number Type</label>
+              <label for="number_type" class="col-md-4 col-form-label text-md-end">Number Type *</label>
               <div class="col-md-6">
                 <select id="number_type" class="form-control @error('number_type') is-invalid @enderror"
                   name="number_type" required>
-                  <option value="">Select Type</option>
+                  <option value="">Select Type *</option>
                   <option value="DS" {{ old('number_type')=='DS' ? 'selected' : '' }}>DS</option>
                   <option value="General" {{ old('number_type')=='General' ? 'selected' : '' }}>General</option>
                 </select>
@@ -111,7 +111,7 @@
             </div>
 
             <div class="row mb-3">
-              <label for="document_type_id" class="col-md-4 col-form-label text-md-end">Document Type</label>
+              <label for="document_type_id" class="col-md-4 col-form-label text-md-end">Document Type *</label>
               <div class="col-md-6">
                 <select id="document_type_id" class="form-control @error('document_type_id') is-invalid @enderror"
                   name="document_type_id" required>
@@ -130,7 +130,7 @@
             </div>
 
             <div class="row mb-3">
-              <label for="code_id" class="col-md-4 col-form-label text-md-end">Code</label>
+              <label for="code_id" class="col-md-4 col-form-label text-md-end">Code *</label>
               <div class="col-md-6">
                 <select id="code_id" class="form-control @error('code_id') is-invalid @enderror" name="code_id"
                   required>
@@ -149,7 +149,7 @@
             </div>
 
             <div class="row mb-3">
-              <label for="authorized_person_id" class="col-md-4 col-form-label text-md-end">Authorized Person</label>
+              <label for="authorized_person_id" class="col-md-4 col-form-label text-md-end">Authorized Person *</label>
               <div class="col-md-6">
                 <select id="authorized_person_id"
                   class="form-control @error('authorized_person_id') is-invalid @enderror" name="authorized_person_id"
@@ -169,7 +169,7 @@
             </div>
 
             <div class="row mb-3">
-              <label for="to_address_details" class="col-md-4 col-form-label text-md-end">To Address Details</label>
+              <label for="to_address_details" class="col-md-4 col-form-label text-md-end">Recipient Details *</label>
               <div class="col-md-6">
                 <textarea id="to_address_details" class="form-control @error('to_address_details') is-invalid @enderror"
                   name="to_address_details" required>{{ old('to_address_details') }}</textarea>
@@ -182,7 +182,7 @@
             </div>
 
             <div class="row mb-3">
-              <label for="subject" class="col-md-4 col-form-label text-md-end">Subject</label>
+              <label for="subject" class="col-md-4 col-form-label text-md-end">Subject *</label>
               <div class="col-md-6">
                 <input id="subject" type="text" class="form-control @error('subject') is-invalid @enderror"
                   name="subject" value="{{ old('subject') }}" required>
