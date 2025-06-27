@@ -88,13 +88,13 @@
   <div class="row justify-content-center">
     <div class="col-md-8">
       <div class="card">
-        <div class="card-header">Generate New Document Number</div>
+        <div class="card-header">Generate New Letter/Document Number</div>
         <div class="card-body">
           <form method="POST" action="{{ route('documents.store') }}">
             @csrf
 
             <div class="row mb-3">
-              <label for="number_type" class="col-md-4 col-form-label text-md-end">Document Number Type</label>
+              <label for="number_type" class="col-md-4 col-form-label text-md-end">Number Type</label>
               <div class="col-md-6">
                 <select id="number_type" class="form-control @error('number_type') is-invalid @enderror"
                   name="number_type" required>
@@ -237,7 +237,7 @@
             <div class="row mb-0">
               <div class="col-md-8 offset-md-4">
                 <button type="submit" class="btn btn-primary">
-                  Generate Document Number
+                  Generate Number
                 </button>
               </div>
             </div>

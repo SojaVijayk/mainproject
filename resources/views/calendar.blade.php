@@ -182,6 +182,11 @@ var coordinatorsSelect = $('#coordinators');
 var facultiesSelect = $('#faculties');
 var venuesSelect = $('#venues');
 
+const $allDaySwitch = $('.switch-input');
+  const $startDateInput = $('#start_date');
+  const $endDateInput = $('#end_date');
+
+
 // Update date change handlers
 startDate.change(function() {
   const startDateTime = new Date($(this).val());
@@ -564,6 +569,56 @@ $('#availabilityDatePicker').change(function() {
 
 
 
+    $allDaySwitch.on('change', function() {
+    if ($(this).is(':checked')) {
+      // When "All Day" is checked - use existing dates but set to midnight/23:59
+      const startDate = new Date($startDateInput.val());
+      const endDate = new Date($endDateInput.val());
+
+      // If no date selected yet, use current date
+      if (isNaN(startDate.getTime())) {
+        startDate = new Date();
+      }
+      if (isNaN(endDate.getTime())) {
+        endDate = new Date();
+      }
+
+      // Set start date to 00:00 of selected date
+      startDate.setHours(0, 0, 0, 0);
+      $startDateInput.val(formatDateTimeLocal(startDate));
+
+      // Set end date to 23:59 of selected date
+      endDate.setHours(23, 59, 0, 0);
+      $endDateInput.val(formatDateTimeLocal(endDate));
+
+      // Disable the inputs
+      $startDateInput.prop('disabled', true);
+      $endDateInput.prop('disabled', true);
+    } else {
+      // When "All Day" is unchecked
+      $startDateInput.prop('disabled', false);
+      $endDateInput.prop('disabled', false);
+    }
+  });
+
+  // Initialize if switch is checked by default
+  if ($allDaySwitch.is(':checked')) {
+    $allDaySwitch.trigger('change');
+  }
+
+
+// Helper function to format date as datetime-local input value
+function formatDateTimeLocal(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+
 
 });
 
@@ -576,6 +631,19 @@ function populateEventForm(event) {
     description.val(event.description);
     startDate.val(event.start_date);
     endDate.val(event.end_date);
+
+    //set all day flag
+
+    if (isFullDay(new Date(event.start_date), new Date(event.end_date))) {
+        $allDaySwitch.prop('checked', true);
+        $startDateInput.prop('disabled', true);
+        $endDateInput.prop('disabled', true);
+    }
+    else{
+        $allDaySwitch.prop('checked', false);
+        $startDateInput.prop('disabled', false);
+        $endDateInput.prop('disabled', false);
+    }
 
     // Set other fields
     eventTypeId.val(event.event_type_id).trigger('change');
@@ -1075,7 +1143,7 @@ function formatDateLocal(date) {
         });
 
         // Reset form
-        function resetForm() {
+  function resetForm() {
     eventForm.trigger('reset');
     eventId.val('');
     externalEntityGroup.hide();
@@ -1092,6 +1160,17 @@ function formatDateLocal(date) {
     availableVenuesList.empty();
 }
 
+function isFullDay(startDate, endDate) {
+    if (!startDate || !endDate) return false;
+
+    return (
+      startDate.getHours() === 0 &&
+      startDate.getMinutes() === 0 &&
+      endDate.getHours() === 23 &&
+      endDate.getMinutes() === 59 &&
+      startDate.toDateString() === endDate.toDateString()
+    );
+  }
 
 function loadDashboardSections() {
     loadHallAvailability('now');
@@ -1353,7 +1432,14 @@ function eventListItem(event, showCoordinators = false) {
     <div class="col-md-8">
       <div class="card">
         <div class="card-header">{{ __('Event Calendar') }}</div>
+
         <div class="card-body">
+          <div class="alert alert-warning m-2" role="alert">
+            🚧 This is a <strong>demo version</strong> of the system. The live platform will be launched on <strong>01
+              July 2025</strong>.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+            </button>
+          </div>
           <div id="calendar"></div>
         </div>
       </div>
@@ -1412,18 +1498,32 @@ function eventListItem(event, showCoordinators = false) {
             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
           </div>
           <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-3">
 
               <div class="form-group mt-2">
                 <label for="start_date">Start Date & Time *</label>
                 <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-group mt-2">
                 <label for="end_date">End Date & Time *</label>
                 <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
               </div>
+            </div>
+            <div class="col-md-2">
+              <label class="switch switch-primary mt-4">
+                <input type="checkbox" class="switch-input" />
+                <span class="switch-toggle-slider">
+                  <span class="switch-on">
+                    <i class="icon-base ti tabler-check"></i>
+                  </span>
+                  <span class="switch-off">
+                    <i class="icon-base ti tabler-x"></i>
+                  </span>
+                </span>
+                <span class="switch-label">All Day</span>
+              </label>
             </div>
             <div class="col-md-4">
               <div class="form-group mt-2">

@@ -148,7 +148,8 @@ class EventController extends Controller
 // Send confirmation emails to all coordinators
 if ($request->coordinators) {
     foreach ($event->coordinators as $coordinator) {
-        Mail::to($coordinator->email)->cc('admin@cmd.kerala.gov.in')->send(new EventConfirmation($event));
+        // Mail::to($coordinator->email)->cc('admin@cmd.kerala.gov.in')->send(new EventConfirmation($event));
+        Mail::to($coordinator->email)->send(new EventConfirmation($event));
     }
   }
   if ($request->faculties) {
@@ -284,12 +285,12 @@ public function getAvailableVenuesForTime(Request $request)
     }
 
     // Check time window first (if defined)
-    $now = now();
-    if ($event->start_date && $event->end_date) {
-        if (!$now->between($event->start_date, $event->end_date)) {
-            return false;
-        }
-    }
+    // $now = now();
+    // if ($event->start_date && $event->end_date) {
+    //     if (!$now->between($event->start_date, $event->end_date)) {
+    //         return false;
+    //     }
+    // }
 
     // Check if user is the event creator
     if (auth()->user()->id === $event->user_id) {
@@ -422,7 +423,8 @@ public function getAvailableVenuesForTime(Request $request)
     // Send confirmation emails to all coordinators
 if ($request->coordinators) {
     foreach ($event->coordinators as $coordinator) {
-        Mail::to($coordinator->email)->cc('admin@cmd.kerala.gov.in')->send(new EventConfirmation($event));
+        // Mail::to($coordinator->email)->cc('admin@cmd.kerala.gov.in')->send(new EventConfirmation($event));
+        Mail::to($coordinator->email)->send(new EventConfirmation($event));
     }
   }
   if ($request->faculties) {
@@ -450,7 +452,7 @@ if ($request->coordinators) {
         $eventModes = EventMode::where('is_active', true)->get();
         $venueTypes = VenueType::where('is_active', true)->get();
         $venues = Venue::where('is_active', true)->where('status', 'active')->get();
-        $users = User::where('active',1)->get();
+        $users = User::where('active', 1)->orderBy('name')->get();
         $faculties = User::where('active',1)->join("employees","employees.user_id","=","users.id")->whereIn('employees.designation',[2,7,9])->get();
 
         return response()->json([

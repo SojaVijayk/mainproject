@@ -148,7 +148,7 @@
           <div class="row mb-3">
             <label class="col-md-4 col-form-label text-md-end">Cancelled At</label>
             <div class="col-md-6">
-              <p class="form-control-plaintext">{{ $document->cancelled_at->format('d-m-Y H:i') }}</p>
+              <p class="form-control-plaintext">{{ $document->cancelled_at }}</p>
             </div>
           </div>
           @endif
@@ -207,14 +207,13 @@
             </div>
             <button type="submit" class="btn btn-primary">Upload</button>
           </form>
-
-          @if($document->attachments->count() > 0)
+          @endif
+          @if($document->status == 'created' && $document->attachments->count() > 0)
           <hr>
           <form method="POST" action="{{ route('documents.confirm', $document) }}">
             @csrf
             <button type="submit" class="btn btn-success">Confirm Document</button>
           </form>
-          @endif
           @endif
 
           @if($document->status != 'cancelled')
@@ -226,7 +225,7 @@
               <textarea class="form-control" name="cancellation_reason" placeholder="Cancellation reason"
                 required></textarea>
             </div>
-            <button type="submit" class="btn btn-danger">Cancel Document</button>
+            <button type="submit" class="btn btn-danger">Cancel Document number</button>
           </form>
           @endif
 

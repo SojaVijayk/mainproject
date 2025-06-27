@@ -214,7 +214,7 @@ class DocumentController extends Controller
     }
 
     $documentTypes = DocumentType::where('is_active', true)->get();
-    $codes = DocumentCode::with('user')->where('is_active', true)->get();
+    $codes = DocumentCode::with('user')->where('is_active', true)->orderBy('priority','ASC')->get();
     $users = User::where('active', 1)->orderBy('name')->get();
 
     return view('documents.edit', compact('document', 'documentTypes', 'codes', 'users'),['pageConfigs'=> $pageConfigs]);
@@ -350,9 +350,9 @@ protected function canEditDocument(Document $document)
 
     public function cancelDocument(Request $request, Document $document)
     {
-        if (!auth()->user()->can('cancel-documents')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('cancel-documents')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         $request->validate([
             'cancellation_reason' => 'required|string|max:500',

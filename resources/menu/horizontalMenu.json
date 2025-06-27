@@ -240,7 +240,7 @@
       ]
     },
     {
-      "name": "Events",
+      "name": "Bookings (BETA)",
       "icon": "menu-icon tf-icons ti ti-calendar",
       "slug": "calendar",
       "permission": 1,
@@ -255,7 +255,7 @@
       ]
     },
     {
-      "name": "Documents",
+      "name": "Documents (BETA)",
       "icon": "menu-icon tf-icons ti ti-calendar",
       "slug": "documents",
       "permission": 1,
@@ -263,7 +263,7 @@
         {
           "url": "/documents",
           "icon": "menu-icon tf-icons ti ti-home",
-          "name": "Generate Document Number",
+          "name": "Generate Number",
           "slug": "documents",
           "permission": 1
         }
