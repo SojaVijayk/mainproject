@@ -11,6 +11,7 @@ use App\Models\Venue;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\EventConfirmation;
+use App\Mail\EventCancellation;
 use Carbon\Carbon;
 
 class EventController extends Controller
@@ -73,7 +74,8 @@ class EventController extends Controller
                 'created_at' => $event->created_at->format('M j, Y g:i A'),
                 'canEdit' => $canEdit,
                 // 'color' => $canEdit ? null : '#6c757d'
-                'color' => $color
+                'color' => $color,
+                'status' =>$event->status
             ];
         });
 
@@ -124,6 +126,7 @@ class EventController extends Controller
  // Create event
     $eventData = $request->except(['coordinators', 'faculties', 'venues']);
     $eventData['user_id'] = auth()->id();
+     $eventData['status'] = 1;
     $event = Event::create($eventData);
 
     // Attach coordinators
@@ -234,7 +237,7 @@ public function getAvailableVenuesForTime(Request $request)
             ->get();
 
         // Get conflicting events
-        $conflictingEvents = Event::where(function($query) use ($startDate, $endDate) {
+        $conflictingEvents = Event::where('status',1)->where(function($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                       ->orWhereBetween('end_date', [$startDate, $endDate])
                       ->orWhere(function($query) use ($startDate, $endDate) {
@@ -353,7 +356,8 @@ public function getAvailableVenuesForTime(Request $request)
         'external_venue' => $event->external_venue,
         'creator' => $event->creator->only(['id', 'name']),
         'created_at' => $event->created_at->format('M j, Y g:i A'),
-        'can_edit' => $this->canEditEvent($event)
+        'can_edit' => $this->canEditEvent($event),
+        'status' => $event->status
     ]);
 }
 
@@ -473,6 +477,7 @@ if ($request->coordinators) {
         $query = Event::whereHas('venues', function($q) use ($venueId) {
                 $q->where('venue_id', $venueId);
             })
+            ->where('status',1)
             ->where(function($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                       ->orWhereBetween('end_date', [$startDate, $endDate])
@@ -632,7 +637,7 @@ public function getHallAvailability(Request $request)
         ->get();
 
     // Get booked venues and their events during this time
-    $bookedEvents = Event::where(function($query) use ($start, $end) {
+    $bookedEvents = Event::where('status',1)->where(function($query) use ($start, $end) {
             $query->whereBetween('start_date', [$start, $end])
                   ->orWhereBetween('end_date', [$start, $end])
                   ->orWhere(function($query) use ($start, $end) {
@@ -788,7 +793,7 @@ public function getUpcomingEvents(Request $request)
     $filter = $request->input('filter', 'upcoming');
     $date = $request->input('date');
 
-    $query = Event::with(['eventType', 'venues', 'coordinators']);
+    $query = Event::where('status',1)->with(['eventType', 'venues', 'coordinators']);
 
     switch ($filter) {
         case 'today':
@@ -843,6 +848,31 @@ private function getEventColor($eventType)
 }
 
 
+public function cancel(Request $request, Event $event)
+{
+    // Check if user has permission to cancel
+    if (!$this->canEditEvent($event)) {
+        return response()->json(['error' => 'Unauthorized to edit this event'], 403);
+    }
+
+    // Soft delete the event (or update status if you prefer)
+    $event->update(['status' => 2,'status' => 2,'cancelled_by'=>auth()->user()->id,'cancelled_at'=>now()]);
+    // Or use $event->delete() for soft delete
+
+    // Send cancellation notifications
+    $this->sendCancellationNotifications($event);
+
+    return response()->json(['message' => 'Event cancelled successfully']);
+}
+
+private function sendCancellationNotifications(Event $event)
+{
+    $recipients = $event->coordinators->merge($event->faculties);
+
+    foreach ($recipients as $user) {
+        Mail::to($user->email)->send(new EventCancellation($event));
+    }
+}
 
 
 }

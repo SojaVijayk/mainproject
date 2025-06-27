@@ -13,7 +13,7 @@ class Event extends Model
         'title', 'description', 'start_date', 'end_date',
         'event_type_id', 'event_mode_id', 'coordinator_id',
         'faculty_id', 'participants_count', 'event_category',
-        'external_entity', 'venue_type_id', 'venue_id', 'external_venue','user_id'
+        'external_entity', 'venue_type_id', 'venue_id', 'external_venue','user_id','status','cancelled_at','cancelled_by'
     ];
 
     protected $dates = ['start_date', 'end_date'];

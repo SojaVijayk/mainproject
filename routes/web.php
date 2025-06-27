@@ -241,6 +241,8 @@ Route::get('/project/docs/{project_id}' , $controller_path . '\Project\ProjectDo
     Route::get('/hall-availability', [EventController::class, 'getHallAvailability']);
 Route::get('/my-events', [EventController::class, 'getMyEvents']);
 Route::get('/upcoming-events', [EventController::class, 'getUpcomingEvents']);
+Route::delete('/events/{event}/cancel', [EventController::class, 'cancel'])
+     ->name('events.cancel');
 
 
  // Tapal Routes

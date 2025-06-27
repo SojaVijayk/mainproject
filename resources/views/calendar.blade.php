@@ -104,6 +104,14 @@
     width: 3rem;
     height: 3rem;
   }
+
+  .fc-event-cancelled {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
 </style>
 
 @endsection
@@ -155,6 +163,7 @@
         var viewEventModal = $('#viewEventModal');
         var viewEventTitle = $('#viewEventTitle');
         var viewEventType = $('#viewEventType');
+          var viewEventStatus = $('#viewEventStatus');
         var viewEventMode = $('#viewEventMode');
         var viewEventStart = $('#viewEventStart');
         var viewEventEnd = $('#viewEventEnd');
@@ -465,6 +474,7 @@ $(document).on('change', '.venue-checkbox', function() {
 
 // Initialize select2 for multiple selection
 $(document).ready(function() {
+  {{--  $('#cancelEventBtn').hide();  --}}
 
 
     console.log('Coordinators options:', $('#coordinators option'));
@@ -700,16 +710,26 @@ function populateEventForm(event) {
 
     customAmenitiesRequest.val(event.custom_amenities_request);
     externalVenue.val(event.external_venue);
-
+    if(event.status == 1){
+        $('#cancelEventBtn').show();
+    }
+    else{
+      $('#cancelEventBtn').hide();
+    }
     // Disable form if user can't edit
     if (!event.can_edit) {
         eventForm.addClass('view-mode');
         $('#eventModalLabel').text('Event Details - View Only');
         $('.modal-footer .btn-primary').hide();
+        $('#cancelEventBtn').hide();
     } else {
         eventForm.removeClass('view-mode');
         $('#eventModalLabel').text('Edit Event');
         $('.modal-footer .btn-primary').show();
+        $('#cancelEventBtn').show().off('click').on('click', function() {
+            cancelEvent(event.id);
+        });
+
     }
 }
 
@@ -820,12 +840,13 @@ function formatDateLocal(date) {
           eventClick: function(info) {
           $.get('/events/' + info.event.id, function(event) {
             console.log(event.can_edit);
-            if (event.can_edit) {
+            if (event.can_edit && event.status == 1) {
                 populateEventForm(event);
             } else {
                 // Populate view modal
                 viewEventTitle.text(event.title);
                 viewEventType.text(event.event_type);
+                viewEventStatus.text((event.status == 1 ? "Booked" : "Cancelled"));
                 viewEventMode.text(event.event_mode);
                 viewEventStart.text(new Date(event.start_date).toLocaleString());
                 viewEventEnd.text(new Date(event.end_date).toLocaleString());
@@ -879,6 +900,7 @@ function formatDateLocal(date) {
   eventDidMount: function(info) {
     var startDateTime = info.event.start.toLocaleString();
     var endDateTime = info.event.end ? info.event.end.toLocaleString() : '';
+     var status = info.event.status ==1 ? 'Booked' : 'Cancelled';
 
     // Calculate duration for tooltip
     var duration = '';
@@ -888,8 +910,13 @@ function formatDateLocal(date) {
         var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         duration = `<strong>Duration:</strong> ${hours}h ${minutes}m<br>`;
     }
+    if (info.event.extendedProps.status === 2) {
+        $(info.el).addClass('fc-event-cancelled');
+        $(info.el).find('.fc-event-title').prepend('[CANCELLED] ');
+    }
   $(info.el).tooltip({
         title: `
+        <strong>Status : ${status}</strong><br>
             <strong>${info.event.title}</strong><br>
             <strong>Type:</strong> ${info.event.extendedProps.eventType}<br>
             <strong>Mode:</strong> ${info.event.extendedProps.eventMode}<br>
@@ -922,6 +949,10 @@ function formatDateLocal(date) {
         var hours = Math.floor(diff / (1000 * 60 * 60));
         var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         duration = `<strong>Duration:</strong> ${hours}h ${minutes}m<br>`;
+    }
+    if (info.event.extendedProps.status === 2) {
+        $(info.el).addClass('fc-event-cancelled');
+        $(info.el).find('.fc-event-title').prepend('[CANCELLED] ');
     }
 
     $(info.el).tooltip({
@@ -1348,6 +1379,44 @@ function eventListItem(event, showCoordinators = false) {
     html += `</a>`;
     return html;
 }
+// Add cancelEvent function
+function cancelEvent(eventId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This will cancel the event and notify all participants",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, cancel it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+           $('.loader-overlay').show();
+            $.ajax({
+                url: '/events/' + eventId + '/cancel',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    _method: 'DELETE'
+                },
+                success: function() {
+                    calendar.refetchEvents();
+                    eventModal.modal('hide');
+                    toastr.success('Event cancelled successfully');
+                     {{--  $('.loader-overlay').hide();  --}}
+                },
+                error: function(xhr) {
+                   {{--  $('.loader-overlay').hide();  --}}
+                    toastr.error(xhr.responseJSON?.error || 'Failed to cancel event');
+                },
+                 complete: function() {
+            // Hide loader when request is complete
+            $('.loader-overlay').hide();
+        }
+            });
+        }
+    });
+}
 
     });
 </script>
@@ -1636,6 +1705,9 @@ function eventListItem(event, showCoordinators = false) {
               cleared if the date or time is changed. Before selecting a Venue, kindly confirm them.</div>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Save Event</button>
+            <button type="button" class="btn btn-danger mr-auto" id="cancelEventBtn" style="display: none;">
+              Cancel Event
+            </button>
           </div>
         </form>
       </div>
@@ -1661,6 +1733,7 @@ function eventListItem(event, showCoordinators = false) {
         <div class="d-flex justify-content-between align-items-start mb-4">
           <h4 class="text-dark fw-semibold mb-0"><span id="viewEventTitle"></span></h4>
           <div>
+            <span class="badge bg-secondary bg-opacity-10 text-white me-2" id="viewEventStatus"></span>
             <span class="badge bg-success bg-opacity-10 text-white me-2" id="viewEventType"></span>
             <span class="badge bg-dark bg-opacity-10 text-white" id="viewEventMode"></span>
           </div>
