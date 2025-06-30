@@ -912,7 +912,11 @@ function formatDateLocal(date) {
     }
     if (info.event.extendedProps.status === 2) {
         $(info.el).addClass('fc-event-cancelled');
-        $(info.el).find('.fc-event-title').prepend('[CANCELLED] ');
+        {{--  $(info.el).find('.fc-event-title').prepend('[CANCELLED] ');  --}}
+    }
+    else  {
+        $(info.el).removeClass('fc-event-cancelled');
+        {{--  $(info.el).find('.fc-event-title').prepend('[CANCELLED] ');  --}}
     }
   $(info.el).tooltip({
         title: `
