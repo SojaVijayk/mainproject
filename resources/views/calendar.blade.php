@@ -840,13 +840,14 @@ function formatDateLocal(date) {
           eventClick: function(info) {
           $.get('/events/' + info.event.id, function(event) {
             console.log(event.can_edit);
-            if (event.can_edit && event.status == 1) {
+            if (event.can_edit && event.status == '1') {
                 populateEventForm(event);
             } else {
                 // Populate view modal
                 viewEventTitle.text(event.title);
                 viewEventType.text(event.event_type);
-                viewEventStatus.text((event.status == 1 ? "Booked" : "Cancelled"));
+                viewEventStatus.text((event.status == '1' ? "Booked" : "Cancelled"));
+
                 viewEventMode.text(event.event_mode);
                 viewEventStart.text(new Date(event.start_date).toLocaleString());
                 viewEventEnd.text(new Date(event.end_date).toLocaleString());
@@ -898,9 +899,10 @@ function formatDateLocal(date) {
         });
       },
   eventDidMount: function(info) {
+    {{--  alert(info.event.extendedProps.status);  --}}
     var startDateTime = info.event.start.toLocaleString();
     var endDateTime = info.event.end ? info.event.end.toLocaleString() : '';
-     var status = info.event.status ==1 ? 'Booked' : 'Cancelled';
+     var status = info.event.extendedProps.status == '1' ? 'Booked' : 'Cancelled';
 
     // Calculate duration for tooltip
     var duration = '';
@@ -910,7 +912,7 @@ function formatDateLocal(date) {
         var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         duration = `<strong>Duration:</strong> ${hours}h ${minutes}m<br>`;
     }
-    if (info.event.extendedProps.status === 2) {
+    if (info.event.extendedProps.status == '2') {
         $(info.el).addClass('fc-event-cancelled');
         {{--  $(info.el).find('.fc-event-title').prepend('[CANCELLED] ');  --}}
     }
@@ -943,9 +945,10 @@ function formatDateLocal(date) {
 },
        eventRender: function(info) {
     // Format dates for tooltip
+
     var startDateTime = info.event.start.toLocaleString();
     var endDateTime = info.event.end ? info.event.end.toLocaleString() : '';
-     var status = info.event.status ==1 ? 'Booked' : 'Cancelled';
+     var status = info.event.extendedProps.status =='1' ? 'Booked' : 'Cancelled';
 
     // Calculate duration for tooltip
     var duration = '';
@@ -955,7 +958,7 @@ function formatDateLocal(date) {
         var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         duration = `<strong>Duration:</strong> ${hours}h ${minutes}m<br>`;
     }
-    if (info.event.extendedProps.status === 2) {
+    if (info.event.extendedProps.status == '2') {
         $(info.el).addClass('fc-event-cancelled');
         {{--  $(info.el).find('.fc-event-title').prepend('[CANCELLED] ');  --}}
     }
