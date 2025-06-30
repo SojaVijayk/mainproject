@@ -48,12 +48,12 @@
       <div class="card">
         <div class="card-header">Letter/Document Search</div>
         <div class="card-body">
-          <div class="alert alert-warning m-2" role="alert">
+          {{-- <div class="alert alert-warning m-2" role="alert">
             🚧 This is a <strong>demo version</strong> of the system. The live platform will be launched on <strong>01
               July 2025</strong>.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
             </button>
-          </div>
+          </div> --}}
           <form method="GET" action="{{ route('documents.index') }}">
             <div class="row">
               <div class="col-md-3">

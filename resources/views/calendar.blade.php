@@ -602,12 +602,12 @@ $('#availabilityDatePicker').change(function() {
       $endDateInput.val(formatDateTimeLocal(endDate));
 
       // Disable the inputs
-      $startDateInput.prop('disabled', true);
-      $endDateInput.prop('disabled', true);
+      {{--  $startDateInput.prop('disabled', true);
+      $endDateInput.prop('disabled', true);  --}}
     } else {
       // When "All Day" is unchecked
-      $startDateInput.prop('disabled', false);
-      $endDateInput.prop('disabled', false);
+      {{--  $startDateInput.prop('disabled', false);
+      $endDateInput.prop('disabled', false);  --}}
     }
   });
 
@@ -646,13 +646,13 @@ function populateEventForm(event) {
 
     if (isFullDay(new Date(event.start_date), new Date(event.end_date))) {
         $allDaySwitch.prop('checked', true);
-        $startDateInput.prop('disabled', true);
-        $endDateInput.prop('disabled', true);
+        {{--  $startDateInput.prop('disabled', true);
+        $endDateInput.prop('disabled', true);  --}}
     }
     else{
         $allDaySwitch.prop('checked', false);
-        $startDateInput.prop('disabled', false);
-        $endDateInput.prop('disabled', false);
+        {{--  $startDateInput.prop('disabled', false);
+        $endDateInput.prop('disabled', false);  --}}
     }
 
     // Set other fields
@@ -1516,12 +1516,12 @@ function cancelEvent(eventId) {
         <div class="card-header">{{ __('Event Calendar') }}</div>
 
         <div class="card-body">
-          <div class="alert alert-warning m-2" role="alert">
+          {{-- <div class="alert alert-warning m-2" role="alert">
             🚧 This is a <strong>demo version</strong> of the system. The live platform will be launched on <strong>01
               July 2025</strong>.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
             </button>
-          </div>
+          </div> --}}
           <div id="calendar"></div>
         </div>
       </div>
@@ -1580,20 +1580,20 @@ function cancelEvent(eventId) {
             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
           </div>
           <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-4">
 
               <div class="form-group mt-2">
                 <label for="start_date">Start Date & Time *</label>
                 <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
               </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
               <div class="form-group mt-2">
                 <label for="end_date">End Date & Time *</label>
                 <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
               </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
               <label class="switch switch-primary mt-4">
                 <input type="checkbox" class="switch-input" />
                 <span class="switch-toggle-slider">
@@ -1607,16 +1607,12 @@ function cancelEvent(eventId) {
                 <span class="switch-label">All Day</span>
               </label>
             </div>
-            <div class="col-md-4">
-              <div class="form-group mt-2">
-                <label for="participants_count">Number of Participants *</label>
-                <input type="number" class="form-control" id="participants_count" name="participants_count" min="0"
-                  required>
-              </div>
-            </div>
+
+
+
           </div>
           <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-group mt-2">
                 <label for="event_type_id">Event Type *</label>
                 <select class="form-control" id="event_type_id" name="event_type_id" required>
@@ -1624,7 +1620,7 @@ function cancelEvent(eventId) {
                 </select>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-group mt-2">
                 <label for="event_mode_id">Event Mode *</label>
                 <select class="form-control" id="event_mode_id" name="event_mode_id" required>
@@ -1634,14 +1630,15 @@ function cancelEvent(eventId) {
             </div>
             <div class="col-md-4">
               <div class="form-group mt-2">
-                <label>Event Hosted By *</label>
-                <div class="form-check">
+                {{-- <label>Hosted By *</label> --}}
+                <small class="fw-medium d-block">Hosted By *</small>
+                <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="event_category" id="cmd" value="CMD" checked>
                   <label class="form-check-label" for="cmd">
                     CMD
                   </label>
                 </div>
-                <div class="form-check">
+                <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="event_category" id="external" value="External">
                   <label class="form-check-label" for="external">
                     External
@@ -1649,21 +1646,43 @@ function cancelEvent(eventId) {
                 </div>
               </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="form-group mt-2">
-              <label for="coordinators">Coordinators *</label>
-              <select class="form-control select2" id="coordinators" name="coordinators[]" multiple="multiple" required>
-                <!-- Options will be loaded dynamically -->
-              </select>
+            <div class="col-md-2">
+              <div class="form-group mt-2">
+                {{-- <label for="participants_count">Participants Count *</label> --}}
+                <small class="fw-medium d-block">Participants *</small>
+                <input type="number" class="form-control" id="participants_count" name="participants_count" min="0"
+                  required>
+              </div>
             </div>
 
-            <!-- Faculty Field -->
-            <div class="form-group mt-2">
-              <label for="faculties">Concerned Faculty (if applicable)</label>
-              <select class="form-control select2" id="faculties" name="faculties[]" multiple="multiple">
-                <!-- Options will be loaded dynamically -->
-              </select>
+
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group mt-2">
+                <label for="coordinators">Coordinators *</label>
+                <select class="form-control select2" id="coordinators" name="coordinators[]" multiple="multiple"
+                  required>
+                  <!-- Options will be loaded dynamically -->
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <!-- Faculty Field -->
+              <div class="form-group mt-2">
+                <label for="faculties">Faculty (if applicable)</label>
+                <select class="form-control select2" id="faculties" name="faculties[]" multiple="multiple">
+                  <!-- Options will be loaded dynamically -->
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mt-2">
+                <label for="venue_type_id">Venue Type *</label>
+                <select class="form-control" id="venue_type_id" name="venue_type_id" required>
+                  <option value="">Select Venue Type</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1672,12 +1691,7 @@ function cancelEvent(eventId) {
             <label for="external_entity">External Department/Organization/Person *</label>
             <input type="text" class="form-control" id="external_entity" name="external_entity">
           </div>
-          <div class="form-group mt-2">
-            <label for="venue_type_id">Venue Type *</label>
-            <select class="form-control" id="venue_type_id" name="venue_type_id" required>
-              <option value="">Select Venue Type</option>
-            </select>
-          </div>
+
           {{-- <div class="form-group" id="venueGroup" style="display: none;">
             <label for="venue_id">Venue</label>
             <select class="form-control" id="venue_id" name="venue_id">
