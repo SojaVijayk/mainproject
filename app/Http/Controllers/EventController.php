@@ -151,8 +151,8 @@ class EventController extends Controller
 // Send confirmation emails to all coordinators
 if ($request->coordinators) {
     foreach ($event->coordinators as $coordinator) {
-        // Mail::to($coordinator->email)->cc('admin@cmd.kerala.gov.in')->send(new EventConfirmation($event));
-        Mail::to($coordinator->email)->send(new EventConfirmation($event));
+        Mail::to($coordinator->email)->cc('admin@cmd.kerala.gov.in')->send(new EventConfirmation($event));
+        // Mail::to($coordinator->email)->send(new EventConfirmation($event));
     }
   }
   if ($request->faculties) {
@@ -427,8 +427,8 @@ public function getAvailableVenuesForTime(Request $request)
     // Send confirmation emails to all coordinators
 if ($request->coordinators) {
     foreach ($event->coordinators as $coordinator) {
-        // Mail::to($coordinator->email)->cc('admin@cmd.kerala.gov.in')->send(new EventConfirmation($event));
-        Mail::to($coordinator->email)->send(new EventConfirmation($event));
+        Mail::to($coordinator->email)->cc('admin@cmd.kerala.gov.in')->send(new EventConfirmation($event));
+        // Mail::to($coordinator->email)->send(new EventConfirmation($event));
     }
   }
   if ($request->faculties) {
