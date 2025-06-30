@@ -457,7 +457,7 @@ if ($request->coordinators) {
         $venueTypes = VenueType::where('is_active', true)->get();
         $venues = Venue::where('is_active', true)->where('status', 'active')->get();
         $users = User::where('active', 1)->orderBy('name')->get();
-        $faculties = User::where('active',1)->join("employees","employees.user_id","=","users.id")->whereIn('employees.designation',[2,7,9])->get();
+        $faculties = User::select('users.*')->where('active',1)->join("employees","employees.user_id","=","users.id")->whereIn('employees.designation',[2,7,9])->get();
 
         return response()->json([
             'eventTypes' => $eventTypes,
