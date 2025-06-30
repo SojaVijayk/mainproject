@@ -105,12 +105,23 @@ class DocumentController extends Controller
             ->orderBy('sequence_number', 'desc')
             ->first();
 
-        $nextSequence = $lastDocument ? $lastDocument->sequence_number + 1 : 1;
+        // $nextSequence = $lastDocument ? $lastDocument->sequence_number + 1 : 1;
+        if($lastDocument){
+          $nextSequence = $lastDocument ? $lastDocument->sequence_number + 1 : 1;
+        }
+        else{
+          if($request->number_type === 'DS'){
+             $nextSequence = 960 + 1;
+          }
+          if($request->number_type === 'General'){
+             $nextSequence = 1442 + 1;
+          }
+        }
 
         if ($request->number_type === 'DS') {
             $preview = "No.CMD/DS/{$code->code}/{$nextSequence}/{$year}";
         } else {
-            $preview = "No.CMD/{$nextSequence}/{$code->code}/{$year}";
+            $preview = "No.CMD/GEN/{$code->code}/{$nextSequence}/{$year}";
         }
 
         return response()->json([
@@ -147,14 +158,25 @@ class DocumentController extends Controller
             ->lockForUpdate() // This locks the rows for the transaction
             ->orderBy('sequence_number', 'desc')
             ->first();
+        if($lastDocument){
+          $nextSequence = $lastDocument ? $lastDocument->sequence_number + 1 : 1;
+        }
+        else{
+          if($validated['number_type'] === 'DS'){
+             $nextSequence = 960 + 1;
+          }
+          if($validated['number_type'] === 'General'){
+             $nextSequence = 1442 + 1;
+          }
+        }
 
-        $nextSequence = $lastDocument ? $lastDocument->sequence_number + 1 : 1;
 
         // Generate the document number
         if ($validated['number_type'] === 'DS') {
             $documentNumber = "No.CMD/DS/{$code->code}/{$nextSequence}/{$year}";
         } else {
-            $documentNumber = "No.CMD/{$nextSequence}/{$code->code}/{$year}";
+            // $documentNumber = "No.CMD/{$nextSequence}/{$code->code}/{$year}";
+            $documentNumber = "No.CMD/GEN/{$code->code}/{$nextSequence}/{$year}";
         }
 
         // Check for duplicate
