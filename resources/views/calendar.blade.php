@@ -108,7 +108,7 @@
   .fc-event-cancelled {
     background-color: #f8d7da !important;
     border-color: #f5c6cb !important;
-    color: #721c24 !important;
+    color: #e50116 !important;
     text-decoration: line-through;
     opacity: 0.7;
   }
