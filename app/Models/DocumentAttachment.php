@@ -8,7 +8,7 @@ class DocumentAttachment extends Model
 {
     protected $fillable = [
         'document_id', 'file_path', 'original_name',
-        'mime_type', 'size'
+        'mime_type', 'size','status'
     ];
 
     public function document()
