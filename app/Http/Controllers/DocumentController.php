@@ -25,7 +25,7 @@ class DocumentController extends Controller
             ->latest();
          }
         $user = auth()->user();
-       if (!$request->filled('search')) {
+      if (!$request->filled('search')) {
        $query = Document::with(['documentType', 'creator', 'authorizedPerson', 'code'])
         ->where(function($q) use ($user) {
             $q->where('user_id', $user->id) // Created by user
@@ -287,7 +287,7 @@ protected function canEditDocument(Document $document)
 
     public function uploadAttachment(Request $request, Document $document)
     {
-        if ($document->status !== 'created') {
+        if ($document->status == 'active') {
             return back()->with('error', 'Cannot upload attachment for this document in its current state.');
         }
 
@@ -319,11 +319,12 @@ protected function canEditDocument(Document $document)
 
     public function confirmDocument(Document $document)
     {
-        if ($document->status !== 'created' || $document->attachments->isEmpty()) {
+        if ($document->status == 'active' || $document->attachments->isEmpty()) {
             return back()->with('error', 'Document cannot be confirmed in its current state.');
         }
 
         $document->update(['status' => 'active']);
+        DocumentAttachment::where('document_id',$document->id)->update(['status'=>1]);
 
         DocumentHistory::create([
             'document_id' => $document->id,
@@ -332,6 +333,8 @@ protected function canEditDocument(Document $document)
             'details' => 'Document confirmed and activated'
         ]);
 
+
+
         return back()->with('success', 'Document confirmed and activated successfully.');
     }
 
@@ -339,8 +342,8 @@ protected function canEditDocument(Document $document)
 {
     $this->authorize('removeAttachment', $document);
 
-    if ($document->status !== 'created') {
-        return back()->with('error', 'Attachments can only be removed from unconfirmed documents.');
+    if ( $document->status == 'active') {
+        return  redirect()->back()->with('error', 'Attachments can only be removed from unconfirmed documents.');
     }
 
     // Verify the attachment belongs to the document
@@ -366,7 +369,7 @@ protected function canEditDocument(Document $document)
         // return back()->with('success', 'Attachment removed successfully.');
         return redirect()->back()->with('success', 'Attachment removed successfully.');
     } catch (\Exception $e) {
-        return back()->with('error', 'Failed to remove attachment: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Failed to remove attachment: ' . $e->getMessage());
     }
 }
 
@@ -392,6 +395,33 @@ protected function canEditDocument(Document $document)
             'user_id' => Auth::id(),
             'action' => 'cancelled',
             'details' => 'Document cancelled. Reason: ' . $request->cancellation_reason
+        ]);
+
+        return back()->with('success', 'Document cancelled successfully.');
+    }
+
+    public function reviseDocument(Request $request, Document $document)
+    {
+        // if (!auth()->user()->can('cancel-documents')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
+
+        $request->validate([
+            'revision_reason' => 'required|string|max:500',
+        ]);
+
+        $document->update([
+            'status' => 'revised',
+            'revision_reason' => $request->revision_reason,
+            'revision_requested_by' => Auth::id(),
+            'revision_request_at' => now(),
+        ]);
+
+        DocumentHistory::create([
+            'document_id' => $document->id,
+            'user_id' => Auth::id(),
+            'action' => 'revision_requested',
+            'details' => 'Document Revised. Reason: ' . $request->revision_reason
         ]);
 
         return back()->with('success', 'Document cancelled successfully.');

@@ -289,6 +289,7 @@ Route::resource('documents', DocumentController::class);
     Route::post('/{document}/upload', [DocumentController::class, 'uploadAttachment'])->name('documents.upload');
     Route::post('/{document}/confirm', [DocumentController::class, 'confirmDocument'])->name('documents.confirm');
     Route::post('/{document}/cancel', [DocumentController::class, 'cancelDocument'])->name('documents.cancel');
+    Route::post('/{document}/revise', [DocumentController::class, 'reviseDocument'])->name('documents.revise');
     Route::get('/attachment/{attachment}/download', [DocumentController::class, 'downloadAttachment'])->name('documents.attachment.download');
     Route::post('/generate-preview', [DocumentController::class, 'generateNumberPreview'])->name('documents.generate.preview');
     Route::delete('/documents/{document}/attachment/{attachment}', [DocumentController::class, 'removeAttachment'])

@@ -30,6 +30,7 @@ class DocumentPolicy
 public function removeAttachment(User $user, Document $document)
 {
     // Only allow if document is not confirmed and user is the creator
-    return $document->status === 'created' && $user->id === $document->user_id;
+    return ($document->status === 'created' || $document->status === 'revised') && ($user->id === $document->user_id || $user->id === $document->authorized_person_id || // Authorized person
+           $user->id === $document->code->user_id);
 }
 }

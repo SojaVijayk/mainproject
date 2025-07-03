@@ -161,11 +161,14 @@
             @foreach($document->attachments as $attachment)
             <li class="list-group-item d-flex justify-content-between align-items-center">
               <div>
-                {{ $attachment->original_name }}
+                {{ $attachment->original_name }} - <span class="badge bg-dark">@if($loop->iteration == 1)Primary
+                  Document @else
+                  Revised Document @endif</span>
                 <br>
                 <small class="text-muted">
                   Uploaded: {{ $attachment->created_at->format('d-m-Y H:i') }}
                 </small>
+
               </div>
               <div>
                 {{-- <a href="{{ route('documents.attachment.download', $attachment) }}" class="btn btn-sm btn-primary">
@@ -175,7 +178,7 @@
                   class="btn btn-sm btn-primary mr-2">
                   <i class="fas fa-eye"></i> Download
                 </a>
-                @if($document->status == 'created')
+                @if($document->status == 'created' || $document->status == 'revised' && $attachment->status == 0 )
                 <form
                   action="{{ route('documents.attachment.remove', ['document' => $document, 'attachment' => $attachment]) }}"
                   method="POST" style="display: inline-block;"
@@ -197,7 +200,8 @@
 
 
 
-          @if($document->status == 'created' && $document->attachments->count() == 0)
+          @if(($document->status == 'created' || $document->status == 'revised') &&
+          $document->attachments->where('status', 0)->count() ==0)
           <hr>
           <h5>Upload Attachment</h5>
           <form method="POST" action="{{ route('documents.upload', $document) }}" enctype="multipart/form-data">
@@ -208,7 +212,8 @@
             <button type="submit" class="btn btn-primary">Upload</button>
           </form>
           @endif
-          @if($document->status == 'created' && $document->attachments->count() > 0)
+          @if(($document->status == 'created' || $document->status == 'revised') &&
+          $document->attachments->where('status',0)->count() > 0)
           <hr>
           <form method="POST" action="{{ route('documents.confirm', $document) }}">
             @csrf
@@ -226,6 +231,18 @@
                 required></textarea>
             </div>
             <button type="submit" class="btn btn-danger">Cancel Document number</button>
+          </form>
+          @endif
+
+          @if($document->status == 'active')
+          <hr>
+          <h5>Revise Document Attachment</h5>
+          <form method="POST" action="{{ route('documents.revise', $document) }}">
+            @csrf
+            <div class="mb-3">
+              <textarea class="form-control" name="revision_reason" placeholder="Revision reason" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-dark">Revise Document Attachment</button>
           </form>
           @endif
 

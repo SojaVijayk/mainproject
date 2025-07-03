@@ -10,7 +10,7 @@ class Document extends Model
         'document_number', 'number_type', 'document_type_id', 'user_id',
         'authorized_person_id', 'code_id', 'to_address_details', 'subject',
         'project_details', 'sequence_number', 'year', 'status',
-        'cancellation_reason', 'cancelled_by', 'cancelled_at'
+        'cancellation_reason', 'cancelled_by', 'cancelled_at','revision_reason','revision_requested_by','revision_request_at'
     ];
 
     public function documentType()
@@ -46,5 +46,10 @@ class Document extends Model
     public function cancelledBy()
     {
         return $this->belongsTo(User::class, 'cancelled_by');
+    }
+
+     public function revisionBy()
+    {
+        return $this->belongsTo(User::class, 'revision_requested_by');
     }
 }
