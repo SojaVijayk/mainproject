@@ -223,7 +223,28 @@
 
           @if($document->status != 'cancelled')
           <hr>
-          <h5>Cancel Document</h5>
+          <div class="accordion accordion-header-primary" id="accordionStyle1">
+            <div class="accordion-item active">
+              <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button collapsed text-danger" data-bs-toggle="collapse"
+                  data-bs-target="#accordionStyle1-1" aria-expanded="false"> Cancel Document Number</button>
+              </h2>
+
+              <div id="accordionStyle1-1" class="accordion-collapse collapse" data-bs-parent="#accordionStyle1">
+                <div class="accordion-body">
+                  <form method="POST" action="{{ route('documents.cancel', $document) }}">
+                    @csrf
+                    <div class="mb-3">
+                      <textarea class="form-control" name="cancellation_reason" placeholder="Cancellation reason"
+                        required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Cancel Document number</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {{-- <h5>Cancel Document</h5>
           <form method="POST" action="{{ route('documents.cancel', $document) }}">
             @csrf
             <div class="mb-3">
@@ -231,19 +252,40 @@
                 required></textarea>
             </div>
             <button type="submit" class="btn btn-danger">Cancel Document number</button>
-          </form>
+          </form> --}}
           @endif
 
           @if($document->status == 'active')
           <hr>
-          <h5>Revise Document Attachment</h5>
+          <div class="accordion accordion-header-primary" id="accordionStyle1">
+            <div class="accordion-item">
+              <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button collapsed text-warning" data-bs-toggle="collapse"
+                  data-bs-target="#accordionStyle1-2" aria-expanded="false">Revise Document Attachment</button>
+              </h2>
+              <div id="accordionStyle1-2" class="accordion-collapse collapse" data-bs-parent="#accordionStyle1">
+                <div class="accordion-body">
+                  <form method="POST" action="{{ route('documents.revise', $document) }}">
+                    @csrf
+                    <div class="mb-3">
+                      <textarea class="form-control" name="revision_reason" placeholder="Revision reason"
+                        required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-dark">Revise Document Attachment</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {{-- <h5>Revise Document Attachment</h5>
           <form method="POST" action="{{ route('documents.revise', $document) }}">
             @csrf
             <div class="mb-3">
               <textarea class="form-control" name="revision_reason" placeholder="Revision reason" required></textarea>
             </div>
             <button type="submit" class="btn btn-dark">Revise Document Attachment</button>
-          </form>
+          </form> --}}
           @endif
 
 
@@ -258,19 +300,34 @@
 
 
           <hr>
-          <h5>History</h5>
-          <ul class="list-group">
-            @foreach($document->histories as $history)
-            <li class="list-group-item">
-              <strong>{{ $history->user->name }}</strong> -
-              {{ ucfirst($history->action) }} -
-              {{ $history->created_at->format('d-m-Y H:i') }}
-              @if($history->details)
-              <br><small>{{ $history->details }}</small>
-              @endif
-            </li>
-            @endforeach
-          </ul>
+          <div class="accordion" id="accordionWithIcon">
+            <div class="accordion-item">
+              <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button collapsed text-primary" data-bs-toggle="collapse"
+                  data-bs-target="#accordionWithIcon-3" aria-expanded="false">
+                  History
+                </button>
+              </h2>
+              <div id="accordionWithIcon-3" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <ul class="list-group">
+                    @foreach($document->histories as $history)
+                    <li class="list-group-item">
+                      <strong>{{ $history->user->name }}</strong> -
+                      {{ ucfirst($history->action) }} -
+                      {{ $history->created_at->format('d-m-Y H:i') }}
+                      @if($history->details)
+                      <br><small>{{ $history->details }}</small>
+                      @endif
+                    </li>
+                    @endforeach
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
         </div>
       </div>
     </div>
