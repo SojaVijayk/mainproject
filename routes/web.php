@@ -300,6 +300,10 @@ Route::resource('documents', DocumentController::class);
     Route::get('document/tracking/{id}', [DocumentController::class, 'trackingShow'])
     ->name('documents.tracking.show');
      Route::get('document/export', [DocumentController::class, 'export'])->name('documents.export');
+     Route::get('document/statistics', [DocumentController::class, 'statistics'])
+    ->name('documents.statistics');
+    Route::get('document/user/statistics', [DocumentController::class, 'userStatistics'])
+    ->name('documents.user.statistics');
 
 //end
 

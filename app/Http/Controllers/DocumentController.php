@@ -555,6 +555,7 @@ protected function canEditDocument(Document $document)
     $users = User::where('active', true)->get();
     $years = Document::select('year')->distinct()->orderBy('year', 'desc')->pluck('year');
 
+
     return view('documents.tracking', compact(
         'documents',
         'documentTypes',
@@ -567,6 +568,134 @@ protected function canEditDocument(Document $document)
 public function export(Request $request)
 {
     return Excel::download(new DocumentsExport($request), 'documents.xlsx');
+}
+
+public function statistics()
+{
+    $stats = [
+        'total_ds' => Document::where('number_type', 'DS')->count(),
+        'total_general' => Document::where('number_type', 'General')->count(),
+
+        'ds_created' => Document::where('number_type', 'DS')->where('status', 'created')->count(),
+        'ds_active' => Document::where('number_type', 'DS')->where('status', 'active')->count(),
+        'ds_cancelled' => Document::where('number_type', 'DS')->where('status', 'cancelled')->count(),
+
+        'general_created' => Document::where('number_type', 'General')->where('status', 'created')->count(),
+        'general_active' => Document::where('number_type', 'General')->where('status', 'active')->count(),
+        'general_cancelled' => Document::where('number_type', 'General')->where('status', 'cancelled')->count(),
+
+        'total_created' => Document::where('status', 'created')->count(),
+        'total_active' => Document::where('status', 'active')->count(),
+        'total_cancelled' => Document::where('status', 'cancelled')->count(),
+
+        'last_updated' => now()->format('Y-m-d H:i:s')
+    ];
+
+    return response()->json($stats);
+}
+
+public function userStatistics()
+{
+
+   $user = auth()->user();
+       $query = Document::where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        });
+
+
+
+
+    $stats = [
+        'total_ds' => Document::where('number_type', 'DS')
+        ->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+        'total_general' => Document::where('number_type', 'General')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+
+        'ds_created' => Document::where('number_type', 'DS')->where('status', 'created')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+        'ds_active' => Document::where('number_type', 'DS')->where('status', 'active')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+        'ds_cancelled' => Document::where('number_type', 'DS')->where('status', 'cancelled')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+
+        'general_created' => Document::where('number_type', 'General')->where('status', 'created')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+        'general_active' => Document::where('number_type', 'General')->where('status', 'active')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+        'general_cancelled' => Document::where('number_type', 'General')->where('status', 'cancelled')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+
+        'total_created' => Document::where('status', 'created')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+        'total_active' => Document::where('status', 'active')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+        'total_cancelled' => Document::where('status', 'cancelled')->where(function($q) use ($user) {
+            $q->where('user_id', $user->id) // Created by user
+              ->orWhere('authorized_person_id', $user->id) // Authorized person
+              ->orWhereHas('code', function($q) use ($user) {
+                  $q->where('user_id', $user->id); // Code belongs to user
+              });
+        })->count(),
+
+        'last_updated' => now()->format('Y-m-d H:i:s')
+    ];
+
+    return response()->json($stats);
 }
 
 

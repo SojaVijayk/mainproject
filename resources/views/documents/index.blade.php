@@ -21,6 +21,51 @@
 @endsection
 
 @section('page-style')
+<style>
+  .stat-card {
+    padding: 5px;
+    text-align: center;
+  }
+
+  .stat-title {
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+    color: #6c757d;
+  }
+
+  .stat-value {
+    font-weight: bold;
+    margin: 0;
+  }
+
+  #statistics-section .stat-value {
+    min-height: 36px;
+    /* Prevent layout shift when loading */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .loading-stat {
+    color: transparent;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    min-width: 40px;
+    display: inline-block;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+
+    100% {
+      background-position: -200% 0;
+    }
+  }
+</style>
 @endsection
 
 @section('vendor-script')
@@ -39,6 +84,71 @@
 @endsection
 
 @section('page-script')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Load statistics initially
+    loadStatistics();
+
+    // Refresh every 30 seconds
+    setInterval(loadStatistics, 30000);
+
+    function loadStatistics() {
+        fetch("{{ route('documents.user.statistics') }}")
+            .then(response => response.json())
+            .then(data => {
+                // Update DS documents
+                document.getElementById('total-ds').textContent = data.total_ds;
+                document.getElementById('ds-created').textContent = data.ds_created;
+                document.getElementById('ds-active').textContent = data.ds_active;
+                document.getElementById('ds-cancelled').textContent = data.ds_cancelled;
+                document.getElementById('ds-pending').textContent = data.ds_created; // Pending is same as created
+
+                // Update General documents
+                document.getElementById('total-general').textContent = data.total_general;
+                document.getElementById('general-created').textContent = data.general_created;
+                document.getElementById('general-active').textContent = data.general_active;
+                document.getElementById('general-cancelled').textContent = data.general_cancelled;
+                document.getElementById('general-pending').textContent = data.general_created; // Pending is same as created
+
+                // Update totals
+                document.getElementById('total-documents').textContent = data.total_ds + data.total_general;
+                document.getElementById('total-created').textContent = data.total_created;
+                document.getElementById('total-active').textContent = data.total_active;
+                document.getElementById('total-cancelled').textContent = data.total_cancelled;
+                document.getElementById('total-pending').textContent = data.total_created; // Pending is same as created
+
+                // Update last updated time
+                document.getElementById('last-updated').textContent = 'Last updated: ' + formatDateTime(data.last_updated);
+            })
+            .catch(error => {
+                console.error('Error loading statistics:', error);
+            });
+    }
+
+    function formatDateTime(datetime) {
+        const options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        return new Date(datetime).toLocaleString(undefined, options);
+    }
+});
+function showLoading() {
+    const statValues = document.querySelectorAll('.stat-value');
+    statValues.forEach(el => {
+        el.innerHTML = '<span class="loading-stat">00</span>';
+    });
+}
+
+function loadStatistics() {
+    showLoading();
+    // Rest of the function remains the same...
+}
+</script>
 @endsection
 
 @section('content')
@@ -104,6 +214,155 @@
           <a href="{{ route('documents.create') }}" class="btn btn-primary">Generate New Number</a>
         </div>
         <div class="card-body">
+
+          <!-- Statistics Section -->
+          <div id="statistics-section" class="card-body bg-light">
+            <div class="row text-center">
+              <div class="col-md-12">
+                <h5><i class="fas fa-chart-pie"></i> Document Statistics <small class="text-muted"
+                    id="last-updated"></small></h5>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <!-- DS Documents -->
+              <div class="col-md-4 mb-3">
+                <div class="card">
+                  <div class="card-header bg-primary text-white">
+                    <i class="fas fa-file-alt"></i> DS Documents
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Total</h6>
+                          <h3 class="stat-value" id="total-ds">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Initiated</h6>
+                          <h3 class="stat-value text-warning" id="ds-created">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Created</h6>
+                          <h3 class="stat-value text-success" id="ds-active">0</h3>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="col-6">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Cancelled</h6>
+                          <h3 class="stat-value text-danger" id="ds-cancelled">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Pending Upload</h6>
+                          <h3 class="stat-value text-info" id="ds-pending">0</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- General Documents -->
+              <div class="col-md-4 mb-3">
+                <div class="card">
+                  <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-file"></i> General Documents
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Total</h6>
+                          <h3 class="stat-value" id="total-general">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Initiated</h6>
+                          <h3 class="stat-value text-warning" id="general-created">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Created</h6>
+                          <h3 class="stat-value text-success" id="general-active">0</h3>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="col-6">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Cancelled</h6>
+                          <h3 class="stat-value text-danger" id="general-cancelled">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Pending Upload</h6>
+                          <h3 class="stat-value text-info" id="general-pending">0</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Overall Summary -->
+              <div class="col-md-4 mb-3">
+                <div class="card">
+                  <div class="card-header bg-info text-white">
+                    <i class="fas fa-chart-bar"></i> Overall Summary
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Total</h6>
+                          <h3 class="stat-value" id="total-documents">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Initiated</h6>
+                          <h3 class="stat-value text-warning" id="total-created">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Created</h6>
+                          <h3 class="stat-value text-success" id="total-active">0</h3>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="col-6">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Cancelled</h6>
+                          <h3 class="stat-value text-danger" id="total-cancelled">0</h3>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="stat-card">
+                          <h6 class="stat-title">Pending Activation</h6>
+                          <h3 class="stat-value text-info" id="total-pending">0</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
           <div class="table-responsive">
             <table class="table table-striped">
               <thead>
