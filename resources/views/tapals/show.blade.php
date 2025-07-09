@@ -103,9 +103,16 @@
 
 <script>
   $(document).ready(function() {
-        $('.select2').select2({
+        {{--  $('.select2').select2({
             placeholder: "Select users",
             allowClear: true
+        });  --}}
+
+        $('#share_users').select2({
+            placeholder: "Select users to notify",
+            allowClear: true,
+            multiple:true,
+            dropdownParent: $('#shareModal')
         });
     });
 </script>
@@ -505,7 +512,7 @@ $isCompleted = $tapal->movements()->where('status', 'Completed')->exists();
           </div> --}}
           <div class="form-group mt-3">
             <label for="share_users">Share Users </label>
-            <select name="share_users[]" id="share_users" class="form-control " required>
+            <select name="share_users[]" id="share_users" class="form-control select2" multiple required>
               @foreach($users as $user)
               @if($user->id != Auth::id())
               <option value="{{ $user->id }}">{{ $user->name }}</option>

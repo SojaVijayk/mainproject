@@ -286,7 +286,7 @@ class TapalController extends Controller
         $this->authorize('forward', $tapal);
 
         $validated = $request->validate([
-            'notify_users' => 'nullable|array',
+            'share_users' => 'nullable|array',
             'share_users.*' => 'exists:users,id',
             'remarks' => 'nullable|string',
         ]);
