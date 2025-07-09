@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use DB;
+use Excel;
+use App\Exports\DocumentsExport;
 
 class DocumentController extends Controller
 {
@@ -219,6 +221,15 @@ class DocumentController extends Controller
         $showFullDetails = $this->canViewFullDetails($document);
         // echo $showFullDetails;exit;
         return view('documents.show', compact('document', 'showFullDetails'),['pageConfigs'=> $pageConfigs]);
+    }
+    public function trackingShow($id){
+      $document = Document::with(['documentType', 'creator', 'authorizedPerson', 'code'])->findOrFail($id);
+
+      // print_r($document); exit;
+        $pageConfigs = ['myLayout' => 'horizontal'];
+        $showFullDetails = $this->canViewTrackingDetails($document);
+        // echo $showFullDetails;exit;
+        return view('documents.tracking-show', compact('document', 'showFullDetails'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function edit(Document $document)
@@ -447,5 +458,116 @@ protected function canEditDocument(Document $document)
         return $user->id === $document->user_id || // Creator
            $user->id === $document->authorized_person_id || // Authorized person
            $user->id === $document->code->user_id; // Code owner
+
     }
+
+    protected function canViewTrackingDetails(Document $document)
+    {
+        $user = auth()->user();
+        return $user->id === $document->user_id || // Creator
+           $user->id === $document->authorized_person_id || // Authorized person
+           $user->id === $document->code->user_id ||
+            $user->id === 30 || // admin
+             $user->id === 20; // Director
+
+    }
+
+
+    public function tracking(Request $request)
+{
+  $pageConfigs = ['myLayout' => 'horizontal'];
+    $query = Document::with([
+        'documentType',
+        'creator',
+        'authorizedPerson',
+        'code.user',
+        'attachments'
+    ])->latest();
+
+    // Search functionality
+    if ($request->filled('search')) {
+        $search = $request->input('search');
+        $query->where(function($q) use ($search) {
+            $q->where('document_number', 'like', "%{$search}%")
+              ->orWhere('subject', 'like', "%{$search}%")
+              ->orWhere('to_address_details', 'like', "%{$search}%")
+              ->orWhere('project_details', 'like', "%{$search}%")
+              ->orWhereHas('creator', function($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
+              })
+              ->orWhereHas('authorizedPerson', function($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
+              })
+              ->orWhereHas('code', function($q) use ($search) {
+                  $q->where('code', 'like', "%{$search}%")
+                    ->orWhereHas('user', function($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+              })
+              ->orWhereHas('documentType', function($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
+              });
+        });
+    }
+
+    // Advanced filters
+    if ($request->filled('code')) {
+        $query->whereHas('code', function($q) use ($request) {
+            $q->where('code', $request->input('code'));
+        });
+    }
+
+    if ($request->filled('document_type')) {
+        $query->where('document_type_id', $request->input('document_type'));
+    }
+
+    if ($request->filled('authorized_person')) {
+        $query->where('authorized_person_id', $request->input('authorized_person'));
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->input('status'));
+    }
+
+    if ($request->filled('date_from')) {
+        $query->whereDate('created_at', '>=', $request->input('date_from'));
+    }
+
+    if ($request->filled('date_to')) {
+        $query->whereDate('created_at', '<=', $request->input('date_to'));
+    }
+
+    // User-specific documents if requested
+    if ($request->has('my_documents')) {
+        $query->where(function($q) {
+            $q->where('user_id', auth()->id())
+              ->orWhere('authorized_person_id', auth()->id())
+              ->orWhereHas('code', function($q) {
+                  $q->where('user_id', auth()->id());
+              });
+        });
+    }
+
+    $documents = $query->paginate(25);
+
+    $documentTypes = DocumentType::where('is_active', true)->get();
+    $codes = DocumentCode::where('is_active', true)->get();
+    $users = User::where('active', true)->get();
+    $years = Document::select('year')->distinct()->orderBy('year', 'desc')->pluck('year');
+
+    return view('documents.tracking', compact(
+        'documents',
+        'documentTypes',
+        'codes',
+        'users',
+        'years'
+    ),['pageConfigs'=> $pageConfigs]);
+}
+
+public function export(Request $request)
+{
+    return Excel::download(new DocumentsExport($request), 'documents.xlsx');
+}
+
+
 }

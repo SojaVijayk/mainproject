@@ -295,6 +295,12 @@ Route::resource('documents', DocumentController::class);
     Route::delete('/documents/{document}/attachment/{attachment}', [DocumentController::class, 'removeAttachment'])
     ->name('documents.attachment.remove');
 
+    Route::get('document/tracking', [DocumentController::class, 'tracking'])
+    ->name('documents.tracking');
+    Route::get('document/tracking/{id}', [DocumentController::class, 'trackingShow'])
+    ->name('documents.tracking.show');
+     Route::get('document/export', [DocumentController::class, 'export'])->name('documents.export');
+
 //end
 
 
