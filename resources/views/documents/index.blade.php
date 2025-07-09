@@ -80,8 +80,8 @@
               <div class="col-md-2">
                 <select name="status" class="form-control">
                   <option value="">All Statuses</option>
-                  <option value="created" {{ request('status')=='created' ? 'selected' : '' }}>Created</option>
-                  <option value="active" {{ request('status')=='active' ? 'selected' : '' }}>Active</option>
+                  <option value="created" {{ request('status')=='created' ? 'selected' : '' }}>Initiated</option>
+                  <option value="active" {{ request('status')=='active' ? 'selected' : '' }}>Created</option>
                   <option value="cancelled" {{ request('status')=='cancelled' ? 'selected' : '' }}>Cancelled</option>
                 </select>
               </div>
@@ -131,7 +131,8 @@
                                             @if($document->status == 'created') bg-warning
                                             @elseif($document->status == 'active') bg-success
                                             @else bg-danger @endif">
-                      {{ ucfirst($document->status) }}
+                      @if($document->status == 'created') Initiated @elseif($document->status == 'active')
+                      Created @else {{ ucfirst($document->status) }} @endif
                     </span>
                   </td>
                   <td>{{ $document->created_at->format('d-m-Y') }}</td>

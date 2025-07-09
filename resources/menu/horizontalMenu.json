@@ -272,7 +272,7 @@
           "icon": "menu-icon tf-icons ti ti-search",
           "name": "Document Tracking",
           "slug": "document-tracking",
-          "permission": "document-tracking"
+          "permission": 1
         }
       ]
     }

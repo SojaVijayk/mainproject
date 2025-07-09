@@ -52,7 +52,8 @@
                         @if($document->status == 'created') bg-warning
                         @elseif($document->status == 'active') bg-success
                         @else bg-danger @endif">
-            {{ ucfirst($document->status) }}
+            @if($document->status == 'created') Initiated @elseif($document->status == 'active')
+            Created @else {{ ucfirst($document->status) }} @endif
           </span>
 
           @if($document->status == 'created' && (auth()->user()->id === $document->user_id ||
