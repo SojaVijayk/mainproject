@@ -247,9 +247,9 @@ class LeaveRequestController extends Controller
         'duration' => 'required|',
         'leave_period_start' => 'required',
         'leave_period_end' => 'required',
-         'duty_assigned' => 'required|array|min:1',
-    'duty_assigned.*.user_id' => 'required|integer|exists:users,id',
-    'duty_assigned.*.description' => 'required|string|max:255',
+         'duty_assignments' => 'required|array|min:1',
+        'duty_assignments.*.user_id' => 'required|integer|exists:users,id',
+        'duty_assignments.*.description' => 'required|string|max:255',
 
 
 
@@ -372,7 +372,7 @@ class LeaveRequestController extends Controller
       'duration' => $request->input('duration'),
         'from' => $from,
         'to' => $to,
-        'date_list' => $date_list,'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date,'duty_assigned'=>$request->input('duty_assigned')
+        'date_list' => $date_list,'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date
     ]);
 
       if ($permission) {
