@@ -22,8 +22,7 @@
 
 @section('page-script')
 <script>
-
-$(function () {
+  $(function () {
 
   $.fn.modal.Constructor.prototype.enforceFocus = function () {};
   $('#DesignationModal').on('hidden.bs.modal', function (e) {
@@ -77,6 +76,7 @@ $(function () {
         { data: 'designation' },
         { data: 'leave_type' },
         { data: 'leave_request_details' },
+         { data: 'duty_assigned' },
         { data: 'requested_at' },
         { data: 'status' },
         { data: 'action_by' },
@@ -166,12 +166,12 @@ $(function () {
 
 
 
-        {
+          {
           // Name
           targets: 4,
           render: function (data, type, full, meta) {
-            var $requested_at = full['formatted_requested_at'];
-            return '<span class="text-nowrap">' + $requested_at + '</span>';
+            var $duration = full['duty_assigned_name'] == null ? 'Nil' : full['duty_assigned_name'];
+            return '<span class="text-nowrap">' + $duration + '</span>';
           }
         },
         {
@@ -630,6 +630,7 @@ else if(status== 2){
           <th>User</th>
           <th>Leave Type</th>
           <th>Leave Days</th>
+          <th>Duty Assigned</th>
           <th>Requested_at</th>
           <th>Status</th>
           <th>Action By</th>

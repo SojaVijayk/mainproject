@@ -445,7 +445,8 @@ class LeaveRequestController extends Controller
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("leaves","leaves.id","=","leave_requests.leave_type_id")
       ->leftjoin("employees as emp","emp.user_id","=","leave_requests.action_by")
-      ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(leave_requests.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(leave_requests.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('employees.reporting_officer',$id)
+      ->leftjoin("users","users.id","=","leave_requests.duty_assigned")
+      ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name','users.name as duty_assigned_name',DB::raw("DATE_FORMAT(leave_requests.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(leave_requests.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('employees.reporting_officer',$id)
       ->orderBy('leave_requests.status')
       ->orderBy('leave_requests.from', 'DESC')->get();
         //  $queries = DB::getQueryLog();
