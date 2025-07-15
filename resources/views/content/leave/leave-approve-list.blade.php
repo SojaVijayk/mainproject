@@ -181,7 +181,7 @@
 
         output += `
           <span class="badge bg-label-dark m-1">${userName}</span>
-          <span class="badge bg-label-info m-1">${description}</span><br>
+          <span class="badge bg-label-primary m-1 text-wrap">${description}</span><br>
         `;
       }
     } else {
