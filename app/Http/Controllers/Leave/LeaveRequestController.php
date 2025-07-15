@@ -247,7 +247,6 @@ class LeaveRequestController extends Controller
         'duration' => 'required|',
         'leave_period_start' => 'required',
         'leave_period_end' => 'required',
-         'duty_assigned' => 'required',
          'duty_assigned' => 'required|array|min:1',
     'duty_assigned.*.user_id' => 'required|integer|exists:users,id',
     'duty_assigned.*.description' => 'required|string|max:255',
