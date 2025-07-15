@@ -9,7 +9,8 @@
 
           <div class="alert alert-warning message" role="alert">
             <h6 class="alert-heading mb-2">Warning</h6>
-            <p class="mb-0">You have no credit and cannot request <span class="leaveTypeName"></span>. Kindly select a different leave type</p>
+            <p class="mb-0">You have no credit and cannot request <span class="leaveTypeName"></span>. Kindly select a
+              different leave type</p>
           </div>
 
           <div class="col-xl-12 p-4 availability">
@@ -38,25 +39,26 @@
 
         <form id="designationForm" class="row" onsubmit="return false">
           <div class="mb-3">
-            <label class="form-label" for="leaveType">Label</label>
-            <select class="select2 select-event-label form-select" id="leaveType" name="leaveType">
-              <option value="" >Select</option>
+            <label class="form-label" for="leaveType">Leave Type *</label>
+            <select class="select2 select-event-label form-select" id="leaveType" name="leaveType" required>
+              <option value="">Select</option>
               @foreach ($leaves_total_credit as $leave)
               <option value={{$leave->leave_type_id}} >{{$leave->leave_type}}</option>
               @endforeach
-              {{--  <option value="4" >Compensatory Off</option>
-              <option value="5" >Leave Without Allowance (Loss of Pay)</option>  --}}
+              {{-- <option value="4">Compensatory Off</option>
+              <option value="5">Leave Without Allowance (Loss of Pay)</option> --}}
 
             </select>
           </div>
-          {{--  <div class="mb-3">
+          {{-- <div class="mb-3">
             <label for="bs-datepicker-multidate" class="form-label">Multidate</label>
-            <input type="text"  id="bs-datepicker-multidate" placeholder="MM/DD/YYYY, MM/DD/YYYY" class="form-control" />
-          </div>  --}}
+            <input type="text" id="bs-datepicker-multidate" placeholder="MM/DD/YYYY, MM/DD/YYYY" class="form-control" />
+          </div> --}}
 
           <div class="mb-3 col-6 date-group">
-            <label for="fromDate" class="form-label">From</label>
-            <input type="text" class="form-control datepicker" id="fromDate" name="fromDate" placeholder="DD/MM/YYYY" class="form-control" />
+            <label for="fromDate" class="form-label">From *</label>
+            <input type="text" class="form-control datepicker" id="fromDate" name="fromDate" placeholder="DD/MM/YYYY"
+              class="form-control" required />
 
           </div>
 
@@ -64,16 +66,28 @@
 
 
           <div class="mb-3 col-6 date-group">
-            <label for="toDate" class="form-label">To</label>
-            <input type="text" class="form-control datepicker" id="toDate" name="toDate" placeholder="DD/MM/YYYY" class="form-control" />
+            <label for="toDate" class="form-label">To *</label>
+            <input type="text" class="form-control datepicker" id="toDate" name="toDate" placeholder="DD/MM/YYYY"
+              class="form-control" required />
 
           </div>
           <div class="mb-3 col-12">
             <input type="hidden" value="" id="dateListCount" />
             <ul id="dateList"></ul>
           </div>
-
-
+          <div class="mb-3">
+            <label class="form-label" for="leaveType">Duty Assigned To *</label>
+            <select name="duty_assigned" id="duty_assigned" class="form-control" required>
+              @php
+              $users = DB::table('users')->where('active',1)->get();
+              @endphp
+              @foreach($users as $user)
+              @if($user->id != Auth::id())
+              <option value="{{ $user->id }}">{{ $user->name }}</option>
+              @endif
+              @endforeach
+            </select>
+          </div>
 
 
 
@@ -83,8 +97,10 @@
           </div>
 
           <div class="col-12 text-center demo-vertical-spacing">
-            <button type="submit" id="submit_designation" data-id="0" data-type="new" class="btn btn-primary me-sm-3 me-1 submit-designation">Save</button>
-            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">Discard</button>
+            <button type="submit" id="submit_designation" data-id="0" data-type="new"
+              class="btn btn-primary me-sm-3 me-1 submit-designation">Save</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal"
+              aria-label="Close">Discard</button>
           </div>
         </form>
       </div>

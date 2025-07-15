@@ -30,9 +30,7 @@
 
 @section('page-script')
 <script>
-
-
-$(function () {
+  $(function () {
   var dataTablePermissions = $('.datatables-designation'),
     dt_permission,
     dateArray = [],
@@ -262,6 +260,7 @@ $(function () {
         { data: 'leave_type' },
         { data: 'leave_request_details' },
         { data: 'duration' },
+         { data: 'duty_assigned' },
         { data: 'requested_at' },
         { data: 'status' },
         { data: 'action_by' },
@@ -320,9 +319,18 @@ $(function () {
           }
         },
 
-        {
+         {
           // Name
           targets: 4,
+          render: function (data, type, full, meta) {
+            var $duration = full['duty_assigned_name'] == null ? 'Nil' : full['duty_assigned_name'];
+            return '<span class="text-nowrap">' + $duration + '</span>';
+          }
+        },
+
+        {
+          // Name
+          targets: 5,
           render: function (data, type, full, meta) {
             var $requested_at = full['formatted_requested_at'];
             return '<span class="text-nowrap">' + $requested_at + '</span>';
@@ -330,7 +338,7 @@ $(function () {
         },
         {
           // User Role
-          targets: 5,
+          targets: 6,
           render: function (data, type, full, meta) {
             var $status = full['status'];
             $out = ($status==1 ? '<a><span class="badge bg-label-dark m-1">Partially Completed</span></a>' : ($status==0 ? '<a><span class="badge bg-label-warning m-1">Pending</span></a>' :  '<a><span class="badge bg-label-success m-1">Completed</span></a>') )
@@ -339,7 +347,7 @@ $(function () {
         },
         {
           // Name
-          targets: 6,
+          targets: 7,
           render: function (data, type, full, meta) {
             var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
             var $action_at = (full['formatted_action_at'] == null ? '' :full['formatted_action_at']);
@@ -516,8 +524,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
       var  start_date =  $("#fromDate").val();
       var  end_date =  $("#toDate").val();
       var  description =  $("#eventDescription").val();
+      var  leaveType =  $("#leaveType").val();
       var request_type =   $("#submit_designation").data('type');
-      var desig_id =   $("#submit_designation").data('id');
+      var duty_assigned =   $("#duty_assigned").val();
       var duration = 0;
       var  leave_period_start =  $("#date_start").val();
       var  leave_period_end =  $("#date_end").val();
@@ -545,6 +554,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               duration:duration,
               date_list:date_leave_type,
               description:description,
+               duty_assigned:duty_assigned,
               leave_period_start:leave_period_start,
               leave_period_end:leave_period_end,
               "_token": "{{ csrf_token() }}",
@@ -622,6 +632,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               end_time:end_time,
               location:location,
               description:description,
+              duty_assigned:duty_assigned,
 
               "_token": "{{ csrf_token() }}",
 
@@ -759,48 +770,44 @@ document.addEventListener('DOMContentLoaded', function (e) {
 <div class="row g-4 mb-4">
 
 
-<div class="alert alert-warning alert-dismissible d-flex align-items-baseline" role="alert">
-  <span class="alert-icon alert-icon-lg text-primary me-2">
-    <i class="ti ti-calendar ti-sm"></i>
-  </span>
-  <div class="d-flex flex-column ps-1">
-    <input type="hidden" id="date_start" value="{{$date_start}}" />
-    <input type="hidden" id="date_end" value="{{$date_end}}" />
-    <p class="mb-0"> Leave Statistics for the period of {{$date_start}} TO {{$date_end}}
-      @if($employment_type !=1)
-      <small> - (Casual Leave Statistics for the period of {{$cl_date_start}} TO {{$cl_date_end}})</small>
-      @endif
-    </p>
-    <h5 class="alert-heading mb-2"></h5>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-    </button>
+  <div class="alert alert-warning alert-dismissible d-flex align-items-baseline" role="alert">
+    <span class="alert-icon alert-icon-lg text-primary me-2">
+      <i class="ti ti-calendar ti-sm"></i>
+    </span>
+    <div class="d-flex flex-column ps-1">
+      <input type="hidden" id="date_start" value="{{$date_start}}" />
+      <input type="hidden" id="date_end" value="{{$date_end}}" />
+      <p class="mb-0"> Leave Statistics for the period of {{$date_start}} TO {{$date_end}}
+        @if($employment_type !=1)
+        <small> - (Casual Leave Statistics for the period of {{$cl_date_start}} TO {{$cl_date_end}})</small>
+        @endif
+      </p>
+      <h5 class="alert-heading mb-2"></h5>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+      </button>
+    </div>
   </div>
-</div>
 
   @foreach ($leaves_total_credit_details as $leave)
   @if($leave['leave_type_id'] == 2 && $employment_type !=1)
-  @if($durationMonths < 11)
-  @php
-  $leave['balance_credit']=0;
-  $leave['total_leaves_credit']=0;
-
-  @endphp
-  @endif
-  @endif
-  <div class="col-sm-6 col-xl-3">
+  @if($durationMonths < 11) @php $leave['balance_credit']=0; $leave['total_leaves_credit']=0; @endphp @endif @endif <div
+    class="col-sm-6 col-xl-3">
     <div class="card">
       <div class="card-body">
         <div class="d-flex align-items-start justify-content-between">
           <div class="content-left">
             <span>{{$leave['leave_type']}}</span>
             <div class="d-flex align-items-center my-1">
-              <small>Available - </small><h4 class="mb-0 me-2">  @if($leave['leave_type_id'] <= 3 ) {{$leave['balance_credit']}} @endif</h4>
-              <input type="hidden"  id="typeBalance{{$leave['leave_type_id']}}" value={{$leave['balance_credit']}} />
-              <input type="hidden"  id="typeTotal{{$leave['leave_type_id']}}" value={{$leave['total_leaves_credit']}} />
-              <input type="hidden"  id="typeRequested{{$leave['leave_type_id']}}" value={{$leave['pending_leave']}} />
-              <input type="hidden"  id="typeAvailed{{$leave['leave_type_id']}}" value={{$leave['pending_leave']}} />
+              <small>Available - </small>
+              <h4 class="mb-0 me-2"> @if($leave['leave_type_id'] <= 3 ) {{$leave['balance_credit']}} @endif</h4>
+                  <input type="hidden" id="typeBalance{{$leave['leave_type_id']}}" value={{$leave['balance_credit']}} />
+                  <input type="hidden" id="typeTotal{{$leave['leave_type_id']}}"
+                    value={{$leave['total_leaves_credit']}} />
+                  <input type="hidden" id="typeRequested{{$leave['leave_type_id']}}"
+                    value={{$leave['pending_leave']}} />
+                  <input type="hidden" id="typeAvailed{{$leave['leave_type_id']}}" value={{$leave['pending_leave']}} />
             </div>
-            <span>Total -  @if($leave['leave_type_id'] <= 3 ) {{$leave['total_leaves_credit']}} @endif</span>
+            <span>Total - @if($leave['leave_type_id'] <= 3 ) {{$leave['total_leaves_credit']}} @endif</span>
           </div>
           <span class="badge bg-label-primary rounded p-2">
             <i class="ti ti-user ti-sm"></i>
@@ -808,8 +815,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
         </div>
       </div>
     </div>
-  </div>
-  @endforeach
+</div>
+@endforeach
 
 </div>
 
@@ -820,10 +827,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
       <thead>
         <tr>
           <th></th>
-          {{--  <th>User</th>  --}}
+          {{-- <th>User</th> --}}
           <th>Leave Type</th>
           <th>Leave Days</th>
           <th>Duration</th>
+          <th>Duty Assigned</th>
           <th>Requested_at</th>
           <th>Status</th>
           <th>Action By</th>

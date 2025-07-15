@@ -223,7 +223,8 @@ class LeaveRequestController extends Controller
     ->leftjoin("designations","designations.id","=","employees.designation")
     ->leftjoin("leaves","leaves.id","=","leave_requests.leave_type_id")
     ->leftjoin("employees as emp","emp.user_id","=","leave_requests.action_by")
-    ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(leave_requests.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(leave_requests.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('leave_requests.user_id',$id)
+    ->leftjoin("users","users.id","=","leave_requests.duty_assigned")
+    ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name','users.name as duty_assigned_name',DB::raw("DATE_FORMAT(leave_requests.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(leave_requests.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('leave_requests.user_id',$id)
     ->orderBy('leave_requests.status')
     ->orderBy('leave_requests.from', 'DESC')
     ->get();
@@ -244,7 +245,9 @@ class LeaveRequestController extends Controller
         'date_list' => 'required|',
         'duration' => 'required|',
         'leave_period_start' => 'required',
-        'leave_period_end' => 'required'
+        'leave_period_end' => 'required',
+         'duty_assigned' => 'required'
+
 
 
     ]);
@@ -366,7 +369,7 @@ class LeaveRequestController extends Controller
       'duration' => $request->input('duration'),
         'from' => $from,
         'to' => $to,
-        'date_list' => $date_list,'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date
+        'date_list' => $date_list,'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date,'duty_assigned'=>$request->input('duty_assigned')
     ]);
 
       if ($permission) {
