@@ -10,6 +10,7 @@ use App\Models\Leave;
 use App\Models\LeaveRequest;
 use App\Models\LeaveRequestDetails;
 use App\Models\LeaveAssign;
+use App\Models\LeaveDutyAssignment;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -219,12 +220,12 @@ class LeaveRequestController extends Controller
 
 
 
-    $list = LeaveRequest::with('leaveRequestDetails')->join("employees","employees.user_id","=","leave_requests.user_id")
+    $list = LeaveRequest::with('leaveRequestDetails')->with('dutyAssignments.user')
+    ->join("employees","employees.user_id","=","leave_requests.user_id")
     ->leftjoin("designations","designations.id","=","employees.designation")
     ->leftjoin("leaves","leaves.id","=","leave_requests.leave_type_id")
     ->leftjoin("employees as emp","emp.user_id","=","leave_requests.action_by")
-    ->leftjoin("users","users.id","=","leave_requests.duty_assigned")
-    ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name','users.name as duty_assigned_name',DB::raw("DATE_FORMAT(leave_requests.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(leave_requests.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('leave_requests.user_id',$id)
+    ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(leave_requests.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(leave_requests.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('leave_requests.user_id',$id)
     ->orderBy('leave_requests.status')
     ->orderBy('leave_requests.from', 'DESC')
     ->get();
@@ -246,7 +247,10 @@ class LeaveRequestController extends Controller
         'duration' => 'required|',
         'leave_period_start' => 'required',
         'leave_period_end' => 'required',
-         'duty_assigned' => 'required'
+         'duty_assigned' => 'required',
+         'duty_assigned' => 'required|array|min:1',
+    'duty_assigned.*.user_id' => 'required|integer|exists:users,id',
+    'duty_assigned.*.description' => 'required|string|max:255',
 
 
 
@@ -400,6 +404,18 @@ class LeaveRequestController extends Controller
         // Mail::to($reporting->email)->send(new LeaveRequestMail($mailData));
 
 
+
+        $dutyAssignments = $request->input('duty_assignments');
+
+        foreach ($dutyAssignments as $assignment) {
+            LeaveDutyAssignment::create([
+                'leave_request_id' => $permission->id,
+                'user_id' => $assignment['user_id'],
+                'description' => $assignment['description'],
+            ]);
+        }
+
+
         return response()->json( ["status"=>true, "data"=>$permission]);
       } else {
         return response()->json(["status"=>false,'message' => "Internal Server Error"], 500);
@@ -441,12 +457,13 @@ class LeaveRequestController extends Controller
 
       $id= Auth::user()->id;
 
-      $list = LeaveRequest::with('leaveRequestDetails')->join("employees","employees.user_id","=","leave_requests.user_id")
+      $list = LeaveRequest::with('leaveRequestDetails')->with('dutyAssignments.user')
+      ->join("employees","employees.user_id","=","leave_requests.user_id")
       ->leftjoin("designations","designations.id","=","employees.designation")
       ->leftjoin("leaves","leaves.id","=","leave_requests.leave_type_id")
       ->leftjoin("employees as emp","emp.user_id","=","leave_requests.action_by")
-      ->leftjoin("users","users.id","=","leave_requests.duty_assigned")
-      ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name','users.name as duty_assigned_name',DB::raw("DATE_FORMAT(leave_requests.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(leave_requests.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('employees.reporting_officer',$id)
+
+      ->select('leave_requests.*','leaves.leave_type','employees.name','employees.email','employees.profile_pic','designations.designation','emp.name as action_by_name',DB::raw("DATE_FORMAT(leave_requests.requested_at, '%d-%b-%Y %H:%i') as formatted_requested_at"),DB::raw("DATE_FORMAT(leave_requests.action_at, '%d-%b-%Y %H:%i') as formatted_action_at"))->where('employees.reporting_officer',$id)
       ->orderBy('leave_requests.status')
       ->orderBy('leave_requests.from', 'DESC')->get();
         //  $queries = DB::getQueryLog();

@@ -75,19 +75,35 @@
             <input type="hidden" value="" id="dateListCount" />
             <ul id="dateList"></ul>
           </div>
-          <div class="mb-3">
-            <label class="form-label" for="leaveType">Duty Assigned To *</label>
-            <select name="duty_assigned" id="duty_assigned" class="form-control" required>
-              @php
-              $users = DB::table('users')->where('active',1)->get();
-              @endphp
-              @foreach($users as $user)
-              @if($user->id != Auth::id())
-              <option value="{{ $user->id }}">{{ $user->name }}</option>
-              @endif
-              @endforeach
-            </select>
+
+
+          <div id="dutyAssignmentContainer">
+            <div id="floatingInputHelp" class="form-text  text-warning"> At least one duty assignment and its
+              description is required to submit the leave request.</div>
+            <label class="form-label">Duty Assignments *</label>
+
+            <div class="duty-assignment-entry mb-2 row">
+              <div class="col-md-5">
+                <select name="duty_assignments[0][user_id]" class="form-select" required>
+                  <option value="">Select User *</option>
+                  @foreach($users as $user)
+                  <option value="{{ $user->id }}">{{ $user->name }}</option>
+                  @endforeach
+                </select>
+              </div>
+
+              <div class="col-md-5">
+                <input type="text" name="duty_assignments[0][description]" class="form-control"
+                  placeholder="Description *" required>
+              </div>
+
+              <div class="col-md-2">
+                <button type="button" class="btn btn-danger remove-assignment">Remove</button>
+              </div>
+            </div>
           </div>
+
+          <button type="button" id="addDutyAssignment" class="btn btn-secondary mb-3">Add More Duty</button>
 
 
 

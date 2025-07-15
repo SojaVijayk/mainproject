@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\LeaveRequestDetails;
+use App\Models\LeaveDutyAssignment;
 
 class LeaveRequest extends Model
 {
@@ -15,5 +16,10 @@ class LeaveRequest extends Model
     {
         return $this->hasMany(LeaveRequestDetails::class,'request_id');
     }
+
+    public function dutyAssignments()
+{
+    return $this->hasMany(LeaveDutyAssignment::class);
+}
 
 }

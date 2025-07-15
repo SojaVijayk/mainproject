@@ -260,7 +260,8 @@
         { data: 'leave_type' },
         { data: 'leave_request_details' },
         { data: 'duration' },
-         { data: 'duty_assigned' },
+         {{--  { data: 'duty_assigned' },  --}}
+          { data: 'duty_assignments' },
         { data: 'requested_at' },
         { data: 'status' },
         { data: 'action_by' },
@@ -319,14 +320,41 @@
           }
         },
 
-         {
+         {{--  {
           // Name
           targets: 4,
           render: function (data, type, full, meta) {
             var $duration = full['duty_assigned_name'] == null ? 'Nil' : full['duty_assigned_name'];
             return '<span class="text-nowrap">' + $duration + '</span>';
           }
-        },
+        },  --}}
+
+         {
+  targets: 4, // Change according to your table column index
+  render: function (data, type, full, meta) {
+    let output = '';
+    const dutyAssignments = full.duty_assignments; // make sure this matches your JSON structure
+
+    if (Array.isArray(dutyAssignments) && dutyAssignments.length > 0) {
+      for (let i = 0; i < dutyAssignments.length; i++) {
+        const assignment = dutyAssignments[i];
+        const userName = assignment.user?.name || 'Unknown';
+        const description = assignment.description || 'No Description';
+
+        output += `
+          <span class="badge bg-label-dark m-1">${userName}</span>
+          <span class="badge bg-label-info m-1">${description}</span><br>
+        `;
+      }
+    } else {
+      output = '<span class="badge bg-label-warning">No Assignment</span>';
+    }
+
+    return output;
+  }
+},
+
+
 
         {
           // Name
@@ -526,7 +554,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       var  description =  $("#eventDescription").val();
       var  leaveType =  $("#leaveType").val();
       var request_type =   $("#submit_designation").data('type');
-      var duty_assigned =   $("#duty_assigned").val();
+
       var duration = 0;
       var  leave_period_start =  $("#date_start").val();
       var  leave_period_end =  $("#date_end").val();
@@ -541,6 +569,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
         date_leave_type.push({'date':item,'leave_day_type':date_leave_type_val})
 
      })
+
+
+     var duty_assigned = [];
+$('.duty-assignment-entry').each(function () {
+  var userId = $(this).find('select').val();
+  var desc = $(this).find('input').val();
+
+  if (userId && desc) {
+    duty_assigned.push({
+      user_id: userId,
+      description: desc
+    });
+  }
+});
+
+
      console.log(date_leave_type);
       if(request_type=='new'){
 
@@ -554,7 +598,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
               duration:duration,
               date_list:date_leave_type,
               description:description,
-               duty_assigned:duty_assigned,
+
+                duty_assignments: duty_assigned,
               leave_period_start:leave_period_start,
               leave_period_end:leave_period_end,
               "_token": "{{ csrf_token() }}",
@@ -610,14 +655,26 @@ document.addEventListener('DOMContentLoaded', function (e) {
               $("#fromDate").val('');
               $("#leaveType").val('');
               $("#availability").hide();
-              Swal.fire({
-                title: 'Oh Sorry!',
+              {{--  Swal.fire({
+                title: 'Oh Sorry ddd!',
                 text: `${status}`,
                 icon: 'error',
                 customClass: {
                   confirmButton: 'btn btn-success'
                 }
-              });
+              });  --}}
+
+               var errors = err.responseJSON.errors;
+                       $.each(errors, function(key, value) {
+                        Swal.fire({
+                    title: value[0],
+                    customClass: {
+                      confirmButton: 'btn btn-warning'
+                    },
+                    buttonsStyling: false
+                  });
+
+                    });
             }
           });
         }
@@ -632,7 +689,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
               end_time:end_time,
               location:location,
               description:description,
-              duty_assigned:duty_assigned,
+
+               duty_assignments: duty_assigned,
 
               "_token": "{{ csrf_token() }}",
 
@@ -757,6 +815,48 @@ document.addEventListener('DOMContentLoaded', function (e) {
     $('.dataTables_filter .form-control').removeClass('form-control-sm');
     $('.dataTables_length .form-select').removeClass('form-select-sm');
   }, 300);
+
+   let assignmentIndex = 1;
+
+  document.getElementById('addDutyAssignment').addEventListener('click', function () {
+    const container = document.getElementById('dutyAssignmentContainer');
+
+    const newEntry = document.createElement('div');
+    newEntry.className = 'duty-assignment-entry mb-2 row';
+    newEntry.innerHTML = `
+      <div class="col-md-5">
+        <select name="duty_assignments[${assignmentIndex}][user_id]" class="form-select" required>
+          <option value="">Select User</option>
+           @php
+              $users = DB::table('users')->where('active',1)->get();
+              @endphp
+          @foreach($users as $user)
+            @if($user->id != Auth::id())
+            <option value="{{ $user->id }}">{{ $user->name }}</option>
+            @endif
+          @endforeach
+        </select>
+      </div>
+      <div class="col-md-5">
+        <input type="text" name="duty_assignments[${assignmentIndex}][description]" class="form-control" placeholder="Description" required>
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-danger remove-assignment">Remove</button>
+      </div>
+    `;
+    container.appendChild(newEntry);
+    assignmentIndex++;
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('remove-assignment')) {
+      e.target.closest('.duty-assignment-entry').remove();
+    }
+  });
+
+
+
+
 });
 </script>
 

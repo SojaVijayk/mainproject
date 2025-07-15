@@ -76,7 +76,7 @@
         { data: 'designation' },
         { data: 'leave_type' },
         { data: 'leave_request_details' },
-         { data: 'duty_assigned' },
+         { data: 'duty_assignments' },
         { data: 'requested_at' },
         { data: 'status' },
         { data: 'action_by' },
@@ -166,14 +166,31 @@
 
 
 
-          {
-          // Name
-          targets: 4,
-          render: function (data, type, full, meta) {
-            var $duration = full['duty_assigned_name'] == null ? 'Nil' : full['duty_assigned_name'];
-            return '<span class="text-nowrap">' + $duration + '</span>';
-          }
-        },
+
+         {
+  targets: 4, // Change according to your table column index
+  render: function (data, type, full, meta) {
+    let output = '';
+    const dutyAssignments = full.duty_assignments; // make sure this matches your JSON structure
+
+    if (Array.isArray(dutyAssignments) && dutyAssignments.length > 0) {
+      for (let i = 0; i < dutyAssignments.length; i++) {
+        const assignment = dutyAssignments[i];
+        const userName = assignment.user?.name || 'Unknown';
+        const description = assignment.description || 'No Description';
+
+        output += `
+          <span class="badge bg-label-dark m-1">${userName}</span>
+          <span class="badge bg-label-info m-1">${description}</span><br>
+        `;
+      }
+    } else {
+      output = '<span class="badge bg-label-warning">No Assignment</span>';
+    }
+
+    return output;
+  }
+},
         {
           // User Role
           targets: 5,
