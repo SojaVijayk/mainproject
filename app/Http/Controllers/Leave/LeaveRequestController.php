@@ -793,6 +793,7 @@ class LeaveRequestController extends Controller
     public function destroy($id)
     {
         //
+        LeaveDutyAssignment::where('leave_request_id', $id)->delete();
         $movement=LeaveRequest::find($id);
           $movement->delete(); //returns true/false
     }
