@@ -825,7 +825,7 @@ $('.duty-assignment-entry').each(function () {
     newEntry.className = 'duty-assignment-entry mb-2 row';
     newEntry.innerHTML = `
       <div class="col-md-5">
-        <select name="duty_assignments[${assignmentIndex}][user_id]" class="form-select" required>
+        <select name="duty_assignments[${assignmentIndex}][user_id]" class="form-select" >
           <option value="">Select User</option>
            @php
               $users = DB::table('users')->where('active',1)->get();
@@ -838,7 +838,7 @@ $('.duty-assignment-entry').each(function () {
         </select>
       </div>
       <div class="col-md-5">
-        <input type="text" name="duty_assignments[${assignmentIndex}][description]" class="form-control" placeholder="Description" required>
+        <input type="text" name="duty_assignments[${assignmentIndex}][description]" class="form-control" placeholder="Description" >
       </div>
       <div class="col-md-2">
         <button type="button" class="btn btn-danger remove-assignment">Remove</button>

@@ -76,16 +76,16 @@
             <ul id="dateList"></ul>
           </div>
 
-
           <div id="dutyAssignmentContainer">
-            <div id="floatingInputHelp" class="form-text  text-warning"> At least one duty assignment and its
-              description is required to submit the leave request.</div>
-            <label class="form-label">Duty Assignments *</label>
+            <div id="floatingInputHelp" class="form-text  text-warning"> You may leave duty assignments blank if not
+              applicable. If filled, at least one duty assigned user & responsibility description are
+              required..</div>
+            <label class="form-label">Duty Assigned To </label>
 
             <div class="duty-assignment-entry mb-2 row">
               <div class="col-md-5">
-                <select name="duty_assignments[0][user_id]" class="form-select" required>
-                  <option value="">Select User *</option>
+                <select name="duty_assignments[0][user_id]" class="form-select">
+                  <option value="">Select User </option>
                   @foreach($users as $user)
                   <option value="{{ $user->id }}">{{ $user->name }}</option>
                   @endforeach
@@ -94,7 +94,7 @@
 
               <div class="col-md-5">
                 <input type="text" name="duty_assignments[0][description]" class="form-control"
-                  placeholder="Description *" required>
+                  placeholder="Responsibility ">
               </div>
 
               <div class="col-md-2">

@@ -319,53 +319,6 @@ Route::resource('documents', DocumentController::class);
 
 
 
-    Route::resource('asset', AssetController::class);
-    Route::get('assets/{asset}/checkout', [AssetController::class, 'checkout'])->name('assets.checkout');
-    Route::post('assets/{asset}/checkout', [AssetController::class, 'processCheckout'])->name('assets.process-checkout');
-    Route::post('assets/{asset}/checkin', [AssetController::class, 'checkin'])->name('assets.checkin');
-
-    // Asset Models
-    Route::resource('asset-models', AssetModelController::class);
-
-    // Categories
-    Route::resource('asset-categories', AssetCategoryController::class);
-
-    // Manufacturers
-    Route::resource('manufacturers', ManufacturerController::class);
-
-    // Suppliers
-    Route::resource('suppliers', SupplierController::class);
-
-    // Statuses
-    Route::resource('asset-statuses', AssetStatusController::class);
-
-    // Locations
-    Route::resource('locations', LocationController::class);
-
-    // Departments
-    Route::resource('departments', DepartmentController::class);
-
-    // Maintenance
-    Route::resource('maintenance', MaintenanceController::class);
-
-    // Tickets
-    Route::resource('tickets', TicketController::class);
-    Route::post('tickets/{ticket}/comment', [TicketController::class, 'addComment'])->name('tickets.comment');
-    Route::post('tickets/{ticket}/resolve', [TicketController::class, 'resolve'])->name('tickets.resolve');
-
-    // Consumables
-    Route::resource('consumables', ConsumableController::class);
-    Route::get('consumables/{consumable}/checkout', [ConsumableController::class, 'checkout'])->name('consumables.checkout');
-    Route::post('consumables/{consumable}/checkout', [ConsumableController::class, 'processCheckout'])->name('consumables.process-checkout');
-
-    // Reports
-    Route::prefix('reports')->group(function () {
-        Route::get('assets', [ReportController::class, 'assets'])->name('reports.assets');
-        Route::get('maintenance', [ReportController::class, 'maintenance'])->name('reports.maintenance');
-        Route::get('tickets', [ReportController::class, 'tickets'])->name('reports.tickets');
-        Route::get('audit', [ReportController::class, 'audit'])->name('reports.audit');
-        Route::get('depreciation', [ReportController::class, 'depreciation'])->name('reports.depreciation');
-    });
 
 //end
 

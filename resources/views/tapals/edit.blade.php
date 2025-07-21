@@ -197,7 +197,7 @@
         </div>
       </div>
 
-      <div class="row mt-3">
+      {{-- <div class="row mt-3">
         <div class="col-md-12">
           <div class="form-group">
             <label for="attachments">Add More Attachments</label>
@@ -205,7 +205,7 @@
             <small class="text-muted">You can upload multiple files (PDF, DOC, JPG, PNG)</small>
           </div>
         </div>
-      </div>
+      </div> --}}
 
       @if($tapal->attachments->count() > 0)
       <div class="row mt-3">

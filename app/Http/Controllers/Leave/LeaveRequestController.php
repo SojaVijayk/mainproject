@@ -247,9 +247,9 @@ class LeaveRequestController extends Controller
         'duration' => 'required|',
         'leave_period_start' => 'required',
         'leave_period_end' => 'required',
-         'duty_assignments' => 'required|array|min:1',
-        'duty_assignments.*.user_id' => 'required|integer|exists:users,id',
-        'duty_assignments.*.description' => 'required|string|max:255',
+         'duty_assignments' => 'nullable|array',
+        'duty_assignments.*.user_id' => 'nullable|integer|exists:users,id',
+        'duty_assignments.*.description' => 'nullable|string|max:255',
 
 
 
@@ -405,14 +405,17 @@ class LeaveRequestController extends Controller
 
 
         $dutyAssignments = $request->input('duty_assignments');
-
-        foreach ($dutyAssignments as $assignment) {
+       if( $request->has('duty_assignments') && count($dutyAssignments) > 0) {
+         foreach ($dutyAssignments as $assignment) {
             LeaveDutyAssignment::create([
                 'leave_request_id' => $permission->id,
                 'user_id' => $assignment['user_id'],
                 'description' => $assignment['description'],
             ]);
         }
+       }
+
+
 
 
         return response()->json( ["status"=>true, "data"=>$permission]);
