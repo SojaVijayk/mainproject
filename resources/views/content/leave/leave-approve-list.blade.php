@@ -79,7 +79,7 @@
          { data: 'duty_assignments' },
         { data: 'requested_at' },
         { data: 'status' },
-        { data: 'action_by' },
+        {{--  { data: 'action_by' },  --}}
         { data: '' }
       ],
       columnDefs: [
@@ -191,25 +191,24 @@
     return output;
   }
 },
+ {
+          // Name
+          targets: 5,
+          render: function (data, type, full, meta) {
+            var $requested_at = full['formatted_requested_at'];
+            return '<span class="text-nowrap">' + $requested_at + '</span>';
+          }
+        },
         {
           // User Role
-          targets: 5,
+          targets: 6,
           render: function (data, type, full, meta) {
             var $status = full['status'];
             $out = ($status==1 ? '<a><span class="badge bg-label-dark m-1">Partially Completed</span></a>' : ($status==0 ? '<a><span class="badge bg-label-warning m-1">Pending</span></a>' :  '<a><span class="badge bg-label-success m-1">Completed</span></a>') )
             return  $out;
           }
         },
-        {
-          // Name
-          targets: 6,
-          render: function (data, type, full, meta) {
-            var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
-            var $action_at = (full['formatted_action_at'] == null ? '' :full['formatted_action_at']);
-            {{--  var $remark = (full['remark'] == null ? '' :full['remark']);  --}}
-            return '<span class="text-nowrap">' + $name + ' <br>'+$action_at+'</span>';
-          }
-        },
+
 
         {
           // Actions
@@ -650,7 +649,7 @@ else if(status== 2){
           <th>Duty Assigned</th>
           <th>Requested_at</th>
           <th>Status</th>
-          <th>Action By</th>
+          {{-- <th>Action By</th> --}}
           <th>Actions</th>
         </tr>
       </thead>
