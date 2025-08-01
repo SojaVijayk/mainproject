@@ -102,15 +102,14 @@
 
     </div>
     <div class="row mb-5">
-       <div class="col-md-4">
+      <div class="col-md-4">
         <div class="card mb-3">
           <div class="row g-0">
             <div class="col-md-8">
               <div class="card-header header-elements">
                 <span class=" me-2">Movement Status Repot</span>
                 <div class="card-header-elements">
-                  <span
-                    class="badge  rounded-pill {{$report > 0 ? 'bg-danger' : 'bg-secondary'}}">{{$report}}</span>
+                  <span class="badge  rounded-pill {{$report > 0 ? 'bg-danger' : 'bg-secondary'}}">{{$report}}</span>
                 </div>
               </div>
               <div class="card-body">
@@ -144,9 +143,151 @@
             </div>
             <div class="col-md-8">
               <div class="card-body">
-                {{--  <h5 class="card-title">Card title</h5>  --}}
+                {{-- <h5 class="card-title">Card title</h5> --}}
                 <p class="card-text">
-                 No Data Available
+                  {{-- No Data Available --}}
+                <div
+                  style="font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);">
+                  <!-- Sparkles -->
+                  <div
+                    style="position: absolute; color: #ffd700; font-size: 20px; animation: sparkle 2s infinite; top: 10%; left: 10%;">
+                    ✨</div>
+                  <div
+                    style="position: absolute; color: #ffd700; font-size: 20px; animation: sparkle 2s infinite 0.5s; top: 15%; right: 15%;">
+                    ⭐</div>
+                  <div
+                    style="position: absolute; color: #ffd700; font-size: 20px; animation: sparkle 2s infinite 1s; bottom: 20%; left: 20%;">
+                    ✨</div>
+                  <div
+                    style="position: absolute; color: #ffd700; font-size: 20px; animation: sparkle 2s infinite 1.5s; bottom: 15%; right: 10%;">
+                    ⭐</div>
+
+                  <!-- Main Content -->
+                  <div
+                    style="text-align: center; padding: 30px; background: rgba(255, 255, 255, 0.95); border-radius: 15px; backdrop-filter: blur(10px); position: relative; max-width: 600px; animation: slideUp 1s ease-out;">
+                    <div
+                      style="background: linear-gradient(45deg, #ff6b6b, #feca57); color: white; padding: 12px 24px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-bottom: 30px; display: inline-block; animation: pulse 2s infinite; box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);">
+                      August 1, 2025
+                    </div>
+
+                    <h1
+                      style="font-size: 3.5rem; font-weight: bold; background: linear-gradient(45deg, #667eea, #764ba2, #ff6b6b); background-size: 300% 300%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradientShift 3s ease-in-out infinite; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);">
+                      CMD 47th Foundation Day
+                    </h1>
+
+                    <p style="font-size: 1.3rem; color: #666; margin-bottom: 30px; animation: fadeInUp 2s ease-out;">
+                      Celebrating <strong>47 Years</strong> of Excellence
+                    </p>
+
+                    {{-- <div
+                      style="background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 15px; margin-top: 30px; font-size: 1.2rem; font-weight: 500; animation: glow 2s ease-in-out infinite alternate; box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);">
+                      Join us in commemorating four decades of innovation, growth, and success!
+                    </div> --}}
+                  </div>
+
+                  <!-- Confetti -->
+                  <div
+                    style="position: absolute; width: 10px; height: 10px; background: #ff6b6b; animation: confettiFall 3s infinite linear; top: -10px; left: 10%;">
+                  </div>
+                  <div
+                    style="position: absolute; width: 10px; height: 10px; background: #feca57; animation: confettiFall 3s infinite linear 0.5s; top: -10px; left: 30%;">
+                  </div>
+                  <div
+                    style="position: absolute; width: 10px; height: 10px; background: #48dbfb; animation: confettiFall 3s infinite linear 1s; top: -10px; left: 50%;">
+                  </div>
+                  <div
+                    style="position: absolute; width: 10px; height: 10px; background: #ff9ff3; animation: confettiFall 3s infinite linear 1.5s; top: -10px; left: 70%;">
+                  </div>
+                  <div
+                    style="position: absolute; width: 10px; height: 10px; background: #54a0ff; animation: confettiFall 3s infinite linear 2s; top: -10px; left: 90%;">
+                  </div>
+
+                  <style>
+                    @keyframes slideUp {
+                      from {
+                        transform: translateY(50px);
+                        opacity: 0;
+                      }
+
+                      to {
+                        transform: translateY(0);
+                        opacity: 1;
+                      }
+                    }
+
+                    @keyframes pulse {
+
+                      0%,
+                      100% {
+                        transform: scale(1);
+                      }
+
+                      50% {
+                        transform: scale(1.05);
+                      }
+                    }
+
+                    @keyframes gradientShift {
+
+                      0%,
+                      100% {
+                        background-position: 0% 50%;
+                      }
+
+                      50% {
+                        background-position: 100% 50%;
+                      }
+                    }
+
+                    @keyframes fadeInUp {
+                      from {
+                        transform: translateY(20px);
+                        opacity: 0;
+                      }
+
+                      to {
+                        transform: translateY(0);
+                        opacity: 1;
+                      }
+                    }
+
+                    @keyframes sparkle {
+
+                      0%,
+                      100% {
+                        transform: scale(1) rotate(0deg);
+                        opacity: 1;
+                      }
+
+                      50% {
+                        transform: scale(1.3) rotate(180deg);
+                        opacity: 0.7;
+                      }
+                    }
+
+                    @keyframes confettiFall {
+                      0% {
+                        transform: translateY(-100px) rotate(0deg);
+                        opacity: 1;
+                      }
+
+                      100% {
+                        transform: translateY(400px) rotate(360deg);
+                        opacity: 0;
+                      }
+                    }
+
+                    @keyframes glow {
+                      from {
+                        box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);
+                      }
+
+                      to {
+                        box-shadow: 0 15px 30px rgba(240, 147, 251, 0.6);
+                      }
+                    }
+                  </style>
+                </div>
                 </p>
                 <p class="card-text"><small class="text-muted time">Last updated 1 mins ago</small></p>
               </div>
