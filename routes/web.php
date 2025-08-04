@@ -6,18 +6,9 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\AssetController;
-use App\Http\Controllers\AssetModelController;
-use App\Http\Controllers\AssetCategoryController;
-use App\Http\Controllers\ManufacturerController;
-use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\AssetStatusController;
-use App\Http\Controllers\LocationController;
-use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\MaintenanceController;
-use App\Http\Controllers\TicketController;
-use App\Http\Controllers\ConsumableController;
-use App\Http\Controllers\ReportController;
+
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -316,7 +307,6 @@ Route::resource('documents', DocumentController::class);
     ->name('documents.statistics');
     Route::get('document/user/statistics', [DocumentController::class, 'userStatistics'])
     ->name('documents.user.statistics');
-
 
 
 
