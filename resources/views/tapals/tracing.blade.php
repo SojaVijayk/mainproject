@@ -30,6 +30,17 @@
 @section('page-script')
 <script>
   $(document).ready(function() {
+    $('.table').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        language: {
+            paginate: {
+                previous: 'Prev',
+                next: 'Next'
+            }
+        }
+    });
         // Initialize date pickers
         $('.datepicker').datepicker({
             format: 'yyyy-mm-dd',
@@ -256,7 +267,7 @@
     </div>
 
     <div class="mt-3">
-      {{ $tapals->appends(request()->query())->links() }}
+      {{-- {{ $tapals->appends(request()->query())->links() }} --}}
     </div>
   </div>
 </div>

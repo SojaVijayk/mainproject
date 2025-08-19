@@ -162,7 +162,7 @@ $isCompleted = $tapal->movements()->where('status', 'Completed')->exists();
       </button>
       @endif
 
-      @if($hasAssignment)
+      @if($hasAssignment || $tapal->created_by === Auth::id())
       <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#shareModal">
         <i class="fas fa-share"></i> Share
       </button>
