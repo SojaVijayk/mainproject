@@ -153,6 +153,14 @@ return [
     | this array to grant expanded functionality to your applications.
     |
     */
+  'address' => env('APP_ADDRESS', '123 Business Street'),
+  'city' => env('APP_CITY', 'Business City'),
+  'state' => env('APP_STATE', 'Business State'),
+  'country' => env('APP_COUNTRY', 'Business Country'),
+  'postal_code' => env('APP_POSTAL_CODE', '123456'),
+  'gstin' => env('APP_GSTIN', 'GSTIN123456789'),
+  'tax_rate' => env('APP_TAX_RATE', 18),
+
 
   'providers' => [
 

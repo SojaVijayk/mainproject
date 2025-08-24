@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Http\Requests\PMS;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class ProposalUpdateRequest extends FormRequest
+{
+    public function authorize()
+    {
+        return true;
+    }
+
+    public function rules()
+    {
+        return [
+            'budget' => 'required|numeric|min:0',
+            'tenure_years' => 'nullable|integer|min:0',
+            'tenure_months' => 'nullable|integer|min:0|max:11',
+            'tenure_days' => 'nullable|integer|min:0|max:30',
+            'expected_start_date' => 'required|date|after_or_equal:today',
+            'expected_end_date' => 'required|date|after:expected_start_date',
+            'estimated_expense' => 'required|numeric|min:0',
+            'revenue' => 'required|numeric|min:0',
+            'technical_details' => 'nullable|string',
+            'methodology' => 'nullable|string',
+            'documents' => 'nullable|array',
+            'documents.*' => 'file|max:10240', // 10MB max
+        ];
+    }
+}

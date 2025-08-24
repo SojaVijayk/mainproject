@@ -49,8 +49,24 @@ class User extends Authenticatable
     ];
     public function employee()
   {
-    return $this->hasOne('App\Employee');
+    return $this->hasOne(\App\Models\Employee::class);
   }
+
+  public function timesheets()
+{
+    return $this->hasMany(\App\Models\PMS\Timesheet::class);
+}
+
+  public function projects()
+{
+    return $this->hasMany(\App\Models\PMS\Project::class,'project_investigator_id');
+}
+  public function requirements()
+{
+    return $this->hasMany(\App\Models\PMS\Requirement::class,'created_by');
+}
+
+
   public function hostedBookings()
 {
     return $this->hasMany(Booking::class, 'hosted_by');

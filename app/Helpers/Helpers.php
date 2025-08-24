@@ -224,5 +224,19 @@ class Helpers
       }
 
 
+    function formatBytes($bytes, $decimals = 2)
+    {
+        if ($bytes == 0) {
+            return '0 Bytes';
+        }
+
+        $k = 1024;
+        $sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        $i = floor(log($bytes, $k));
+
+        return round($bytes / pow($k, $i), $decimals) . ' ' . $sizes[$i];
+    }
+
+
 
 }

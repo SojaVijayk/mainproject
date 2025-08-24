@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\PMS\Requirement;
 
 class ProjectSubCategory extends Model
 {
@@ -12,6 +13,10 @@ class ProjectSubCategory extends Model
 
     public function category()
     {
-        return $this->belongsTo(ProjectCategory::class);
+        return $this->belongsTo(ProjectCategory::class,'category_id');
+    }
+    public function requirements()
+    {
+        return $this->hasMany(Requirement::class,'project_subcategory_id');
     }
 }

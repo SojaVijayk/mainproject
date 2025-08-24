@@ -110,9 +110,9 @@ class EmployeeController extends Controller
     $employee = User::where($where)->with("roles")->join("employees","employees.user_id","=","users.id")
     ->join("usertype_role","usertype_role.id","=","users.user_role")
     ->leftjoin("designations","designations.id","=","employees.designation")->first();
-    $employee_projects = Employee::with('lead_projects')->withCount('lead_projects')->with('member_projects')->withCount('member_projects')->where('user_id',$id)->first();
+    // $employee_projects = Employee::with('lead_projects')->withCount('lead_projects')->with('member_projects')->withCount('member_projects')->where('user_id',$id)->first();
 
-    return view('content.employee.user-employee-view-account',compact('employee','employee_projects'));
+    return view('content.employee.user-employee-view-account',compact('employee'));
   }
   public function profileView(Request $request){
     $id= Auth::user()->id;
@@ -123,10 +123,10 @@ class EmployeeController extends Controller
     ->leftjoin("designations","designations.id","=","employees.designation")
     ->select('users.*','employees.status','employees.id as employee_id','employees.empId','employees.profile_pic','employees.email','employees.mobile','employees.name','designations.designation','usertype_role.usertype_role')
     ->first();
-    $employee_projects = Employee::with('lead_projects')->withCount('lead_projects')->with('member_projects')->withCount('member_projects')->where('user_id',$id)->first();
+    // $employee_projects = Employee::with('lead_projects')->withCount('lead_projects')->with('member_projects')->withCount('member_projects')->where('user_id',$id)->first();
    $employeeRoles= User::where($where)->with("roles")->first();
    $employeeAccounts = BankAccount::where('user_id',$id)->get();
-    return view('content.employee.user-employee-view-account',compact('employee','employee_projects','employeeRoles','employeeAccounts'),['pageConfigs'=> $pageConfigs]);
+    return view('content.employee.user-employee-view-account',compact('employee','employeeRoles','employeeAccounts'),['pageConfigs'=> $pageConfigs]);
   }
 
 

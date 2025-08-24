@@ -9,7 +9,9 @@
 
 @endsection
 
-
+@php
+$user = Auth::user();
+@endphp
 @section('content')
 
 {{-- <lottie-player style="align-items: center; width: 800px; height: 400px;" src='{{config(' variables.login3')}}'
@@ -125,9 +127,117 @@
           </div>
         </div>
       </div>
+
+
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
+                <span class=" me-2">Project Management BETA</span>
+                <div class="card-header-elements">
+                  {{-- <span class="badge "></span> --}}
+                </div>
+              </div>
+              <div class="card-body">
+                <a href="/pms/dashboard" class="btn btn-primary">Start</a>
+                <p class="card-text pt-4"><small class="text-muted">Last updated 1 mins ago</small></p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" "
+                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+          </div>
+        </div>
+      </div>
+      @if($user->hasRole('director'))
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
+                <span class=" me-2">Project Dashboard BETA</span>
+                <div class="card-header-elements">
+                  {{-- <span class="badge "></span> --}}
+                </div>
+              </div>
+              <div class="card-body">
+                <a href="/pms/reports/project-status-detailed" class="btn btn-primary">View</a>
+                <p class="card-text pt-4"><small class="text-muted">Last updated 1 mins ago</small></p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" "
+                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+          </div>
+        </div>
+      </div>
+      @endif
+      @if($user->hasRole('finance'))
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
+                <span class=" me-2">Invoice Management </span>
+                <div class="card-header-elements">
+                  {{-- <span class="badge "></span> --}}
+                </div>
+              </div>
+              <div class="card-body">
+                <a href="/pms/finance/dashboard" class="btn btn-primary">View</a>
+                <p class="card-text pt-4"><small class="text-muted">Last updated 1 mins ago</small></p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" "
+                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+          </div>
+        </div>
+      </div>
+      @endif
+
+
     </div>
     <!--/ Notification -->
     @endcan
+    @cannot('leave-request-approve')
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
+                <span class=" me-2">Project Management BETA</span>
+                <div class="card-header-elements">
+                  {{-- <span class="badge "></span> --}}
+                </div>
+              </div>
+              <div class="card-body">
+                <a href="/pms/dashboard" class="btn btn-primary">Start</a>
+                <p class="card-text pt-4"><small class="text-muted">Last updated 1 mins ago</small></p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" "
+                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    @endcannot
 
 
     <!-- NEWS -->

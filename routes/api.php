@@ -29,5 +29,21 @@ Route::group([
       ], function () {
           Route::get('logout', [AuthController::class, 'logout']);
           Route::get('user', [AuthController::class, 'user']);
+
+          Route::get('/project-categories/{category}/subcategories', function (App\Models\ProjectCategory $category) {
+        return $category->subcategories;
+    });
+
+    // Get contacts for a client
+    Route::get('/clients/{client}/contacts', function (App\Models\Client $client) {
+        return $client->contacts;
+    });
+
+    // Get team members for a project
+    Route::get('/projects/{project}/team-members', function (App\Models\PMS\Project $project) {
+        return $project->teamMembers()->with('user')->get();
+    });
+
+
       });
   });

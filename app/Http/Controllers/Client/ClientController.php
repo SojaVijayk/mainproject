@@ -63,6 +63,7 @@ class ClientController extends Controller
         //
         $this->validate($request, [
           'client_name' => 'required|unique:clients,client_name',
+           'client_code' => 'required|unique:clients,code',
           'email' => 'required|unique:clients,email',
           'address' => 'required',
           'phone' => 'required|unique:clients,phone',
@@ -70,6 +71,7 @@ class ClientController extends Controller
       ]);
 
       $client = Client::create(['client_name' => $request->input('client_name'),
+       'code' => $request->input('client_code'),
       'email' => $request->input('email'),
       'address' => $request->input('address'),
       'phone' => $request->input('phone'),
@@ -119,6 +121,7 @@ class ClientController extends Controller
 
       $client = Client::find($id);
       $client->client_name = $request->input('client_name');
+       $client->code = $request->input('client_code');
       $client->address = $request->input('address');
       $client->email = $request->input('email');
       $client->phone = $request->input('phone');
@@ -207,6 +210,19 @@ class ClientController extends Controller
 
       }
     }
+
+    public function checkCode(Request $request)
+{
+    $exists = Client::where('code', $request->code)
+        ->when($request->id, function ($q) use ($request) {
+            $q->where('id', '!=', $request->id); // exclude same client when editing
+        })
+        ->exists();
+
+    return response()->json(['exists' => $exists]);
+}
+
+
 
     /**
      * Remove the specified resource from storage.

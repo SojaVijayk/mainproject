@@ -7,6 +7,20 @@ use App\Http\Controllers\VenueController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\DocumentController;
 
+use App\Http\Controllers\PMS\RequirementController;
+use App\Http\Controllers\PMS\ProposalController;
+use App\Http\Controllers\PMS\ProjectController;
+use App\Http\Controllers\PMS\MilestoneController;
+use App\Http\Controllers\PMS\TaskController;
+use App\Http\Controllers\PMS\InvoiceController;
+use App\Http\Controllers\PMS\TimesheetController;
+use App\Http\Controllers\PMS\ReportController;
+use App\Http\Controllers\PMS\ProjectDocumentController;
+use App\Http\Controllers\PMS\DashboardController;
+use App\Http\Controllers\PMS\FinanceDashboardController;
+
+
+
 
 
 
@@ -75,7 +89,7 @@ Route::get('/client/contactPersons', $controller_path . '\Client\ClientControlle
 Route::post('/client/contactPerson/store/{client}', $controller_path . '\Client\ClientController@contactPersonStore')->name('client-contact-store');
 Route::get('/client/contactPerson/edit/{id}', $controller_path . '\Client\ClientController@editContactPerson')->name('client-contact-edit');
 Route::post('/client/contactPerson/update/{id}', $controller_path . '\Client\ClientController@updateContactPerson')->name('client-contact-update');
-
+Route::post('/client/check-code', $controller_path . '\Client\ClientController@checkCode' );
 //Projects
 Route::get('/projects', $controller_path . '\Client\ProjectController@index')->name('client-projects');
 Route::get('/project/list', $controller_path . '\Client\ProjectController@getAllProjects')->name('client-project-list');
@@ -215,7 +229,7 @@ Route::get('/user/project/list', $controller_path . '\Client\ProjectController@u
 //Project employee Mngmnt
 Route::get('/project/employee/{project_id}' , $controller_path . '\Project\ProjectEmployeeController@index')->name('project-employee');
 Route::get('/project/employees/detail/list' , $controller_path . '\Project\ProjectEmployeeController@employeeList')->name('project-employee-list');
-Route::get('/project/employee/view/account/{id}' , $controller_path . '\ProjectProjectEmployeeController@employeeView')->name('project-employee-view');
+// Route::get('/project/employee/view/account/{id}' , $controller_path . '\ProjectProjectEmployeeController@employeeView')->name('project-employee-view');
 Route::post('/project/employee/store' , $controller_path . '\Project\ProjectEmployeeController@store')->name('project-employee-store');
 
 
@@ -307,6 +321,273 @@ Route::resource('documents', DocumentController::class);
     ->name('documents.statistics');
     Route::get('document/user/statistics', [DocumentController::class, 'userStatistics'])
     ->name('documents.user.statistics');
+
+
+
+
+//     Route::prefix('pms')->name('pms.')->middleware(['auth'])->group(function () {
+//     // Requirements
+//     Route::resource('requirements', RequirementController::class);
+//     Route::post('requirements/{requirement}/submit', [RequirementController::class, 'submitForApproval'])
+//         ->name('requirements.submit');
+//     Route::post('requirements/{requirement}/approve', [RequirementController::class, 'approve'])
+//         ->name('requirements.approve');
+//     Route::post('requirements/{requirement}/reject', [RequirementController::class, 'reject'])
+//         ->name('requirements.reject');
+//     Route::post('requirements/{requirement}/allocate', [RequirementController::class, 'allocate'])
+//         ->name('requirements.allocate');
+
+//     // Proposals
+//     Route::resource('proposals', ProposalController::class)->except(['create']);
+//     Route::get('requirements/{requirement}/proposals/create', [ProposalController::class, 'create'])
+//         ->name('proposals.create');
+//     Route::post('proposals/{proposal}/submit', [ProposalController::class, 'submitForApproval'])
+//         ->name('proposals.submit');
+//     Route::post('proposals/{proposal}/approve', [ProposalController::class, 'approve'])
+//         ->name('proposals.approve');
+//     Route::post('proposals/{proposal}/reject', [ProposalController::class, 'reject'])
+//         ->name('proposals.reject');
+//     Route::post('proposals/{proposal}/return', [ProposalController::class, 'returnForClarification'])
+//         ->name('proposals.return');
+//     Route::post('proposals/{proposal}/send', [ProposalController::class, 'sendToClient'])
+//         ->name('proposals.send');
+//     Route::post('proposals/{proposal}/client-status', [ProposalController::class, 'updateClientStatus'])
+//         ->name('proposals.client-status');
+
+//     // Projects
+//     Route::resource('projects', ProjectController::class)->except(['create']);
+//     Route::get('proposals/{proposal}/projects/create', [ProjectController::class, 'create'])
+//         ->name('projects.create');
+//     Route::post('projects/{project}/start', [ProjectController::class, 'start'])
+//         ->name('projects.start');
+//     Route::post('projects/{project}/complete', [ProjectController::class, 'complete'])
+//         ->name('projects.complete');
+//     Route::post('projects/{project}/documents', [ProjectController::class, 'addDocument'])
+//         ->name('projects.add-document');
+//         Route::get('projects/{project}/gantt', [ProjectController::class, 'gantt'])->name('projects.gantt');
+
+//     // Project Milestones
+//     Route::prefix('projects/{project}/milestones')->name('milestones.')->group(function () {
+//         Route::get('/', [MilestoneController::class, 'index'])->name('index');
+//         Route::get('/create', [MilestoneController::class, 'create'])->name('create');
+//         Route::post('/', [MilestoneController::class, 'store'])->name('store');
+//         Route::get('/{milestone}', [MilestoneController::class, 'show'])->name('show');
+//         Route::get('/{milestone}/edit', [MilestoneController::class, 'edit'])->name('edit');
+//         Route::put('/{milestone}', [MilestoneController::class, 'update'])->name('update');
+//         Route::post('/{milestone}/start', [MilestoneController::class, 'start'])->name('start');
+//         Route::post('/{milestone}/complete', [MilestoneController::class, 'complete'])->name('complete');
+//         Route::post('/{milestone}/request-invoice', [MilestoneController::class, 'requestInvoice'])
+//             ->name('request-invoice');
+//     });
+
+//     // Project Tasks
+//     Route::prefix('projects/{project}/milestones/{milestone}/tasks')->name('tasks.')->group(function () {
+//         Route::get('/', [TaskController::class, 'index'])->name('index');
+//         Route::get('/create', [TaskController::class, 'create'])->name('create');
+//         Route::post('/', [TaskController::class, 'store'])->name('store');
+//         Route::get('/{task}', [TaskController::class, 'show'])->name('show');
+//         Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
+//         Route::put('/{task}', [TaskController::class, 'update'])->name('update');
+//         Route::post('/{task}/start', [TaskController::class, 'start'])->name('start');
+//         Route::post('/{task}/complete', [TaskController::class, 'complete'])->name('complete');
+//     });
+
+//     // Project Invoices
+//     Route::prefix('projects/{project}/invoices')->name('invoices.')->group(function () {
+//         Route::get('/', [InvoiceController::class, 'index'])->name('index');
+//         Route::get('/create', [InvoiceController::class, 'create'])->name('create');
+//         Route::post('/', [InvoiceController::class, 'store'])->name('store');
+//         Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
+//         Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->name('edit');
+//         Route::put('/{invoice}', [InvoiceController::class, 'update'])->name('update');
+//         Route::post('/{invoice}/generate', [InvoiceController::class, 'generate'])->name('generate');
+//         Route::post('/{invoice}/pay', [InvoiceController::class, 'markAsPaid'])->name('pay');
+//         Route::post('/{invoice}/payments', [InvoiceController::class, 'addPayment'])->name('add-payment');
+//     });
+
+//     // Timesheets
+//     Route::prefix('timesheets')->name('timesheets.')->group(function () {
+//         Route::get('/', [TimesheetController::class, 'index'])->name('index');
+//         Route::get('/calendar', [TimesheetController::class, 'calendar'])->name('calendar');
+//         Route::get('/report', [TimesheetController::class, 'report'])->name('report');
+//         Route::get('/export', [TimesheetController::class, 'export'])->name('export');
+//         Route::post('/', [TimesheetController::class, 'store'])->name('store');
+//         Route::put('/{timesheet}', [TimesheetController::class, 'update'])->name('update');
+//         Route::delete('/{timesheet}', [TimesheetController::class, 'destroy'])->name('destroy');
+//     });
+
+//     Route::prefix('reports')->name('reports.')->group(function () {
+//     Route::get('project-status', [ReportController::class, 'projectStatus'])->name('project-status');
+//     Route::get('financial', [ReportController::class, 'financial'])->name('financial');
+//     Route::get('timesheet', [ReportController::class, 'timesheet'])->name('timesheet');
+//     Route::get('resource-utilization', [ReportController::class, 'resourceUtilization'])->name('resource-utilization');
+//     Route::get('export/{type}', [ReportController::class, 'export'])->name('export');
+//     });
+
+
+// });
+
+ Route::get('project-categories/{category}/subcategories', [RequirementController::class, 'getSubcategories'])->name('categories.subcategories');
+    Route::get('clients/{client}/contacts', [RequirementController::class, 'getClientContacts'])->name('clients.contacts');
+
+Route::prefix('pms')->name('pms.')->middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Requirements
+    Route::resource('requirements', RequirementController::class);
+    Route::get('requirements-proposals', [RequirementController::class, 'proposalsList'])->name('requirements.proposals');
+    Route::post('requirements/{requirement}/submit', [RequirementController::class, 'submitForApproval'])->name('requirements.submit');
+    Route::post('requirements/{requirement}/approve', [RequirementController::class, 'approve'])->name('requirements.approve');
+    Route::post('requirements/{requirement}/sent-to-pac', [RequirementController::class, 'sentToPac'])->name('requirements.sent-to-pac');
+    Route::post('requirements/{requirement}/reject', [RequirementController::class, 'reject'])->name('requirements.reject');
+    Route::post('requirements/{requirement}/allocate', [RequirementController::class, 'allocate'])->name('requirements.allocate');
+
+    // Dynamic data loading for requirements
+
+    // Proposals
+    Route::resource('proposals', ProposalController::class)->except(['create','store']);
+    Route::get('requirements/{requirement}/proposals/create', [ProposalController::class, 'create'])->name('proposals.create');
+    Route::post('requirements/{requirement}/proposals', [ProposalController::class, 'store'])->name('proposals.store');
+    Route::post('proposals/{proposal}/submit', [ProposalController::class, 'submitForApproval'])->name('proposals.submit');
+    // Route::post('proposals/{proposal}/sent-to-pac', [ProposalController::class, 'sentToPac'])->name('proposals.sent-to-pac');
+    Route::post('proposals/{proposal}/approve', [ProposalController::class, 'approve'])->name('proposals.approve');
+    Route::post('proposals/{proposal}/reject', [ProposalController::class, 'reject'])->name('proposals.reject');
+    Route::post('proposals/{proposal}/return', [ProposalController::class, 'returnForClarification'])->name('proposals.return');
+    Route::post('proposals/{proposal}/send', [ProposalController::class, 'sendToClient'])->name('proposals.send');
+    Route::post('proposals/{proposal}/client-status', [ProposalController::class, 'updateClientStatus'])->name('proposals.client-status');
+
+    // Projects
+    Route::resource('projects', ProjectController::class)->except(['create','store']);
+    Route::get('proposals/{proposal}/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+      Route::post('proposals/{proposal}/projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::post('projects/{project}/start', [ProjectController::class, 'start'])->name('projects.start');
+    Route::post('projects/{project}/complete', [ProjectController::class, 'complete'])->name('projects.complete');
+       Route::post('projects/{project}/archive', [ProjectController::class, 'archive'])->name('projects.archive');
+    Route::post('projects/{project}/documents', [ProjectController::class, 'addDocument'])->name('projects.add-document');
+    Route::get('projects/{project}/gantt', [ProjectController::class, 'gantt'])->name('projects.gantt');
+
+    // Dynamic data loading for projects
+    Route::get('projects/{project}/team-members', [ProjectController::class, 'getTeamMembers'])->name('projects.team-members');
+
+
+    Route::prefix('projects/{project}/documents')->name('projects.documents.')->group(function () {
+    Route::get('/', [ProjectDocumentController::class, 'index'])->name('index');
+    Route::get('/create', [ProjectDocumentController::class, 'create'])->name('create');
+    Route::post('/', [ProjectDocumentController::class, 'store'])->name('store');
+    Route::get('/{document}', [ProjectDocumentController::class, 'show'])->name('show');
+    Route::get('/{document}/download', [ProjectDocumentController::class, 'download'])->name('download');
+    Route::delete('/{document}', [ProjectDocumentController::class, 'destroy'])->name('destroy');
+});
+
+
+    // Project Milestones
+    Route::prefix('projects/{project}/milestones')->name('milestones.')->group(function () {
+        Route::get('/', [MilestoneController::class, 'index'])->name('index');
+        Route::get('/create', [MilestoneController::class, 'create'])->name('create');
+        Route::post('/', [MilestoneController::class, 'store'])->name('store');
+        Route::get('/{milestone}', [MilestoneController::class, 'show'])->name('show');
+        Route::get('/{milestone}/edit', [MilestoneController::class, 'edit'])->name('edit');
+        Route::put('/{milestone}', [MilestoneController::class, 'update'])->name('update');
+        Route::post('/{milestone}/start', [MilestoneController::class, 'start'])->name('start');
+        Route::post('/{milestone}/complete', [MilestoneController::class, 'complete'])->name('complete');
+        Route::post('/{milestone}/request-invoice', [MilestoneController::class, 'requestInvoice'])->name('request-invoice');
+    });
+
+    // Project Tasks
+    Route::prefix('projects/{project}/milestones/{milestone}/tasks')->name('tasks.')->group(function () {
+        Route::get('/', [TaskController::class, 'index'])->name('index');
+        Route::get('/create', [TaskController::class, 'create'])->name('create');
+        Route::post('/', [TaskController::class, 'store'])->name('store');
+        Route::get('/{task}', [TaskController::class, 'show'])->name('show');
+        Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
+        Route::put('/{task}', [TaskController::class, 'update'])->name('update');
+        Route::post('/{task}/start', [TaskController::class, 'start'])->name('start');
+        Route::post('/{task}/complete', [TaskController::class, 'complete'])->name('complete');
+    });
+
+        // Route::get('/projects/{project}/kanban', [TaskController::class, 'kanban'])->name('tasks.kanban');
+        // Route::post('/tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('pms.tasks.update-status');
+        Route::prefix('projects/{project}/kanban')->name('projects.kanban.')->group(function () {
+    Route::get('/', [TaskController::class, 'kanban'])->name('index'); // Show Kanban board
+    Route::get('/data', [TaskController::class, 'kanbanData'])->name('data'); // Filters
+    Route::post('/tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.update-status'); // Drag-drop
+});
+
+Route::prefix('projects/{project}/tasks/{task}/comments')
+    ->name('tasks.comments.')
+    ->group(function () {
+        Route::get('/', [TaskController::class, 'comments'])->name('index');
+        Route::post('/', [TaskController::class, 'addComment'])->name('store');
+        Route::put('/{comment}', [TaskController::class, 'updateComment'])->name('update');
+        Route::delete('/{comment}', [TaskController::class, 'deleteComment'])->name('destroy');
+    });
+
+    // Project Invoices
+    Route::prefix('projects/{project}/invoices')->name('invoices.')->group(function () {
+        Route::get('/', [InvoiceController::class, 'index'])->name('index');
+        Route::get('/create', [InvoiceController::class, 'create'])->name('create');
+        Route::post('/', [InvoiceController::class, 'store'])->name('store');
+        Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
+        Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->name('edit');
+        Route::put('/{invoice}', [InvoiceController::class, 'update'])->name('update');
+        Route::post('/{invoice}/generate', [InvoiceController::class, 'generate'])->name('generate');
+        Route::post('/{invoice}/pay', [InvoiceController::class, 'markAsPaid'])->name('pay');
+        Route::post('/{invoice}/payments', [InvoiceController::class, 'addPayment'])->name('add-payment');
+    });
+
+
+
+      // Finance Routes
+    Route::prefix('finance')->name('finance.')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [FinanceDashboardController::class, 'index'])->name('dashboard');
+
+        // Invoices
+        Route::get('/invoices', [FinanceDashboardController::class, 'invoiceIndex'])->name('invoices.index');
+        Route::get('/invoices/{invoice}', [FinanceDashboardController::class, 'showInvoice'])->name('invoices.show');
+
+        // Draft Processing
+        Route::get('/invoices/{invoice}/process', [FinanceDashboardController::class, 'processDraft'])->name('invoices.process');
+        Route::put('/invoices/{invoice}/process', [FinanceDashboardController::class, 'updateDraft'])->name('invoices.update');
+        Route::post('/invoices/{invoice}/generate', [FinanceDashboardController::class, 'generateInvoice'])->name('invoices.generate');
+
+        // Payments
+        Route::post('/invoices/{invoice}/pay', [FinanceDashboardController::class, 'markAsPaid'])
+            ->name('invoices.pay');
+        Route::get('/invoices/{invoice}/payment', [FinanceDashboardController::class, 'recordPayment'])->name('invoices.payment');
+        Route::post('/invoices/{invoice}/payment', [FinanceDashboardController::class, 'storePayment'])->name('invoices.store-payment');
+    });
+
+
+
+    // Timesheets
+    Route::prefix('timesheets')->name('timesheets.')->group(function () {
+        Route::get('/', [TimesheetController::class, 'index'])->name('index');
+        Route::get('/calendar', [TimesheetController::class, 'calendar'])->name('calendar');
+        Route::get('/report', [TimesheetController::class, 'report'])->name('report');
+         Route::get('/resource-utilization', [TimesheetController::class, 'resourceUtilization'])->name('resource-utilization');
+        Route::get('/export/{type}', [TimesheetController::class, 'export'])->name('export');
+        Route::post('/', [TimesheetController::class, 'store'])->name('store');
+        Route::put('/{timesheet}', [TimesheetController::class, 'update'])->name('update');
+        Route::delete('/{timesheet}', [TimesheetController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk', [TimesheetController::class, 'bulkStore'])->name('bulk');
+
+
+        Route::get('/projects', [TimesheetController::class, 'getProjects'])->name('projects');
+    });
+
+    // Reports
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('project-status', [ReportController::class, 'projectStatus'])->name('project-status');
+         Route::get('project-status-detailed', [ReportController::class, 'projectStatusDetailed'])->name('project-status-detailed');
+
+         Route::get('financial', [ReportController::class, 'financial'])->name('financial');
+        Route::get('timesheet', [ReportController::class, 'timesheet'])->name('timesheet');
+        Route::get('resource-utilization', [ReportController::class, 'resourceUtilization'])->name('resource-utilization');
+        Route::get('export/{type}', [ReportController::class, 'export'])->name('export');
+    });
+});
 
 
 

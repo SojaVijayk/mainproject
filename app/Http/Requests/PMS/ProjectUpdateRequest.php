@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Requests\PMS;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class ProjectUpdateRequest extends FormRequest
+{
+    public function authorize()
+    {
+        return true;
+    }
+
+    public function rules()
+    {
+        return [
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'budget' => 'required|numeric|min:0',
+            'estimated_expense' => 'required|numeric|min:0',
+            'revenue' => 'required|numeric|min:0',
+            'project_investigator_id' => 'required|exists:users,id',
+            'team_members' => 'nullable|array',
+            'team_members.*' => 'exists:users,id',
+        ];
+    }
+}

@@ -97,10 +97,10 @@ $projectIds=array_unique($projectIds);
         ->get();
 
 
-      $projects = Project::select('projects.*',DB::raw("(SELECT  GROUP_CONCAT(type_name) FROM project_types
+      $projects = Project::select('projects_old.*',DB::raw("(SELECT  GROUP_CONCAT(type_name) FROM project_types
       WHERE FIND_IN_SET(id, type)) as typeName"))
       ->withCount('clients')->with('clients')->withCount('leads')->with('leads')
-      ->withCount('members')->with('members')->whereIn('projects.id',$projectIds)->orderBy('id','DESC')->get();
+      ->withCount('members')->with('members')->whereIn('projects_old.id',$projectIds)->orderBy('id','DESC')->get();
 
         // return view('content.clients.clients',compact('clients','permissions'));
         return view('content.projects.project-management',compact('projects','clients','projectTypes','leads','members'),['pageConfigs'=> $pageConfigs]);
