@@ -19,16 +19,17 @@ class TimesheetController extends Controller
             ? Carbon::parse($request->date)
             : now();
 
+
             $startOfWeek = $date->copy()->startOfWeek();
 $weekDays = collect();
 
 for ($i = 0; $i < 7; $i++) {
-    $date = $startOfWeek->copy()->addDays($i);
+    $weekdate = $startOfWeek->copy()->addDays($i);
     $weekDays->push([
-        'date' => $date,
-        'dayName' => $date->format('D'),
-        'isToday' => $date->isToday(),
-        'isWeekend' => $date->isWeekend(),
+        'date' => $weekdate,
+        'dayName' => $weekdate->format('D'),
+        'isToday' => $weekdate->isToday(),
+        'isWeekend' => $weekdate->isWeekend(),
     ]);
 }
 
@@ -49,6 +50,8 @@ for ($i = 0; $i < 7; $i++) {
         ->where('status', Project::STATUS_ONGOING)
         ->get();
 
+
+            //  echo $date;exit;
         return view('pms.timesheets.index', [
             'timesheets' => $timesheets,
             'categories' => $categories,

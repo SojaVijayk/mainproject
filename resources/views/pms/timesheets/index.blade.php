@@ -107,6 +107,7 @@
         autoclose: true
     }).on('changeDate', function () {
         window.location.href = "{{ route('pms.timesheets.index') }}?date=" + $(this).val();
+
     });
 
     // Save all timesheet entries
@@ -217,7 +218,7 @@ function unblockUI() {
 @section('content')
 
 <div class="today-header">
-  {{ now()->format('l, F j, Y') }}
+  {{ $selectedDate->format('l, F j, Y') }}
 </div>
 
 
@@ -366,7 +367,7 @@ function unblockUI() {
       <div class="row">
         <div class="col-md-4">
           <label for="date" class="form-label">Date</label>
-          <input type="date" name="date" id="date" class="form-control" value="{{ now()->format('Y-m-d') }}">
+          <input type="text" name="date" id="date" class="form-control" value="{{  $selectedDate->format('Y-m-d')  }}">
         </div>
         <div class="col-md-4 d-flex align-items-end">
           <button type="submit" class="btn btn-primary me-2">Load</button>
