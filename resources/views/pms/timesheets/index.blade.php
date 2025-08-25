@@ -259,7 +259,9 @@ function unblockUI() {
     @endforeach
   </div> --}}
 
-
+  <div class="row alert alert-primary">
+    <h4>Project wise Time Entry</h4>
+  </div>
   <div class="projects-section scroll-x">
     @php
     // Group projects by their requirement category
@@ -267,6 +269,7 @@ function unblockUI() {
     return $project->requirement->category->name ?? 'Uncategorized';
     });
     @endphp
+
 
     <div class="accordion" id="projectAccordion">
       @foreach($groupedProjects as $categoryName => $categoryProjects)
@@ -321,6 +324,9 @@ function unblockUI() {
 
 
   <!-- General Time Horizontal Scroll -->
+  <div class="row alert alert-primary">
+    <h4>General Time Horizontal Scroll</h4>
+  </div>
   <div class="general-time-section scroll-x">
     @foreach($categories as $category)
     <div class="project-card">
