@@ -112,6 +112,20 @@
     text-decoration: line-through;
     opacity: 0.7;
   }
+
+  .fc .fc-day-today {
+    background-color: #fff6e5 !important;
+    /* soft yellow highlight */
+    border: 2px solid #f39c12 !important;
+    /* orange border */
+  }
+
+  /* Optional: make header date bold */
+  .fc .fc-col-header-cell.fc-day-today {
+    background: #f39c12 !important;
+    color: #fff !important;
+    font-weight: bold;
+  }
 </style>
 
 @endsection
@@ -143,7 +157,9 @@ var calendarEl1 = document.getElementById('calendarHall');
 
     var calendar1 = new FullCalendar.Calendar(calendarEl1, {
           schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-        initialView: 'resourceTimelineMonth',   // load current week by default
+        initialView: 'resourceTimelineMonth',
+         initialDate: new Date(),  // focus today
+  nowIndicator: true,  // load current week by default
         aspectRatio: 2,
         resourceAreaHeaderContent: 'Venues',
         headerToolbar: {
@@ -220,7 +236,7 @@ var calendarEl1 = document.getElementById('calendarHall');
 <div class="container">
   <div class="card mt-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h2>Venue Booking Avialability Calendar</h2>
+      <h2>Venue Booking Availability Calendar</h2>
       <div class="card-header-elements ms-auto">
         <a class="btn btn-primary" href="/calendar">New Booking</a>
       </div>
