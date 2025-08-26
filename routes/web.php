@@ -247,6 +247,8 @@ Route::get('/project/docs/{project_id}' , $controller_path . '\Project\ProjectDo
 
 
  Route::get('/calendar', [EventController::class, 'index'])->name('calendar');
+
+ Route::get('/availability/calendar', [EventController::class, 'Avialability'])->name('availability.calendar');
     Route::get('/events', [EventController::class, 'getEvents']);
     Route::post('/events', [EventController::class, 'store']);
     Route::put('/events/{event}', [EventController::class, 'update']);
@@ -255,11 +257,14 @@ Route::get('/project/docs/{project_id}' , $controller_path . '\Project\ProjectDo
     Route::get('/events/{event}', [EventController::class, 'show']);
     Route::get('/venues/available', [EventController::class, 'getAvailableVenuesForTime']);
 
-    Route::get('/hall-availability', [EventController::class, 'getHallAvailability']);
+    Route::get('/hall-availability', [EventController::class, 'getHallAvailability'])->name('getHallAvailabilityCalendar');
 Route::get('/my-events', [EventController::class, 'getMyEvents']);
 Route::get('/upcoming-events', [EventController::class, 'getUpcomingEvents']);
 Route::delete('/events/{event}/cancel', [EventController::class, 'cancel'])
      ->name('events.cancel');
+
+     Route::get('/venues', [EventController::class, 'getVenues'])->name('venues.list');
+     Route::get('/bookings', [EventController::class, 'getBookings'])->name('bookings.list');
 
 
  // Tapal Routes

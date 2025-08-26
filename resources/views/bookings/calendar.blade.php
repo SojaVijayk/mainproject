@@ -1431,6 +1431,74 @@ function cancelEvent(eventId) {
     });
 }
 
+
+
+var calendarEl1 = document.getElementById('calendarHall');
+
+
+
+    var calendar1 = new FullCalendar.Calendar(calendarEl1, {
+          schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+        initialView: 'resourceTimelineMonth',   // load current week by default
+        aspectRatio: 2,
+        resourceAreaHeaderContent: 'Venues',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'resourceTimelineWeek,resourceTimelineMonth'
+        },
+
+        // Load Venues dynamically
+        resources: function(fetchInfo, successCallback, failureCallback) {
+    fetch("{{ route('venues.list') }}")
+        .then(res => res.json())
+        .then(data => {
+            // Backend returns: [{ id: "1", title: "Hall A" }, …]
+            // But if your backend still sends {id, name}, map it:
+            let resources = data.map(v => ({
+                id: String(v.id),      // cast to string (important)
+                title: v.name ?? v.title
+            }));
+            successCallback(resources);
+        })
+        .catch(err => failureCallback(err));
+},
+
+      events: {
+      url: '{{ route('bookings.list') }}',
+      method: 'GET'
+    },
+
+        eventDidMount: function(info) {
+      if (!window.bootstrap) return;
+      info.el.style.backgroundColor = '#e74c3c';
+    info.el.style.borderColor = '#e74c3c';
+
+      const p = info.event.extendedProps || {};
+      const html = `
+        <div>
+          <div><strong>${info.event.title}</strong></div>
+          <div>Venue: ${p.venue_name ?? ''}</div>
+          <div>Start: ${p.start_hm ?? ''}</div>
+          <div>End: ${p.end_hm ?? ''}</div>
+          <div>Participants: ${p.participants ?? 0}</div>
+          <div>Booked by: ${p.booked_by ?? 'N/A'}</div>
+        </div>
+      `;
+      new bootstrap.Tooltip(info.el, {
+        title: html,
+        html: true,
+        placement: 'top',
+        trigger: 'hover',
+        container: 'body'
+      });
+    }
+    });
+
+    calendar1.render();
+
+
+
     });
 </script>
 @endsection
@@ -1453,6 +1521,8 @@ function cancelEvent(eventId) {
             <button class="btn btn-sm btn-outline-secondary" data-time-filter="custom">Custom Date</button>
           </div>
         </div>
+
+
         <div class="card-body">
           <div id="customDatePicker" class="mb-3" style="display: none;">
             <input type="date" class="form-control" id="availabilityDatePicker">
@@ -1467,6 +1537,8 @@ function cancelEvent(eventId) {
           </div>
         </div>
       </div>
+
+
 
       <!-- My Events Card -->
       <div class="card mb-4">
@@ -1549,6 +1621,17 @@ function cancelEvent(eventId) {
 
     </div>
   </div>
+
+  <div class="container">
+    <div class="card mt-4">
+      <div class="card-body">
+        <h2>Venue Booking Avialability Calendar</h2>
+
+        <div id="calendarHall"></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Event Modal -->

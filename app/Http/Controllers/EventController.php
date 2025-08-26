@@ -19,7 +19,12 @@ class EventController extends Controller
     public function index()
     {
        $pageConfigs = ['myLayout' => 'horizontal'];
-        return view('calendar',['pageConfigs'=> $pageConfigs]);
+        return view('bookings.calendar',['pageConfigs'=> $pageConfigs]);
+    }
+    public function Avialability()
+    {
+       $pageConfigs = ['myLayout' => 'horizontal'];
+        return view('bookings.calendar_availability',['pageConfigs'=> $pageConfigs]);
     }
 
     public function getEvents()
@@ -872,6 +877,115 @@ private function sendCancellationNotifications(Event $event)
     foreach ($recipients as $user) {
         Mail::to($user->email)->send(new EventCancellation($event));
     }
+}
+
+
+
+public function getVenues()
+{
+    $venues = Venue::where('status', 'active')
+                   ->where('is_active', true)
+                   ->get(['id', 'name']);
+
+    return response()->json($venues);
+}
+
+// public function getBookings(Request $request)
+// {
+//     $startInput = $request->query('start');
+//     $endInput   = $request->query('end');
+
+//     // Fix timezone formatting issue: replace " 05:30" with "+05:30"
+//     $startInput = preg_replace('/\s(\d{2}:\d{2})$/', '+$1', $startInput);
+//     $endInput   = preg_replace('/\s(\d{2}:\d{2})$/', '+$1', $endInput);
+
+//     $start = Carbon::parse($startInput);
+//     $end   = Carbon::parse($endInput);
+
+//     $bookings = Event::where('status', 1)
+//         ->where(function($query) use ($start, $end) {
+//             $query->whereBetween('start_date', [$start, $end])
+//                   ->orWhereBetween('end_date', [$start, $end])
+//                   ->orWhere(function($query) use ($start, $end) {
+//                       $query->where('start_date', '<', $start)
+//                             ->where('end_date', '>', $end);
+//                   });
+//         })
+//         ->with('venues:id,name')
+//         ->get()
+//         ->map(function($event) {
+//             return [
+//                 'title' => $event->title,
+//                 'start_date' => $event->start_date,
+//                 'end_date' => $event->end_date,
+//                 'venue_id' => $event->venues->first()->id ?? null,
+//                 'venue_name' => $event->venues->first()->name ?? null,
+//             ];
+//         });
+
+//     return response()->json($bookings);
+// }
+public function getBookings(Request $request)
+{
+        $startInput = $request->query('start');
+    $endInput   = $request->query('end');
+
+    // Fix timezone formatting issue: replace " 05:30" with "+05:30"
+    $startInput = preg_replace('/\s(\d{2}:\d{2})$/', '+$1', $startInput);
+    $endInput   = preg_replace('/\s(\d{2}:\d{2})$/', '+$1', $endInput);
+
+    $start = Carbon::parse($startInput);
+    $end   = Carbon::parse($endInput);
+try {
+        $start = Carbon::parse($startInput)->startOfDay();
+        $end   = Carbon::parse($endInput)->endOfDay();
+    } catch (\Throwable $e) {
+        // Fallback: trim to date part only
+        $start = Carbon::parse(substr($startInput, 0, 10))->startOfDay();
+        $end   = Carbon::parse(substr($endInput,   0, 10))->endOfDay();
+    }
+
+    // Query events that overlap the visible range
+    $events = Event::where('status', 1)
+        ->where(function($q) use ($start, $end) {
+            $q->whereBetween('start_date', [$start, $end])
+              ->orWhereBetween('end_date',   [$start, $end])
+              ->orWhere(function($q) use ($start, $end) {
+                  $q->where('start_date', '<', $start)
+                    ->where('end_date',   '>', $end);
+              });
+        })
+        ->with(['venues:id,name', 'creator:id,name'])
+        ->get();
+
+    // IMPORTANT: explode multi-venue events => one FC event per venue,
+    // and make sure resourceId === venue.id (as string) to match resources.
+    $bookings = $events->flatMap(function ($event) {
+        return $event->venues->map(function ($venue) use ($event) {
+            return [
+                'id'         => 'E'.$event->id.'V'.$venue->id,              // unique per event+venue
+                'resourceId' => (string) $venue->id,                         // MUST match resources list
+                'title'      => $event->title,
+                // 'start'      => $event->start_date->format('Y-m-d\TH:i:sP'), // ISO8601 w/ offset
+                // 'end'        => $event->end_date->format('Y-m-d\TH:i:sP'),
+                 'start'           => Carbon::parse($event->start_date)->format('Y-m-d\TH:i:sP'),
+                    'end'             => Carbon::parse($event->end_date)->format('Y-m-d\TH:i:sP'),
+                // Extra details for tooltip
+                'extendedProps' => [
+                    'venue_name'   => $venue->name,
+                    'participants' => (int) ($event->participants_count ?? 0),
+                    'booked_by'    => $event->creator->name ?? 'N/A',
+                    // 'start_hm'     => $event->start_date->format('d M Y, H:i'),
+                    // 'end_hm'       => $event->end_date->format('d M Y, H:i'),
+                       'start_hm'           => Carbon::parse($event->start_date)->format('d M Y, H:i'),
+                    'end_hm'             => Carbon::parse($event->end_date)->format('d M Y, H:i'),
+
+                ],
+            ];
+        });
+    })->values();
+
+    return response()->json($bookings);
 }
 
 
