@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\laravel_example\UserManagement;
-use App\Http\Controllers\BookingController;
+use App\Http\Controllers\Leave\LeaveRequestController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\DocumentController;
@@ -159,6 +159,23 @@ Route::get('/leave-assign/list', $controller_path . '\Leave\LeaveAssignControlle
 Route::post('/leave-assign/store', $controller_path . '\Leave\LeaveAssignController@store')->name('leave-assign-store');
 Route::get('/leave-assign/edit/{id}', $controller_path . '\Leave\LeaveAssignController@assignEdit')->name('leave-assign-edit');
 Route::post('/leave-assign/update/{id}', $controller_path . '\Leave\LeaveAssignController@assignUpdate')->name('leave-assign-update');
+
+
+//LEave cancel
+Route::get('/leave/user/cancel-requests/{id}', [LeaveRequestController::class, 'employeeCancelRequests'])->name('leave.cancel.employee.list');
+Route::get('/leave/{id}/dates', [LeaveRequestController::class, 'getLeaveDates']);
+Route::post('/leave/cancel-request', [LeaveRequestController::class, 'cancelRequest'])->name('leave.cancel.request');
+
+// HR
+Route::get('/leave/hr/cancel-requests', [LeaveRequestController::class, 'hrCancelRequests'])->name('leave.cancel.hr.list');
+Route::post('/leave/cancel/hr/{id}', [LeaveRequestController::class, 'cancelActionByHR'])->name('leave.cancel.hr.action');
+
+// Reporting Officer
+Route::get('/leave/ro/cancel-requests', [LeaveRequestController::class, 'roCancelRequests'])->name('leave.cancel.ro.list');
+Route::post('/leave/cancel/ro/{id}', [LeaveRequestController::class, 'cancelActionByReportingOfficer'])->name('leave.cancel.ro.action');
+
+
+
 
 Route::get('/attendance', $controller_path . '\Attendance\AttendanceController@index')->name('attendance-index');
 // Route::post('/attendance/import', $controller_path . '\Attendance\AttendanceController@import')->name('attendance-import');

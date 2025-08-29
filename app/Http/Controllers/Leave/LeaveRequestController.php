@@ -855,4 +855,75 @@ class LeaveRequestController extends Controller
       // return response()->download(public_path('storage/AttendanceRepot01-09-2023To30-09-2023Bulk.pdf'));
     }
 
+
+
+    public function getLeaveDates($id)
+{
+    $dates = LeaveRequestDetails::where('request_id', $id)
+        ->where('status', 1) // approved
+        ->pluck('date');
+
+    return response()->json($dates);
+}
+
+public function cancelRequest(Request $request)
+{
+    $leaveRequestId = $request->leave_request_id;
+    $dates = $request->dates ?? [];
+
+    foreach ($dates as $date) {
+        LeaveRequestDetails::where('request_id', $leaveRequestId)
+            ->whereDate('date', $date)
+            ->update(['cancel_status' => 3,'cancel_requested_at'=>now()]); // 3 = Cancel Requested
+    }
+
+    return back()->with('success', 'Cancel request submitted.');
+}
+
+public function hrCancelRequests()
+{
+   $pageConfigs = ['myLayout' => 'horizontal'];
+    $cancelRequests = LeaveRequestDetails::where('cancel_status', 3)
+        ->with(['leaveRequest.user','leaveRequest.leaveType'])
+        ->get()
+        ->map(function($detail) {
+            $detail->attendance_exists = DB::table('AttendanceLogs')
+                ->where('user_id', $detail->leaveRequest->user_id)
+                ->whereDate('date', $detail->date)
+                ->exists();
+            return $detail;
+        });
+
+    return view('content.leave.hr-cancel-requests', compact('cancelRequests'),['pageConfigs'=> $pageConfigs]);
+}
+
+public function cancelActionByHR(Request $request, $id)
+{
+    LeaveRequestDetails::where('id', $id)
+        ->update(['cancel_status' => $request->status,'hr_cancel_action_taken_at'=>now()]);
+
+    return back()->with('success', 'HR action completed.');
+}
+
+public function roCancelRequests()
+{
+   $pageConfigs = ['myLayout' => 'horizontal'];
+    $cancelRequests = LeaveRequestDetails::join("employees","employees.user_id","=","leave_request_details.user_id")
+   ->where('employees.reporting_officer',Auth::user()->id)
+    ->where('leave_request_details.cancel_status', 4)
+    ->select('leave_request_details.*') // HR Approved
+        ->with(['leaveRequest.user','leaveRequest.leaveType'])
+        ->get();
+
+    return view('content.leave.ro-cancel-requests', compact('cancelRequests'),['pageConfigs'=> $pageConfigs]);
+}
+
+public function cancelActionByReportingOfficer(Request $request, $id)
+{
+    LeaveRequestDetails::where('id', $id)
+        ->update(['cancel_status' => $request->status,'status' => $request->status,'ro_cancel_action_taken_at'=>now()]);
+
+    return back()->with('success', 'RO action completed.');
+}
+
 }

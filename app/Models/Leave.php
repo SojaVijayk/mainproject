@@ -9,4 +9,9 @@ class Leave extends Model
 {
     use HasFactory;
     protected $fillable = ['leave_type','status'];
+
+      public function leaveRequests()
+    {
+        return $this->hasMany(LeaveRequest::class, 'leave_type_id');
+    }
 }

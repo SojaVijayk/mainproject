@@ -397,7 +397,14 @@
                 '<span class="text-nowrap">' +
                 '<button class="btn btn-sm btn-icon delete-record" data-id="'+full['id']+'"><i class="ti ti-trash"></i></button></span>'
               );
-            }else{
+            }
+                if(full['status'] == 2){
+                   return (
+              '<span class="text-nowrap"><button class="btn btn-sm btn-primary  me-2 edit-designation" data-id="'+full['id']+'" data-bs-target="#leaveActionModal" data-bs-toggle="modal" data-bs-dismiss="modal">View</button>' +
+              '<button class="btn btn-sm btn-danger  me-2 " data-id="'+full['id']+'" data-bs-toggle="modal"  data-bs-target="#cancelModal">Cancel</button></span>'
+            );
+                }
+            else{
               return (
               '<span class="text-nowrap"><button class="btn btn-sm btn-primary  me-2 edit-designation" data-id="'+full['id']+'" data-bs-target="#leaveActionModal" data-bs-toggle="modal" data-bs-dismiss="modal">View</button>' +
               '</span>'
@@ -784,7 +791,7 @@ $('.duty-assignment-entry').each(function () {
       const converted_date = convertDateFormat(item.date);
       console.log(converted_date);
       tbody=tbody+'<tr><td>'+data.leave_list.leave_type+'</td><td>'+converted_date+'</td><td>'+(item.leave_day_type == 1 ? 'Full Day' : item.leave_day_type == 2 ? 'FN' : 'AN')+'</td>'+
-        '<td>'+(item.status == 0 ? '<span class="text-nowrap badge bg-label-secondary">Pending</span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ ''));
+        '<td>'+(item.status == 0 ? '<span class="text-nowrap badge bg-label-secondary">Pending</span></td></tr>' : (item.status == 1 ? '<span class="badge bg-label-success">Approved</span><br>Remark : '+item.remark+' ': item.status == 5 ? '<span class="badge bg-label-danger">Cancelled</span> <br>Remark : '+item.remark+ '': '<span class="badge bg-label-danger">Rejected</span> <br>Remark : '+item.remark+ ''));
      })
     $(".datatables-leave-list #dataList").html(tbody);
     $(".leave-type-name").html(data.leave_list.leave_type);
@@ -855,6 +862,27 @@ $('.duty-assignment-entry').each(function () {
   });
 
 
+
+    var cancelModal = document.getElementById('cancelModal');
+    cancelModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var leaveId = button.getAttribute('data-id');
+        document.getElementById('leave_request_id').value = leaveId;
+
+        // fetch dates via AJAX
+        fetch("/leave/" + leaveId + "/dates")
+            .then(res => res.json())
+            .then(data => {
+                let html = "";
+                data.forEach(date => {
+                    html += `<div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="dates[]" value="${date}">
+                                <label class="form-check-label">${date}</label>
+                             </div>`;
+                });
+                document.getElementById('datesContainer').innerHTML = html;
+            });
+    });
 
 
 });
@@ -942,7 +970,29 @@ $('.duty-assignment-entry').each(function () {
   </div>
 </div>
 <!--/ Permission Table -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ route('leave.cancel.request') }}">
+      @csrf
+      <input type="hidden" name="leave_request_id" id="leave_request_id">
 
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Cancel Leave Dates</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="datesContainer">
+            <!-- checkboxes will be injected with JS -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">Submit Cancel Request</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- Modal -->
 @include('_partials/_modals/modal-leave-request')

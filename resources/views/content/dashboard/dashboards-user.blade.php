@@ -50,6 +50,34 @@ $user = Auth::user();
 
           </div>
         </div>
+        <div class="col-md">
+          <div class="card mb-3">
+            <div class="row g-0">
+              <div class="col-md-8">
+                <div class="card-header header-elements">
+                  <span class=" me-2">Leave Cencel Request</span>
+                  <div class="card-header-elements">
+                    <span
+                      class="badge  rounded-pill {{$pending_leave_cancel_ro > 0 ? 'bg-danger' : 'bg-secondary'}}">{{$pending_leave_cancel_ro}}</span>
+
+                  </div>
+
+                </div>
+                <div class="card-body">
+                  <a href="/leave/ro/cancel-requests" class="btn btn-primary">Take Action</a>
+                  <p class="card-text pt-4"><small class="text-muted">Last updated 1 mins ago</small></p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <dotlottie-player style=" "
+                  src="https://lottie.host/ba97c031-5f47-4ac8-a78a-30e38da11a45/Fg7GMZaUw0.json"
+                  background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+                </dotlottie-player>
+              </div>
+
+            </div>
+          </div>
+        </div>
       </div>
       <div class="col-md">
         <div class="card mb-3">
@@ -236,7 +264,34 @@ $user = Auth::user();
         </div>
       </div>
       @cannot('leave-request-approve')
+      @if($user->hasRole('HR'))
+      <div class="col-md">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
+                <span class=" me-2">Leave Cencel Request</span>
+                <div class="card-header-elements">
+                  <span
+                    class="badge  rounded-pill {{$pending_leave_cancel_hr > 0 ? 'bg-danger' : 'bg-secondary'}}">{{$pending_leave_cancel_hr}}</span>
+                </div>
 
+              </div>
+              <div class="card-body">
+                <a href="/leave/hr/cancel-requests" class="btn btn-primary">Take Action</a>
+                <p class="card-text pt-4"><small class="text-muted">Last updated 1 mins ago</small></p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" " src="https://lottie.host/ba97c031-5f47-4ac8-a78a-30e38da11a45/Fg7GMZaUw0.json"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      @endif
       <div class="col-md-4">
         <div class="card mb-3">
           <div class="row g-0">
