@@ -208,9 +208,13 @@
        $("#dateList").empty();
        $("#fromDate").val('');
         $("#toDate").val('');
+         $('.availability').hide();
 
       if(id > 0){
-        $('.availability').show();
+        if(id <4){
+ $('.availability').show();
+        }
+
         $('.date-group').show();
 
 

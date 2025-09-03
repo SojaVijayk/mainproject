@@ -44,9 +44,10 @@
               <option value="">Select</option>
               @foreach ($leaves_total_credit as $leave)
               <option value={{$leave->leave_type_id}} >{{$leave->leave_type}}</option>
+
               @endforeach
-              {{-- <option value="4">Compensatory Off</option>
-              <option value="5">Leave Without Allowance (Loss of Pay)</option> --}}
+              {{-- <option value="4">Compensatory Off</option>--}}
+              <option value="5">Leave Without Allowance (Loss of Pay)</option>
 
             </select>
           </div>

@@ -281,16 +281,20 @@ class LeaveRequestController extends Controller
     return response()->json(['error' => 'Invalid date format'], 400);
 }
 
-
-    $date_list = json_encode($request->input('date_list'));
+ $date_list = json_encode($request->input('date_list'));
     // $from = date('2023-04-01');
     // $to = date('2024-03-31');
     $employee = Employee::where('employees.user_id',Auth::user()->id)->first();
-    $total_leaves_credit = LeaveAssign::where('employment_type', $employee->employment_type)->where('leave_type', $request->input('leave_type_id'))->first();
+     $total_leaves_credit = LeaveAssign::where('employment_type', $employee->employment_type)->where('leave_type', $request->input('leave_type_id'))->first();
     $date_result = (new MasterFunctionController)->GetLeavePeriod($employee->user_id,$request->input('leave_type_id'));
     // $date_result = (new MasterFunctionController)->GenerateLeavePeriod($employee->employment_type,$employee->doj);
     $date_start = $date_result['start_date'];
     $date_end = $date_result['end_date'];
+
+
+    if($request->input('leave_type_id') < 4){
+
+
 
     $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
     $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$employee->user_id)->where('leave_type_id',$request->input('leave_type_id'))->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
@@ -364,9 +368,11 @@ class LeaveRequestController extends Controller
       $balance = $total_leaves_credit->total_credit - ( $availed_leave + $pending_leave);
     }
 
+
+
 // echo $date_start.' '.$date_end;exit;
 
-    if($request->input('duration') <=  $balance || $request->input('leave_type_id') >3){
+    if($request->input('duration') <=  $balance || $request->input('leave_type_id') > 3){
 
       $permission = LeaveRequest::create(['leave_type_id' => $request->input('leave_type_id'),
       'duration' => $request->input('duration'),
@@ -425,8 +431,75 @@ class LeaveRequestController extends Controller
       }
     }
     else{
+
       return response()->json(["status"=>false,'message' => "You have no credit and cannot request ".$request->input('duration')." Leave" ], 200);
     }
+
+
+
+  }
+  //manage LOP
+  else{
+
+     $permission = LeaveRequest::create(['leave_type_id' => $request->input('leave_type_id'),
+      'duration' => $request->input('duration'),
+        'from' => $from,
+        'to' => $to,
+        'date_list' => $date_list,'description' => $request->input('description'),'user_id' => $id,'status' => 0,'requested_at' => $date
+    ]);
+
+      if ($permission) {
+        foreach($request->input('date_list') as $data){
+
+           LeaveRequestDetails::create(['leave_type_id' => $permission->leave_type_id,
+          'request_id' => $permission->id,
+          'leave_day_type' => $data['leave_day_type'],
+          'leave_duration' => ($data['leave_day_type'] == 1 ? 1 : 0.5),
+            'date' => $data['date'],
+           'user_id' => $id,'status' => 0,'requested_at' => $date,
+           'leave_period_start' => $date_start,
+           'leave_period_end' => $date_end
+        ]);
+        }
+
+        $mailData = [
+          'title' => 'Leave Request',
+          'button' => 'Take Action',
+          'url' => 'http://localhost:8000/leave/approve-list',
+          'body' => Auth::user()->name." created a new leave request for the period of ".$request->input('from')." to ".$request->input('to').".  Please login to your account for take action.",
+        ];
+
+        $reporting = Employee::where('employees.user_id',Auth::user()->id)
+        ->leftjoin("employees as emp","emp.user_id","=","employees.reporting_officer")
+        ->select('emp.email')->first();
+
+        // Mail::to($reporting->email)->send(new LeaveRequestMail($mailData));
+
+
+
+        $dutyAssignments = $request->input('duty_assignments');
+       if( $request->has('duty_assignments') && count($dutyAssignments) > 0) {
+         foreach ($dutyAssignments as $assignment) {
+            LeaveDutyAssignment::create([
+                'leave_request_id' => $permission->id,
+                'user_id' => $assignment['user_id'],
+                'description' => $assignment['description'],
+            ]);
+        }
+       }
+
+
+
+
+        return response()->json( ["status"=>true, "data"=>$permission]);
+      } else {
+        return response()->json(["status"=>false,'message' => "Internal Server Error"], 500);
+
+      }
+
+  }
+
+
 
   }
 
