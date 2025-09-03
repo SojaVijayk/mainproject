@@ -572,8 +572,8 @@ class LeaveRequestController extends Controller
     // $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->whereBetween('date', [$date_start, $date_end])->sum('leave_duration');
     $availed_leave = LeaveRequestDetails::where('status',1)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_start', $date_start)->sum('leave_duration');
     $pending_leave = LeaveRequestDetails::where('status',0)->where('user_id',$list->user_id)->where('leave_type_id',$list->leave_type_id)->where('leave_period_end', $date_end)->sum('leave_duration');
-
-   //Regular employee
+if($list->leave_type_id < 4){
+          //Regular employee
     if(($list->leave_type_id == 1 || $list->leave_type_id == 2 || $list->leave_type_id == 3) && $list->employment_type == 1){
 
     // if($list->leave_type_id == 2 || $list->leave_type_id == 3){
@@ -679,6 +679,17 @@ class LeaveRequestController extends Controller
 
       ];
     }
+}
+else{
+  $leave_balance = [
+        "total_leaves_credit"=>'NA',
+        "availed_leave"=>'NA',
+        "pending_leave"=>'NA',
+        "balance_credit"=>'NA',
+
+      ];
+}
+
 
 
           return response()->json(['leave_list'=> $list,"leave_balance"=>$leave_balance,'date_start'=>$date_start,'date_end'=>$date_end]);
@@ -717,13 +728,13 @@ class LeaveRequestController extends Controller
       $data->action_by = Auth::user()->id;
       $data->save();
 
-      if ($designation) {
+      if ($designation ) {
         $list = LeaveRequest::with('leaveRequestDetails')->join("employees","employees.user_id","=","leave_requests.user_id")
         ->leftjoin("designations","designations.id","=","employees.designation")
         ->leftjoin("leaves","leaves.id","=","leave_requests.leave_type_id")
         ->select('leave_requests.*','leaves.leave_type','employees.employment_type','employees.name','employees.email','employees.profile_pic','designations.designation')->where('leave_requests.id',$designation->request_id)->first();
-
-        $total_leaves_credit = LeaveAssign::where('employment_type', $list->employment_type)->where('leave_type', $list->leave_type_id)->first();
+        if($list->leave_type_id < 4){
+                 $total_leaves_credit = LeaveAssign::where('employment_type', $list->employment_type)->where('leave_type', $list->leave_type_id)->first();
         // $date_result = (new MasterFunctionController)->GenerateLeavePeriod($list->employment_type,$list->doj);
         // $date_start = $date_result['start_date'];
         // $date_end = $date_result['end_date'];
@@ -857,6 +868,14 @@ class LeaveRequestController extends Controller
         $user =  User::find($data->user_id);
         // Mail::to($user->email)->send(new LeaveRequestActionMail($mailData));
         }
+
+        }
+        //manage LOP
+        else{
+          $leave_balance ='NA';
+
+        }
+
 
 
               return response()->json(['leave_list'=> $list,"leave_balance"=>$leave_balance]);
