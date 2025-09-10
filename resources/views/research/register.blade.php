@@ -179,7 +179,7 @@
 
 
   })
-  </script>
+</script>
 @endsection
 
 @section('content')
@@ -206,25 +206,28 @@
         <div class="row g-3">
           <div class="col-md-6">
             <label for="name" class="form-label">Name of Scholar *</label>
-            <input type="text" required class="form-control" id="name" name="name" placeholder="Enter your name" autofocus>
+            <input type="text" required class="form-control" id="name" name="name" placeholder="Enter your name"
+              autofocus>
           </div>
           <div class="col-md-6">
             <label class="form-label" for="multicol-email">Email *</label>
             <div class="input-group input-group-merge">
-              <input type="text" required id="multicol-email" name="multicol-email" class="form-control" placeholder="john.doe" aria-label="john.doe" aria-describedby="multicol-email2" />
+              <input type="text" required id="multicol-email" name="multicol-email" class="form-control"
+                placeholder="john.doe" aria-label="john.doe" aria-describedby="multicol-email2" />
               <span class="input-group-text" id="multicol-email2">@example.com</span>
             </div>
           </div>
           <div class="col-md-6">
             <label for="name" class="form-label">Mobile Number *</label>
-            <input type="text" required class="form-control" id="mobile" name="mobile" placeholder="Enter your Mobile Number" autofocus>
+            <input type="text" required class="form-control" id="mobile" name="mobile"
+              placeholder="Enter your Mobile Number" autofocus>
           </div>
           <div class="col-md-6">
             <label class="form-label" for="centre">Institution *</label>
             <select class="select2 select-event-label form-select" required id="institution" name="institution">
               <option disabled selected>Select</option>
 
-              <option data-label="danger" value="Amrita">Amrita Vishwa Vidyapeetham, Amritapuri</option>
+              {{-- <option data-label="danger" value="Amrita">Amrita Vishwa Vidyapeetham, Amritapuri</option> --}}
               <option data-label="info" value="CHRIST">CHRIST (Deemed to be University), Bangalore</option>
             </select>
           </div>
@@ -245,18 +248,23 @@
             <select class="select2 select-event-label form-select" required id="programme" name="v">
               <option disabled selected>Select</option>
 
-              <option class="CHRIST-Management" data-label="danger" value="Business & Management">Business & Management</option>
+              <option class="CHRIST-Management" data-label="danger" value="Business & Management">Business & Management
+              </option>
 
-              <option class="CHRIST-Social-Sciences" data-label="info" value="Sociology & Social Work">Sociology & Social Work</option>
+              <option class="CHRIST-Social-Sciences" data-label="info" value="Sociology & Social Work">Sociology &
+                Social Work</option>
 
               <option class="Amrita-Management" data-label="info" value="Social">Marketing</option>
               <option class="Amrita-Management" data-label="info" value="Finance">Finance</option>
               <option class="Amrita-Management" data-label="info" value="Operations">Operations</option>
-              <option class="Amrita-Management" data-label="info" value="Organisational Behaviour & Human Resources">Organisational Behaviour & Human Resources</option>
+              <option class="Amrita-Management" data-label="info" value="Organisational Behaviour & Human Resources">
+                Organisational Behaviour & Human Resources</option>
               <option class="Amrita-Management" data-label="info" value="General Management">General Management</option>
 
-              <option class="Amrita-Social-Sciences" data-label="info" value="Social & Behavoural Sciences">Social & Behavoural Sciences</option>
-              <option class="Amrita-Social-Sciences" data-label="info" value="Social Sciences & Technology">Social Sciences & Technology</option>
+              <option class="Amrita-Social-Sciences" data-label="info" value="Social & Behavoural Sciences">Social &
+                Behavoural Sciences</option>
+              <option class="Amrita-Social-Sciences" data-label="info" value="Social Sciences & Technology">Social
+                Sciences & Technology</option>
 
             </select>
           </div>
@@ -266,13 +274,14 @@
               <option disabled selected>Select</option>
 
               <option class="Amrita CHRIST" data-label="danger" value="Part-Time">Part-Time</option>
-              {{--  <option class="CHRIST" data-label="danger" value="Full-Time">Full-Time</option>  --}}
+              {{-- <option class="CHRIST" data-label="danger" value="Full-Time">Full-Time</option> --}}
             </select>
             <div class="form-text text-primary"> (Note: CMD encourages only Part-Time Admission) </div>
           </div>
           <div class="col-md-6" id="input-container">
             <label for="name" class="form-label">Educational Qualification *</label>
-            <input type="text" class="form-control" id="education" required name="education[]" placeholder="Enter your educational qualification" autofocus>
+            <input type="text" class="form-control" id="education" required name="education[]"
+              placeholder="Enter your educational qualification" autofocus>
             <button id="add-input" class=" btn btn-success btn-sm mt-2">Add New Education </button>
           </div>
           <div class="col-md-6">
@@ -287,90 +296,86 @@
               <option data-label="danger" value="SLET">SLET</option>
               <option data-label="danger" value="GATE">GATE</option>
               <option data-label="danger" value="CEED">CEED</option>
-              <option  value="Nil">Not Applicable</option>
+              <option value="Nil">Not Applicable</option>
             </select>
           </div>
           <div class="col-md-6">
             <label for="addl_qualification" class="form-label">Other National Level Test, Please Specify</label>
-            <input type="text" class="form-control" id="addl_qualification" name="addl_qualification" placeholder="Other National Level Test, Please Specify" autofocus>
+            <input type="text" class="form-control" id="addl_qualification" name="addl_qualification"
+              placeholder="Other National Level Test, Please Specify" autofocus>
           </div>
           <div class="col-md-6">
-            <label class="form-label d-block">  Do you belong to SC/ST/OBC (Non Creamy layer)/Economically Weaker Section
+            <label class="form-label d-block"> Do you belong to SC/ST/OBC (Non Creamy layer)/Economically Weaker Section
               (EWS): Yes/No? *</label>
             <div class="form-check form-check-inline mt-3">
-                <input class="form-check-input" type="radio" checked name="reservation"
-                    id="reservation" value="Yes" />
-                <label class="form-check-label" for="inlineRadio1">
-                    Yes</label>
+              <input class="form-check-input" type="radio" checked name="reservation" id="reservation" value="Yes" />
+              <label class="form-check-label" for="inlineRadio1">
+                Yes</label>
             </div>
 
             <div class="form-check form-check-inline mt-3 detailed-radio">
-              <input class="form-check-input" type="radio"  checked name="reservation"
-                  id="reservation" value="No" />
+              <input class="form-check-input" type="radio" checked name="reservation" id="reservation" value="No" />
               <label class="form-check-label" for="inlineRadio1">
-                  No</label>
-          </div>
+                No</label>
+            </div>
           </div>
           <div class="col-md-6 res_category">
             <label class="form-label d-block">
               Category *</label>
-              <div class="form-check form-check-inline mt-3">
-                  <input class="form-check-input" type="radio" checked name="res_category"
-                      id="res_category" value="SC" />
-                  <label class="form-check-label" for="inlineRadio1">
-                      SC</label>
-              </div>
+            <div class="form-check form-check-inline mt-3">
+              <input class="form-check-input" type="radio" checked name="res_category" id="res_category" value="SC" />
+              <label class="form-check-label" for="inlineRadio1">
+                SC</label>
+            </div>
 
-              <div class="form-check form-check-inline mt-3 detailed-radio">
-                <input class="form-check-input" type="radio"  name="res_category"
-                    id="res_category" value="ST" />
-                <label class="form-check-label" for="inlineRadio1">
-                    ST</label>
+            <div class="form-check form-check-inline mt-3 detailed-radio">
+              <input class="form-check-input" type="radio" name="res_category" id="res_category" value="ST" />
+              <label class="form-check-label" for="inlineRadio1">
+                ST</label>
             </div>
             <div class="form-check form-check-inline mt-3 detailed-radio">
-              <input class="form-check-input" type="radio"  name="res_category"
-                  id="res_category" value="OBC (Non Creamy layer)" />
+              <input class="form-check-input" type="radio" name="res_category" id="res_category"
+                value="OBC (Non Creamy layer)" />
               <label class="form-check-label" for="inlineRadio1">
                 OBC (Non Creamy layer)</label>
-          </div>
-          <div class="form-check form-check-inline mt-3 detailed-radio">
-            <input class="form-check-input" type="radio"  name="res_category"
-                id="res_category" value="Economically Weaker Section
+            </div>
+            <div class="form-check form-check-inline mt-3 detailed-radio">
+              <input class="form-check-input" type="radio" name="res_category" id="res_category" value="Economically Weaker Section
               (EWS)" />
-            <label class="form-check-label" for="inlineRadio1">
-              Economically Weaker Section
-              (EWS)</label>
-        </div>
+              <label class="form-check-label" for="inlineRadio1">
+                Economically Weaker Section
+                (EWS)</label>
+            </div>
           </div>
           <div class="col-md-6">
-            <label class="form-label d-block">  Do you belong to Differentially Abled Yes/No? *</label>
+            <label class="form-label d-block"> Do you belong to Differentially Abled Yes/No? *</label>
             <div class="form-check form-check-inline mt-3">
-                <input class="form-check-input" type="radio"  name="physical_status"
-                    id="physical_status" value="Yes" />
-                <label class="form-check-label" for="inlineRadio1">
-                    Yes</label>
+              <input class="form-check-input" type="radio" name="physical_status" id="physical_status" value="Yes" />
+              <label class="form-check-label" for="inlineRadio1">
+                Yes</label>
             </div>
 
             <div class="form-check form-check-inline mt-3 detailed-radio">
-              <input class="form-check-input" type="radio" checked name="physical_status"
-                  id="physical_status" value="No" />
+              <input class="form-check-input" type="radio" checked name="physical_status" id="physical_status"
+                value="No" />
               <label class="form-check-label" for="inlineRadio1">
-                  No</label>
-          </div>
+                No</label>
+            </div>
 
           </div>
           <div class="col-md-6">
             <label class="form-label" for="pro_qualification">Professional Qualification *</label>
-        <select class="select2 select-event-label form-select" required id="pro_qualification" name="pro_qualification">
-          <option disabled selected>Select</option>
+            <select class="select2 select-event-label form-select" required id="pro_qualification"
+              name="pro_qualification">
+              <option disabled selected>Select</option>
 
-          <option data-label="danger" value="Chartered Accountancy">Chartered Accountancy</option>
-          <option data-label="danger" value="Cost Accountancy">Cost Accountancy</option>
-          <option data-label="danger" value="Company Secretary ">Company Secretary </option>
-          <option  value="Nil">Not Applicable</option>
+              <option data-label="danger" value="Chartered Accountancy">Chartered Accountancy</option>
+              <option data-label="danger" value="Cost Accountancy">Cost Accountancy</option>
+              <option data-label="danger" value="Company Secretary ">Company Secretary </option>
+              <option value="Nil">Not Applicable</option>
 
 
-        </select>
+            </select>
           </div>
           <div class="col-md-6">
           </div>
@@ -399,7 +404,7 @@
         <div class="modal-body">
           <div class="">
             <div class="card">
-              {{--  <h5 class="card-header">Instructions</h5>  --}}
+              {{-- <h5 class="card-header">Instructions</h5> --}}
               <div class="card-body pb-0">
                 <ul class="timeline mt-3 mb-0">
                   <li class="timeline-item timeline-item-primary pb-4 border-left-dashed">
@@ -458,7 +463,8 @@
                       </div>
                       <div class="d-flex justify-content-between flex-wrap mb-2">
                         <div>
-                          <span>Applicant has to submit their Registration through Centre Portal (Amrita Vishwa Vidyapeetham, Amritapuri / CHRIST (Deemed to be University) Bangalore) -</span>
+                          <span>Applicant has to submit their Registration through Centre Portal (Amrita Vishwa
+                            Vidyapeetham, Amritapuri / CHRIST (Deemed to be University) Bangalore) -</span>
 
                         </div>
                         <div>
@@ -520,7 +526,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Proceed</button>
-          {{--  <button type="button" class="btn btn-primary">Save changes</button>  --}}
+          {{-- <button type="button" class="btn btn-primary">Save changes</button> --}}
         </div>
       </div>
     </div>
