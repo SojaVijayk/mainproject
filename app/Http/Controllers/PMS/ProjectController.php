@@ -401,7 +401,7 @@ if ($request->has('team_members_json')) {
         ]);
 
         $file = $request->file('document');
-        $path = $file->store("projects/{$project->id}/documents");
+        $path = $file->store("public/projects/{$project->id}/documents");
 
         $project->documents()->create([
             'name' => $file->getClientOriginalName(),

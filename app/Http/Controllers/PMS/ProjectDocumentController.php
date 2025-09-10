@@ -54,7 +54,7 @@ class ProjectDocumentController extends Controller
         $folder = $request->new_folder ?: $request->folder;
 
         foreach ($request->file('documents') as $index => $file) {
-            $path = $file->store("projects/{$project->id}/documents/{$folder}");
+            $path = $file->store("public/projects/{$project->id}/documents/{$folder}");
 
             ProjectDocument::create([
                 'project_id' => $project->id,

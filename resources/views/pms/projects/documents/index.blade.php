@@ -27,7 +27,7 @@
 
 @section('page-script')
 <script>
-  function formatBytes(bytes, decimals = 2) {
+  function formatBytess(bytes, decimals = 2) {
         if (bytes === 0) return '0 Bytes';
 
         const k = 1024;
@@ -97,6 +97,16 @@
               </tr>
             </thead>
             <tbody>
+              @php
+              function formatBytes($bytes, $decimals = 2)
+              {
+              if ($bytes == 0) return '0 Bytes';
+              $k = 1024;
+              $sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+              $i = floor(log($bytes, $k));
+              return round($bytes / pow($k, $i), $decimals) . ' ' . $sizes[$i];
+              }
+              @endphp
               @foreach($folderDocuments as $document)
               <tr>
                 <td>
@@ -108,16 +118,7 @@
                   <small class="d-block text-muted">{{ $document->description }}</small>
                   @endif
                 </td>
-                @php
-                function formatBytes($bytes, $decimals = 2)
-                {
-                if ($bytes == 0) return '0 Bytes';
-                $k = 1024;
-                $sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-                $i = floor(log($bytes, $k));
-                return round($bytes / pow($k, $i), $decimals) . ' ' . $sizes[$i];
-                }
-                @endphp
+
                 <td>{{ formatBytes($document->size) }}</td>
                 <td>{{ $document->uploadedBy->name }}</td>
                 <td>{{ $document->created_at->format('d M Y H:i') }}</td>

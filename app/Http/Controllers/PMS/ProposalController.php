@@ -57,7 +57,7 @@ class ProposalController extends Controller
         // Handle document uploads if any
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
-                $path = $file->store('proposals/documents');
+                $path = $file->store('public/proposals/documents');
 
                 $proposal->documents()->create([
                     'name' => $file->getClientOriginalName(),
@@ -123,7 +123,7 @@ class ProposalController extends Controller
         // Handle document uploads if any
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
-                $path = $file->store('proposals/documents');
+                $path = $file->store('public/proposals/documents');
 
                 $proposal->documents()->create([
                     'name' => $file->getClientOriginalName(),
@@ -353,7 +353,7 @@ class ProposalController extends Controller
     // Handle document uploads if any
     if ($request->hasFile('documents')) {
         foreach ($request->file('documents') as $file) {
-            $path = $file->store('proposals/work-orders');
+            $path = $file->store('public/proposals/work-orders');
 
             $proposal->workOrderDocuments()->create([
                 'name' => $file->getClientOriginalName(),

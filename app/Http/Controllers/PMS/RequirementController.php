@@ -80,7 +80,7 @@ class RequirementController extends Controller
         // Handle document uploads if any
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
-                $path = $file->store('requirements/documents');
+                $path = $file->store('public/requirements/documents');
 
                 $requirement->documents()->create([
                     'name' => $file->getClientOriginalName(),
@@ -152,7 +152,7 @@ class RequirementController extends Controller
         // Handle document uploads if any
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
-                $path = $file->store('requirements/documents');
+                $path = $file->store('public/requirements/documents');
 
                 $requirement->documents()->create([
                     'name' => $file->getClientOriginalName(),
