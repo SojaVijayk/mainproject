@@ -924,6 +924,7 @@ function formatDateLocal(date) {
         title: `
         <strong>Status : ${status}</strong><br>
             <strong>${info.event.title}</strong><br>
+            <strong>Venues:</strong> ${info.event.extendedProps.venues.join(', ')}<br>
             <strong>Type:</strong> ${info.event.extendedProps.eventType}<br>
             <strong>Mode:</strong> ${info.event.extendedProps.eventMode}<br>
             <strong>Start:</strong> ${startDateTime}<br>
@@ -931,7 +932,7 @@ function formatDateLocal(date) {
             ${duration}
             <strong>Coordinators:</strong> ${info.event.extendedProps.coordinators.join(', ')}<br>
             ${info.event.extendedProps.faculties.length ? `<strong>Faculties:</strong> ${info.event.extendedProps.faculties.join(', ')}<br>` : ''}
-            <strong>Venues:</strong> ${info.event.extendedProps.venues.join(', ')}<br>
+
             ${info.event.extendedProps.custom_amenities_request ? `<strong>Additional Amenities:</strong> ${info.event.extendedProps.custom_amenities_request}<br>` : ''}
             <strong>Participants:</strong> ${info.event.extendedProps.participants_count}
         `,
