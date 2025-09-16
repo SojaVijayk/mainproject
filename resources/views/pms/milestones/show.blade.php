@@ -46,7 +46,11 @@ auth()->id())->where('role','lead')->exists();
           </span>
           <div><a href="{{ route('pms.projects.show', $project->id) }}" class="btn btn-sm btn-secondary me-2">
               <i class="fas fa-arrow-left"></i> Back to Project
-            </a></div>
+            </a>
+            <a href="{{ route('pms.milestones.index', $project->id) }}" class="btn btn-sm btn-secondary me-2">
+              <i class="fas fa-arrow-left"></i> Back to Milestones
+            </a>
+          </div>
         </div>
       </div>
       <div class="card-body">
