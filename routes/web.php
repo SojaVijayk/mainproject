@@ -18,6 +18,9 @@ use App\Http\Controllers\PMS\ReportController;
 use App\Http\Controllers\PMS\ProjectDocumentController;
 use App\Http\Controllers\PMS\DashboardController;
 use App\Http\Controllers\PMS\FinanceDashboardController;
+use App\Http\Controllers\PMS\ExpenseController;
+use App\Http\Controllers\PMS\ExpenseCategoryController;
+use App\Http\Controllers\PMS\VendorController;
 
 
 
@@ -557,6 +560,17 @@ Route::prefix('projects/{project}/tasks/{task}/comments')
         Route::post('/{invoice}/pay', [InvoiceController::class, 'markAsPaid'])->name('pay');
         Route::post('/{invoice}/payments', [InvoiceController::class, 'addPayment'])->name('add-payment');
     });
+
+//EXPENSE
+    Route::resource('expenses', ExpenseController::class);
+Route::get('expenses/export/excel', [ExpenseController::class, 'exportExcel'])->name('expenses.export.excel');
+Route::get('expenses/export/pdf', [ExpenseController::class, 'exportPdf'])->name('expenses.export.pdf');
+
+Route::resource('expense-categories', ExpenseCategoryController::class);
+Route::resource('vendors', VendorController::class);
+
+// Finance Dashboard Route
+Route::get('finance-dashboard', [FinanceDashboardController::class, 'index'])->name('finance.dashboard');
 
 
 

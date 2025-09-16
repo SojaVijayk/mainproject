@@ -164,14 +164,17 @@
               <label class="form-label">Tenure</label>
               <div class="row g-2">
                 <div class="col-4">
+                  <label for="tenure_years" class="form-label">Years</label>
                   <input type="number" name="tenure_years" id="tenure_years" class="form-control" placeholder="Years"
                     value="{{ old('tenure_years', 0) }}" min="0">
                 </div>
                 <div class="col-4">
+                  <label for="tenure_months" class="form-label">Months</label>
                   <input type="number" name="tenure_months" id="tenure_months" class="form-control" placeholder="Months"
                     value="{{ old('tenure_months', 0) }}" min="0" max="11">
                 </div>
                 <div class="col-4">
+                  <label for="tenure_days" class="form-label">Days</label>
                   <input type="number" name="tenure_days" id="tenure_days" class="form-control" placeholder="Days"
                     value="{{ old('tenure_days', 0) }}" min="0" max="30">
                 </div>
