@@ -218,7 +218,7 @@ function updateTeamJson() {
             <label class="form-label">Add Team Member</label>
             <select id="user_selector" class="form-select">
               <option value="">Select a user</option>
-              @foreach(User::where('id', '!=', auth()->id())->get() as $user)
+              @foreach(User::where('id', '!=', auth()->id())->where('active',1)->orderBy('name', 'asc')->get() as $user)
               <option value="{{ $user->id }}" {{ in_array($user->id, $teamMemberIds) ? 'selected' : '' }}>{{
                 $user->name }}</option>
               @endforeach
