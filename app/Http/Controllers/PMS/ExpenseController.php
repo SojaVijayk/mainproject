@@ -12,10 +12,15 @@ use App\Exports\ExpensesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use PDF;
 
+use App\Models\PMS\Invoice;
+use DB;
+use Carbon\Carbon;
+
 class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
+       $pageConfigs = ['myLayout' => 'horizontal'];
         $query = Expense::with(['project', 'category', 'vendor', 'creator']);
 
         // Apply filters
@@ -56,11 +61,12 @@ class ExpenseController extends Controller
             'categories',
             'vendors',
             'paymentModes'
-        ));
+        ),['pageConfigs'=> $pageConfigs]);
     }
 
     public function create()
     {
+       $pageConfigs = ['myLayout' => 'horizontal'];
         $projects = Project::all();
         $categories = ExpenseCategory::all();
         $vendors = Vendor::all();
@@ -71,7 +77,7 @@ class ExpenseController extends Controller
             'categories',
             'vendors',
             'paymentModes'
-        ));
+        ),['pageConfigs'=> $pageConfigs]);
     }
 
     public function store(Request $request)
@@ -106,17 +112,19 @@ class ExpenseController extends Controller
 
         Expense::create($validated);
 
-        return redirect()->route('expenses.index')
+        return redirect()->route('pms.expenses.index')
             ->with('success', 'Expense recorded successfully.');
     }
 
     public function show(Expense $expense)
     {
-        return view('pms.expenses.show', compact('expense'));
+       $pageConfigs = ['myLayout' => 'horizontal'];
+        return view('pms.expenses.show', compact('expense'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function edit(Expense $expense)
     {
+       $pageConfigs = ['myLayout' => 'horizontal'];
         $projects = Project::all();
         $categories = ExpenseCategory::all();
         $vendors = Vendor::all();
@@ -128,7 +136,7 @@ class ExpenseController extends Controller
             'categories',
             'vendors',
             'paymentModes'
-        ));
+        ),['pageConfigs'=> $pageConfigs]);
     }
 
     public function update(Request $request, Expense $expense)
@@ -215,5 +223,118 @@ class ExpenseController extends Controller
         $pdf = PDF::loadView('expenses.pdf', compact('expenses'));
 
         return $pdf->download('expenses.pdf');
+    }
+
+     public function report(Request $request)
+    {
+        $dateRange = $request->input('date_range', 'this_month');
+
+        // Set date range for filtering
+        switch ($dateRange) {
+            case 'last_month':
+                $startDate = Carbon::now()->subMonth()->startOfMonth();
+                $endDate = Carbon::now()->subMonth()->endOfMonth();
+                break;
+            case 'last_quarter':
+                $startDate = Carbon::now()->subMonths(3)->startOfMonth();
+                $endDate = Carbon::now()->subMonth()->endOfMonth();
+                break;
+            case 'last_year':
+                $startDate = Carbon::now()->subYear()->startOfYear();
+                $endDate = Carbon::now()->subYear()->endOfYear();
+                break;
+            case 'this_month':
+            default:
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                break;
+        }
+
+        // Budget vs Actual Expense
+        $budgetData = Project::with(['proposal', 'expenses' => function($query) use ($startDate, $endDate) {
+            $query->whereBetween('payment_date', [$startDate, $endDate]);
+        }])
+        ->whereHas('proposal')
+        ->get()
+        ->map(function ($project) {
+            $budget = $project->proposal->budget;
+            $actual = $project->expenses->sum('total_amount');
+            $variance = $budget - $actual;
+
+            return [
+                'project' => $project->name,
+                'budget' => $budget,
+                'actual' => $actual,
+                'variance' => $variance,
+                'variance_percent' => $budget > 0 ? ($variance / $budget) * 100 : 0
+            ];
+        });
+
+        // Revenue vs Expense
+        $revenueData = Project::with(['proposal', 'expenses' => function($query) use ($startDate, $endDate) {
+            $query->whereBetween('payment_date', [$startDate, $endDate]);
+        }, 'invoices' => function($query) use ($startDate, $endDate) {
+            $query->whereBetween('invoice_date', [$startDate, $endDate]);
+        }])
+        ->whereHas('proposal')
+        ->get()
+        ->map(function ($project) {
+            $revenue = $project->invoices->sum('total_amount');
+            $expense = $project->expenses->sum('total_amount');
+            $profit = $revenue - $expense;
+
+            return [
+                'project' => $project->name,
+                'revenue' => $revenue,
+                'expense' => $expense,
+                'profit' => $profit,
+                'profit_margin' => $revenue > 0 ? ($profit / $revenue) * 100 : 0
+            ];
+        });
+
+        // Expense distribution by category
+        $categoryData = Expense::join('expense_categories', 'expenses.category_id', '=', 'expense_categories.id')
+            ->select('expense_categories.name as category', DB::raw('SUM(expenses.total_amount) as total'))
+            ->whereBetween('payment_date', [$startDate, $endDate])
+            ->groupBy('expenses.category_id', 'expense_categories.name')
+            ->get();
+
+        // Expense trend over time (last 6 months)
+        $trendData = Expense::select(
+                DB::raw('YEAR(payment_date) as year'),
+                DB::raw('MONTH(payment_date) as month'),
+                DB::raw('SUM(total_amount) as total')
+            )
+            ->where('payment_date', '>=', Carbon::now()->subMonths(6)->startOfMonth())
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'label' => date('M Y', mktime(0, 0, 0, $item->month, 1, $item->year)),
+                    'total' => $item->total
+                ];
+            });
+
+        // Total metrics for dashboard cards
+        $totalExpenses = Expense::whereBetween('payment_date', [$startDate, $endDate])->sum('total_amount');
+        $totalRevenue = Invoice::whereBetween('invoice_date', [$startDate, $endDate])->sum('amount');
+        $totalProjects = Project::count();
+        $avgExpensePerProject = $totalProjects > 0 ? $totalExpenses / $totalProjects : 0;
+
+        return view('pms.expenses.dashboard', compact(
+            'budgetData',
+            'revenueData',
+            'categoryData',
+            'trendData',
+            'totalExpenses',
+            'totalRevenue',
+            'totalProjects',
+            'avgExpensePerProject',
+            'dateRange',
+            'startDate',
+            'endDate'
+        ));
     }
 }

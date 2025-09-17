@@ -65,6 +65,10 @@ auth()->id())->where('role','lead')->exists();
 
   </p>
 
+  <a href="{{ route('pms.projects.dashboard', $project->id) }}" class="btn btn-sm btn-info">
+    <i class="fas fa-tachometer-alt"></i> Dashboard
+  </a>
+
 
 </div>
 

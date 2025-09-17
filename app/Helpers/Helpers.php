@@ -238,5 +238,24 @@ class Helpers
     }
 
 
+    function indianNumberFormat($num, $decimals = 2) {
+        $exploded = explode('.', number_format($num, $decimals, '.', ''));
+        $decimal = isset($exploded[1]) ? '.' . $exploded[1] : '';
+        $num = $exploded[0];
+
+        $last3 = substr($num, -3);
+        $rest = substr($num, 0, -3);
+
+        if ($rest != '') {
+            $last3 = ',' . $last3;
+        }
+        $rest = preg_replace("/\B(?=(\d{2})+(?!\d))/", ",", $rest);
+
+        return $rest . $last3 . $decimal;
+    }
+
+
+
+
 
 }

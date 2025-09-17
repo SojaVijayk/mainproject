@@ -495,6 +495,10 @@ Route::prefix('pms')->name('pms.')->middleware(['auth'])->group(function () {
     // Dynamic data loading for projects
     Route::get('projects/{project}/team-members', [ProjectController::class, 'getTeamMembers'])->name('projects.team-members');
 
+    Route::get('projects/{id}/dashboard', [ProjectController::class, 'dashboard'])->name('projects.dashboard');
+Route::get('projects/{id}/financial-data', [ProjectController::class, 'getProjectFinancialData'])->name('projects.financial-data');
+Route::get('projects/{id}/timeline-data', [ProjectController::class, 'getProjectTimelineData'])->name('projects.timeline-data');
+
 
     Route::prefix('projects/{project}/documents')->name('projects.documents.')->group(function () {
     Route::get('/', [ProjectDocumentController::class, 'index'])->name('index');
@@ -570,7 +574,7 @@ Route::resource('expense-categories', ExpenseCategoryController::class);
 Route::resource('vendors', VendorController::class);
 
 // Finance Dashboard Route
-Route::get('finance-dashboard', [FinanceDashboardController::class, 'index'])->name('finance.dashboard');
+Route::get('expense-dashboard', [ExpenseController::class, 'report'])->name('expense.dashboard');
 
 
 

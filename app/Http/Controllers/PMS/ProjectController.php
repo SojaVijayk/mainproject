@@ -13,6 +13,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use DB;
+use Carbon\Carbon;
 
 class ProjectController extends Controller
 {
@@ -488,5 +490,114 @@ if ($request->has('team_members_json')) {
     {
         $members = $project->teamMembers()->with('user')->get();
         return response()->json($members);
+    }
+
+
+
+    //Dashboard
+    public function dashboard($id)
+    {
+        $pageConfigs = ['myLayout' => 'horizontal'];
+        $project = Project::with([
+            'proposal',
+            'milestones.tasks',
+            'invoices.payments',
+            'expenses',
+            'timesheets.user',
+            'teamMembers.user'
+        ])->findOrFail($id);
+
+        // Budget vs Expenses
+        $budget = $project->proposal ? $project->proposal->budget : 0;
+        $expenses = $project->expenses->sum('total_amount');
+        $budgetRemaining = $budget - $expenses;
+        $budgetUtilization = $budget > 0 ? ($expenses / $budget) * 100 : 0;
+
+        // Revenue vs Invoices
+        $totalInvoiced = $project->invoices->sum('amount');
+        $totalPaid = $project->invoices->sum(function($invoice) {
+            return $invoice->payments->sum('amount');
+        });
+        $outstanding = $totalInvoiced - $totalPaid;
+
+        // Milestone progress
+        $milestoneProgress = $project->milestones->map(function($milestone) {
+            return [
+                'name' => $milestone->name,
+                'progress' => $milestone->getTaskCompletionPercentageAttribute(),
+                'status' => $milestone->status_name
+            ];
+        });
+
+        // Expense by category
+        $expenseByCategory = $project->expenses->groupBy('category.name')->map(function($expenses, $category) {
+            return $expenses->sum('total_amount');
+        });
+
+        // Timesheet data
+        $timesheetByUser = $project->timesheets->groupBy('user.name')->map(function($timesheets) {
+            return $timesheets->sum('minutes') / 60; // Convert to hours
+        });
+
+        // Recent activities
+        $recentInvoices = $project->invoices()->latest()->take(5)->get();
+        $recentExpenses = $project->expenses()->latest()->take(5)->get();
+        $recentTasks = $project->tasks()->latest()->take(5)->get();
+
+        return view('pms.projects.detailed_dashboard', compact(
+            'project',
+            'budget',
+            'expenses',
+            'budgetRemaining',
+            'budgetUtilization',
+            'totalInvoiced',
+            'totalPaid',
+            'outstanding',
+            'milestoneProgress',
+            'expenseByCategory',
+            'timesheetByUser',
+            'recentInvoices',
+            'recentExpenses',
+            'recentTasks'
+        ),['pageConfigs'=> $pageConfigs]);
+    }
+
+    public function getProjectFinancialData($id)
+    {
+        $project = Project::findOrFail($id);
+
+        $financialData = [
+            'budget' => $project->proposal ? $project->proposal->budget : 0,
+            'expenses' => $project->expenses->sum('total_amount'),
+            'invoiced' => $project->invoices->sum('amount'),
+            'paid' => $project->invoices->sum(function($invoice) {
+                return $invoice->payments->sum('amount');
+            })
+        ];
+
+        return response()->json($financialData);
+    }
+
+    public function getProjectTimelineData($id)
+    {
+        $project = Project::with(['milestones.tasks'])->findOrFail($id);
+
+        $timelineData = [
+            'milestones' => $project->milestones->map(function($milestone) {
+                return [
+                    'name' => $milestone->name,
+                    'progress' => $milestone->getTaskCompletionPercentageAttribute(),
+                    'status' => $milestone->status_name,
+                    'tasks' => $milestone->tasks->map(function($task) {
+                        return [
+                            'name' => $task->name,
+                            'status' => $task->status_name
+                        ];
+                    })
+                ];
+            })
+        ];
+
+        return response()->json($timelineData);
     }
 }

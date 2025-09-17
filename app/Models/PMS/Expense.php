@@ -5,6 +5,7 @@ namespace App\Models\PMS;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
 
 class Expense extends Model
 {
@@ -23,6 +24,9 @@ class Expense extends Model
         'notes',
         'created_by'
     ];
+    protected $casts = [
+            'payment_date' => 'datetime',
+        ];
 
     protected static function boot()
     {

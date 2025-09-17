@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts/layoutMaster')
 
 @section('content')
 <div class="container-fluid">
@@ -90,7 +90,7 @@
                 @foreach($expenses as $expense)
                 <tr>
                   <td>{{ $expense->id }}</td>
-                  <td>{{ $expense->project->name }}</td>
+                  <td>{{ $expense->project->title }}</td>
                   <td>{{ $expense->category->name }}</td>
                   <td>{{ $expense->vendor->name }}</td>
                   <td>{{ number_format($expense->amount, 2) }}</td>
@@ -99,9 +99,9 @@
                   <td>{{ ucwords(str_replace('_', ' ', $expense->payment_mode)) }}</td>
                   <td>{{ $expense->payment_date->format('M d, Y') }}</td>
                   <td>
-                    <a href="{{ route('expenses.show', $expense) }}" class="btn btn-info btn-sm">View</a>
-                    <a href="{{ route('expenses.edit', $expense) }}" class="btn btn-primary btn-sm">Edit</a>
-                    <form action="{{ route('expenses.destroy', $expense) }}" method="POST" class="d-inline">
+                    <a href="{{ route('pms.expenses.show', $expense) }}" class="btn btn-info btn-sm">View</a>
+                    <a href="{{ route('pms.expenses.edit', $expense) }}" class="btn btn-primary btn-sm">Edit</a>
+                    <form action="{{ route('pms.expenses.destroy', $expense) }}" method="POST" class="d-inline">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-danger btn-sm"

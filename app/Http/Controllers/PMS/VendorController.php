@@ -11,13 +11,15 @@ class VendorController extends Controller
 {
     public function index()
     {
+        $pageConfigs = ['myLayout' => 'horizontal'];
         $vendors = Vendor::paginate(20);
-        return view('expenses.vendors.index', compact('vendors'));
+        return view('pms.expenses.vendors.index', compact('vendors'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function create()
     {
-        return view('expenses.vendors.create');
+        $pageConfigs = ['myLayout' => 'horizontal'];
+        return view('pms.expenses.vendors.create',['pageConfigs'=> $pageConfigs]);
     }
 
     public function store(Request $request)
@@ -29,13 +31,14 @@ class VendorController extends Controller
 
         Vendor::create($validated);
 
-        return redirect()->route('vendors.index')
+        return redirect()->route('pms.vendors.index')
             ->with('success', 'Vendor created successfully.');
     }
 
     public function edit(Vendor $vendor)
     {
-        return view('expenses.vendors.edit', compact('vendor'));
+        $pageConfigs = ['myLayout' => 'horizontal'];
+        return view('pms.expenses.vendors.edit', compact('vendor'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function update(Request $request, Vendor $vendor)
@@ -47,7 +50,7 @@ class VendorController extends Controller
 
         $vendor->update($validated);
 
-        return redirect()->route('vendors.index')
+        return redirect()->route('pms.vendors.index')
             ->with('success', 'Vendor updated successfully.');
     }
 
@@ -60,7 +63,7 @@ class VendorController extends Controller
 
         $vendor->delete();
 
-        return redirect()->route('vendors.index')
+        return redirect()->route('pms.vendors.index')
             ->with('success', 'Vendor deleted successfully.');
     }
 }

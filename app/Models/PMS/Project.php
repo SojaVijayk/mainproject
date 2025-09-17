@@ -72,6 +72,11 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
     return $this->hasMany(Invoice::class);
 }
 
+       public function expenses()
+{
+    return $this->hasMany(Expense::class);
+}
+
     public function tasks()
 {
     return $this->hasManyThrough(Task::class, Milestone::class);
@@ -122,4 +127,21 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
         $completedWeightage = $this->milestones->where('status', Milestone::STATUS_COMPLETED)->sum('weightage');
         return round(($completedWeightage / $totalWeightage) * 100, 2);
     }
+
+    public function getTotalInvoicedAttribute()
+{
+    return $this->invoices->sum('amount');
+}
+
+public function getTotalPaidAttribute()
+{
+    return $this->invoices->sum(function($invoice) {
+        return $invoice->payments->sum('amount');
+    });
+}
+
+public function getTotalExpensesAttribute()
+{
+    return $this->expenses->sum('total_amount');
+}
 }

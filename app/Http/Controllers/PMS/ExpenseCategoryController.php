@@ -12,13 +12,15 @@ class ExpenseCategoryController extends Controller
 {
     public function index()
     {
+        $pageConfigs = ['myLayout' => 'horizontal'];
         $categories = ExpenseCategory::paginate(20);
-        return view('expenses.categories.index', compact('categories'));
+        return view('pms.expenses.categories.index', compact('categories'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function create()
     {
-        return view('expenses.categories.create');
+        $pageConfigs = ['myLayout' => 'horizontal'];
+        return view('pms.expenses.categories.create',['pageConfigs'=> $pageConfigs]);
     }
 
     public function store(Request $request)
@@ -30,13 +32,14 @@ class ExpenseCategoryController extends Controller
 
         ExpenseCategory::create($validated);
 
-        return redirect()->route('expense-categories.index')
+        return redirect()->route('pms.expense-categories.index')
             ->with('success', 'Category created successfully.');
     }
 
     public function edit(ExpenseCategory $expenseCategory)
     {
-        return view('expenses.categories.edit', compact('expenseCategory'));
+        $pageConfigs = ['myLayout' => 'horizontal'];
+        return view('pms.expenses.categories.edit', compact('expenseCategory'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function update(Request $request, ExpenseCategory $expenseCategory)
@@ -48,20 +51,20 @@ class ExpenseCategoryController extends Controller
 
         $expenseCategory->update($validated);
 
-        return redirect()->route('expense-categories.index')
+        return redirect()->route('pms.expense-categories.index')
             ->with('success', 'Category updated successfully.');
     }
 
     public function destroy(ExpenseCategory $expenseCategory)
     {
         if ($expenseCategory->expenses()->count() > 0) {
-            return redirect()->route('expense-categories.index')
+            return redirect()->route('pms.expense-categories.index')
                 ->with('error', 'Cannot delete category with associated expenses.');
         }
 
         $expenseCategory->delete();
 
-        return redirect()->route('expense-categories.index')
+        return redirect()->route('pms.expense-categories.index')
             ->with('success', 'Category deleted successfully.');
     }
 }
