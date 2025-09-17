@@ -81,6 +81,7 @@
             <th>Status</th>
             <th>Completion</th>
             <th>Budget (₹)</th>
+            <th>Dashboard</th>
           </tr>
         </thead>
         <tbody>
@@ -105,6 +106,9 @@
               </div>
             </td>
             <td>{{ number_format($project->budget, 2) }}</td>
+            <td><a href="{{ route('pms.projects.dashboard', $project->id) }}" class="btn btn-sm btn-info">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+              </a></td>
           </tr>
           @endforeach
         </tbody>
