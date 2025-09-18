@@ -18,8 +18,8 @@
                   <select name="project_id" id="project_id" class="form-control" required>
                     <option value="">Select Project</option>
                     @foreach($projects as $project)
-                    <option value="{{ $project->id }}" {{ old('project_id')==$project->id ? 'selected' : '' }}>{{
-                      $project->title }}</option>
+                    <option value="{{ $project->id }}" {{ old('project_id')==$project->id ? 'selected' : '' }}>
+                      {{$project->title }} - {{$project->project_code }}</option>
                     @endforeach
                   </select>
                   @error('project_id')

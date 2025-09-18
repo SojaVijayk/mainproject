@@ -75,6 +75,7 @@
               <thead>
                 <tr>
                   <th>ID</th>
+                  <th>Project Code</th>
                   <th>Project</th>
                   <th>Category</th>
                   <th>Vendor</th>
@@ -90,7 +91,9 @@
                 @foreach($expenses as $expense)
                 <tr>
                   <td>{{ $expense->id }}</td>
+                  <td> {{$project->project_code }}</td>
                   <td>{{ $expense->project->title }}</td>
+
                   <td>{{ $expense->category->name }}</td>
                   <td>{{ $expense->vendor->name }}</td>
                   <td>{{ number_format($expense->amount, 2) }}</td>
