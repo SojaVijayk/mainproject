@@ -30,6 +30,19 @@
   let teamMembers = @json($teamMembersData);
 renderTeamList();
 
+ const budgetInput = document.getElementById('budget');
+    const expenseInput = document.getElementById('estimated_expense');
+    const revenueInput = document.getElementById('revenue');
+    function calculateRevenue() {
+      const budget = parseFloat(budgetInput.value) || 0;
+      const expense = parseFloat(expenseInput.value) || 0;
+      const revenue = budget - expense;
+      revenueInput.value = revenue >= 0 ? revenue.toFixed(2) : 0;
+    }
+
+    budgetInput.addEventListener('input', calculateRevenue);
+    expenseInput.addEventListener('input', calculateRevenue);
+
 $('#user_selector').on('change', function () {
     const userId = $(this).val();
     const userName = $(this).find('option:selected').text();
@@ -61,6 +74,7 @@ function renderTeamList() {
                     </select>
                 </div>
                 <div class="col-md-3">
+                  <label for="project_investigator_id" class="form-label">Time Investment (Hours)</label>
                     <input type="number" step="0.1" min="0" class="form-control time-input" value="${member.expected_time}">
                 </div>
                 <div class="col-md-2">
@@ -159,7 +173,7 @@ function updateTeamJson() {
 
           <div class="row mb-3">
             <div class="col-md-4">
-              <label for="budget" class="form-label">Budget (₹)</label>
+              <label for="budget" class="form-label">Budget (₹ Without Tax)</label>
               <input type="number" step="0.01" min="0" name="budget" id="budget" class="form-control"
                 value="{{ old('budget', $project->budget) }}" required>
               @error('budget')
@@ -167,7 +181,7 @@ function updateTeamJson() {
               @enderror
             </div>
             <div class="col-md-4">
-              <label for="estimated_expense" class="form-label">Estimated Expense (₹)</label>
+              <label for="estimated_expense" class="form-label">Estimated Expense (₹ Without Tax)</label>
               <input type="number" step="0.01" min="0" name="estimated_expense" id="estimated_expense"
                 class="form-control" value="{{ old('estimated_expense', $project->estimated_expense) }}" required>
               @error('estimated_expense')
@@ -175,7 +189,7 @@ function updateTeamJson() {
               @enderror
             </div>
             <div class="col-md-4">
-              <label for="revenue" class="form-label">Expected Revenue (₹)</label>
+              <label for="revenue" class="form-label">Expected Revenue (₹ Without Tax)</label>
               <input type="number" step="0.01" min="0" name="revenue" id="revenue" class="form-control"
                 value="{{ old('revenue', $project->revenue) }}" required>
               @error('revenue')

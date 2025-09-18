@@ -46,24 +46,24 @@ use \App\Models\PMS\Invoice;
             <tbody>
               <tr>
                 <td>{{ $invoice->description ?? 'No description provided' }}</td>
-                <td class="text-end">${{ number_format($invoice->amount, 2) }}</td>
+                <td class="text-end">{{ number_format($invoice->amount, 2) }}</td>
               </tr>
             </tbody>
             <tfoot>
               <tr>
                 <th class="text-end">Total:</th>
-                <th class="text-end">${{ number_format($invoice->amount, 2) }}</th>
+                <th class="text-end">{{ number_format($invoice->amount, 2) }}</th>
               </tr>
               @if($invoice->paid_amount > 0)
               <tr>
                 <th class="text-end">Paid:</th>
-                <th class="text-end text-success">${{ number_format($invoice->paid_amount, 2) }}</th>
+                <th class="text-end text-success">{{ number_format($invoice->paid_amount, 2) }}</th>
               </tr>
               <tr>
                 <th class="text-end">Balance:</th>
                 <th class="text-end">
                   @if($invoice->balance_amount > 0)
-                  <span class="text-danger">${{ number_format($invoice->balance_amount, 2) }}</span>
+                  <span class="text-danger">{{ number_format($invoice->balance_amount, 2) }}</span>
                   @else
                   <span class="text-success">Paid</span>
                   @endif
@@ -131,7 +131,7 @@ use \App\Models\PMS\Invoice;
         @forelse($invoice->payments as $payment)
         <div class="border-bottom pb-3 mb-3">
           <div class="d-flex justify-content-between mb-1">
-            <span class="fw-semibold">${{ number_format($payment->amount, 2) }}</span>
+            <span class="fw-semibold">{{ number_format($payment->amount, 2) }}</span>
             <span class="text-muted">{{ $payment->payment_date->format('M d, Y') }}</span>
           </div>
           <div class="d-flex justify-content-between">

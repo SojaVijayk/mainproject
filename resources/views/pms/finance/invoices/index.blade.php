@@ -59,12 +59,12 @@ use \App\Models\PMS\Invoice;
                       </span>
                     </td>
                     <td>{{ $invoice->invoice_date?->format('M d, Y') ?? '-' }}</td>
-                    <td>${{ number_format($invoice->amount, 2) }}</td>
+                    <td>{{ number_format($invoice->amount, 2) }}</td>
                     <td>
                       @if($invoice->status == Invoice::STATUS_PAID)
                       <span class="text-success">Paid</span>
                       @else
-                      ${{ number_format($invoice->balance_amount, 2) }}
+                      {{ number_format($invoice->balance_amount, 2) }}
                       @endif
                     </td>
                     <td>

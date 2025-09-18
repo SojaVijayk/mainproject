@@ -14,11 +14,11 @@
       <div class="row mb-3">
         <div class="col-md-6">
           <label class="form-label">Invoice Amount</label>
-          <input type="text" class="form-control" value="${{ number_format($invoice->amount, 2) }}" readonly>
+          <input type="text" class="form-control" value="{{ number_format($invoice->amount, 2) }}" readonly>
         </div>
         <div class="col-md-6">
           <label class="form-label">Balance Due</label>
-          <input type="text" class="form-control" value="${{ number_format($invoice->balance_amount, 2) }}" readonly>
+          <input type="text" class="form-control" value="{{ number_format($invoice->balance_amount, 2) }}" readonly>
         </div>
       </div>
 

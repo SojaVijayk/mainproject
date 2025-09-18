@@ -129,7 +129,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="budget" class="form-label">Budget (₹)</label>
+              <label for="budget" class="form-label">Budget (₹ Without Tax)</label>
               <input type="number" step="0.01" min="0" name="budget" id="budget" class="form-control"
                 value="{{ old('budget') }}" required>
               @error('budget')
@@ -193,7 +193,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="estimated_expense" class="form-label">Estimated Expense (₹)</label>
+              <label for="estimated_expense" class="form-label">Estimated Expense (₹ Without Tax)</label>
               <input type="number" step="0.01" min="0" name="estimated_expense" id="estimated_expense"
                 class="form-control" value="{{ old('estimated_expense') }}" required>
               @error('estimated_expense')
@@ -201,7 +201,7 @@
               @enderror
             </div>
             <div class="col-md-6">
-              <label for="revenue" class="form-label">Expected Revenue (₹)</label>
+              <label for="revenue" class="form-label">Expected Revenue (₹ Without Tax)</label>
               <input type="number" step="0.01" min="0" name="revenue" id="revenue" class="form-control"
                 value="{{ old('revenue') }}" required>
               @error('revenue')
