@@ -254,7 +254,10 @@ $user = Auth::user();
         {{-- <p class="card-text">With supporting text below as a natural lead-in to additional content.</p> --}}
         <div class="row g-4">
           @forelse($projects_ongoing as $project)
-
+          @php
+          $userIsTeamLead = $project->teamMembers()->where('user_id',
+          auth()->id())->where('role','lead')->exists();
+          @endphp
           <div class="col-xl-4 col-lg-6 col-md-6">
             <div class="card ">
               <div class="card-header">
@@ -290,7 +293,8 @@ $user = Auth::user();
                             details</a></li>
 
                         @if($project->status == \App\Models\PMS\Project::STATUS_INITIATED || $project->status ==
-                        \App\Models\PMS\Project::STATUS_ONGOING && $user->hasRole('Project Investigator'))
+                        \App\Models\PMS\Project::STATUS_ONGOING && ($user->hasRole('Project Investigator') ||
+                        $userIsTeamLead))
                         <li> <a href="{{ route('pms.projects.edit', $project->id) }}" class="dropdown-item">
                             {{-- <i class="fas fa-edit"></i> --}} Edit
                           </a> </li>
