@@ -287,8 +287,10 @@
     <div class="col-md-3">
       <div class="card stat-card bg-label-success text-white">
         <div class="card-body text-center">
-          <h6 class="card-title">Total Paid</h6>
+          <h6 class="card-title">Total Recieved</h6>
           <h3 class="card-text">{{ number_format($totalPaid, 2) }}</h3>
+          <small class="card-text text-dark">Balance</small>
+          <small class="card-text text-danger">{{ number_format($totalInvoiced - $totalPaid, 2) }}</small>
         </div>
       </div>
     </div>

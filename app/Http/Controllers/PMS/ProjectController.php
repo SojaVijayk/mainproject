@@ -508,7 +508,7 @@ if ($request->has('team_members_json')) {
         ])->findOrFail($id);
 
         // Budget vs Expenses
-        $budget = $project->proposal ? $project->proposal->budget : 0;
+        $budget = $project->budget ? $project->budget : 0;
         $expenses = $project->expenses->sum('total_amount');
         $budgetRemaining = $budget - $expenses;
         $budgetUtilization = $budget > 0 ? ($expenses / $budget) * 100 : 0;
