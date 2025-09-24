@@ -24,13 +24,13 @@ class TapalController extends Controller
       $user = auth()->user();
        $stats = $this->getTapalStatistics($user);
 
-        $tapals = Tapal::with(['creator', 'currentHolder'])
+        $query = Tapal::with(['creator', 'currentHolder'])
             ->where('created_by', Auth::id())
             ->orWhereHas('movements', function($query) {
                 $query->where('to_user_id', Auth::id());
             })
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc');
+             $tapals = $query->latest()->paginate(25);
 
         return view('tapals.index', compact('tapals','stats'),['pageConfigs'=> $pageConfigs]);
     }

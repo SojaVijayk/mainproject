@@ -245,7 +245,7 @@ $user = Auth::user();
           </div>
 
           @endforelse
-          {{ $projects->links() }}
+          {{ $projects->links('pagination::bootstrap-5') }}
 
         </div>
       </div>
@@ -399,7 +399,7 @@ $user = Auth::user();
 
           @endforelse
 
-          {{ $projects->links() }}
+          {{ $projects_ongoing->links('pagination::bootstrap-5') }}
         </div>
       </div>
       <div class="tab-pane fade" id="navs-pills-within-card-completed" role="tabpanel">
@@ -541,7 +541,7 @@ $user = Auth::user();
 
           @endforelse
 
-          {{ $projects->links() }}
+          {{ $projects_completed->links('pagination::bootstrap-5') }}
         </div>
       </div>
 
@@ -672,7 +672,7 @@ $user = Auth::user();
 
           @endforelse
 
-          {{ $projects->links() }}
+          {{ $projects_archived->links('pagination::bootstrap-5') }}
         </div>
       </div>
     </div>
