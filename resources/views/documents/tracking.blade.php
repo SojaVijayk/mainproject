@@ -453,7 +453,7 @@ function loadStatistics() {
             </table>
           </div>
           <div class="mt-3">
-            {{ $documents->appends(request()->query())->links() }}
+            {{ $documents->appends(request()->query())->links('pagination::bootstrap-5') }}
           </div>
         </div>
       </div>
