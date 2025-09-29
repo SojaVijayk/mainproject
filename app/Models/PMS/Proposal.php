@@ -133,4 +133,15 @@ public function getStatusBadgeColorAttribute()
 
         return implode(', ', $parts);
     }
+
+    public function expenseComponents()
+{
+    return $this->hasMany(ProposalExpenseComponent::class);
+}
+
+// Add this method to calculate total expense from components
+public function getTotalEstimatedExpenseAttribute()
+{
+    return $this->expenseComponents->sum('amount');
+}
 }

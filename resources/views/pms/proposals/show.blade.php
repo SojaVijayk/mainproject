@@ -110,6 +110,41 @@
           <div class="col-md-6">
             <p><strong>End Date:</strong> {{ $proposal->expected_end_date->format('d M Y') }}</p>
             <p><strong>Estimated Expense:</strong> ₹{{ number_format($proposal->estimated_expense, 2) }}</p>
+            @if($proposal->expenseComponents->count() > 0)
+            <div class="card mt-4">
+              <div class="card-header">
+                <h5 class="card-title">Estimated Expense Breakdown</h5>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Category</th>
+                        <th>Component</th>
+                        <th>Amount (₹)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @foreach($proposal->expenseComponents as $component)
+                      <tr>
+                        <td>{{ $component->category->name }}</td>
+                        <td>{{ $component->component }}</td>
+                        <td>₹{{ number_format($component->amount, 2) }}</td>
+                      </tr>
+                      @endforeach
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th colspan="2" class="text-end">Total Estimated Expense:</th>
+                        <th>₹{{ number_format($proposal->estimated_expense, 2) }}</th>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+            @endif
             <p><strong>Expected Revenue:</strong> ₹{{ number_format($proposal->revenue, 2) }}</p>
             <p><strong>Created By:</strong> {{ $proposal->creator->name }}</p>
           </div>

@@ -29,10 +29,10 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Initialize select2 for team members
-    $('#team_members').select2({
+    {{--  $('#team_members').select2({
         placeholder: 'Select team members',
         width: '100%'
-    });
+    });  --}}
 
     // Set end date minimum based on start date
     const startDateInput = document.getElementById('start_date');
@@ -47,7 +47,87 @@
         }
     });
 
-    const expenseInput = document.getElementById('estimated_expense');
+
+    // Expense Components Management
+    const container = document.getElementById('expense-components-container');
+    const addButton = document.getElementById('add-component');
+    const totalExpenseSpan = document.getElementById('total-expense');
+    const estimatedExpenseInput = document.getElementById('estimated_expense');
+    let componentCount = {{ $proposal->expenseComponents->count() }};
+
+    // Add new component row
+    addButton.addEventListener('click', function() {
+        const newRow = document.querySelector('.expense-component').cloneNode(true);
+        newRow.innerHTML = newRow.innerHTML.replace(/\[0\]/g, `[${componentCount}]`);
+
+        // Clear values
+        newRow.querySelector('.expense-category').value = '';
+        newRow.querySelector('input[name*="component"]').value = '';
+        newRow.querySelector('.expense-amount').value = '';
+
+        // Show remove button
+        newRow.querySelector('.remove-component').style.display = 'block';
+
+        // Add remove functionality
+        newRow.querySelector('.remove-component').addEventListener('click', function() {
+            newRow.remove();
+            calculateTotalExpense();
+        });
+
+        // Add input listener for amount
+        newRow.querySelector('.expense-amount').addEventListener('input', calculateTotalExpense);
+
+        container.appendChild(newRow);
+        componentCount++;
+    });
+
+    // Remove component functionality
+    document.querySelectorAll('.remove-component').forEach(button => {
+        button.addEventListener('click', function() {
+            if (document.querySelectorAll('.expense-component').length > 1) {
+                this.closest('.expense-component').remove();
+                calculateTotalExpense();
+            }
+        });
+    });
+
+    // Calculate total expense
+    function calculateTotalExpense() {
+        let total = 0;
+        document.querySelectorAll('.expense-amount').forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+
+        totalExpenseSpan.textContent = total.toFixed(2);
+        estimatedExpenseInput.value = total.toFixed(2);
+
+        // Update revenue calculation
+        calculateRevenue();
+    }
+
+    // Add event listeners to all amount inputs
+    document.querySelectorAll('.expense-amount').forEach(input => {
+        input.addEventListener('input', calculateTotalExpense);
+    });
+
+    // Update revenue calculation to use component total
+    function calculateRevenue() {
+        const budget = parseFloat(document.getElementById('budget').value) || 0;
+        const expense = parseFloat(estimatedExpenseInput.value) || 0;
+        const revenue = budget - expense;
+        document.getElementById('revenue').value = revenue >= 0 ? revenue.toFixed(2) : 0;
+    }
+
+    // Update existing revenue calculation to use component total
+    const budgetInput = document.getElementById('budget');
+    if (budgetInput) {
+        budgetInput.addEventListener('input', calculateRevenue);
+    }
+
+    // Initial calculation
+    calculateTotalExpense();
+
+    {{--  const expenseInput = document.getElementById('estimated_expense');
     const revenueInput = document.getElementById('revenue');
     function calculateRevenue() {
       const budget = parseFloat(budgetInput.value) || 0;
@@ -57,7 +137,7 @@
     }
 
     budgetInput.addEventListener('input', calculateRevenue);
-    expenseInput.addEventListener('input', calculateRevenue);
+    expenseInput.addEventListener('input', calculateRevenue);  --}}
 
 
 });
@@ -205,14 +285,108 @@ function updateTeamJson() {
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
-            <div class="col-md-4">
+            <!-- Expense Components Section -->
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label">Estimated Expense Components</label>
+                <div id="expense-components-container">
+                  @foreach($proposal->expenseComponents as $index => $component)
+                  <div class="expense-component row g-3 mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Category</label>
+                      <select name="expense_components[{{ $index }}][category_id]" class="form-select expense-category"
+                        required>
+                        <option value="">Select Category</option>
+                        @foreach($expenseCategories as $category)
+                        <option value="{{ $category->id }}" {{ $component->expense_category_id == $category->id ?
+                          'selected' : '' }}>
+                          {{ $category->name }}
+                        </option>
+                        @endforeach
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Component</label>
+                      <input type="text" name="expense_components[{{ $index }}][component]" class="form-control"
+                        value="{{ old('expense_components.' . $index . '.component', $component->component) }}"
+                        placeholder="Component name" required>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label">Amount (₹)</label>
+                      <input type="number" step="0.01" min="0" name="expense_components[{{ $index }}][amount]"
+                        class="form-control expense-amount"
+                        value="{{ old('expense_components.' . $index . '.amount', $component->amount) }}"
+                        placeholder="0.00" required>
+                    </div>
+                    <div class="col-md-1">
+                      <label class="form-label">&nbsp;</label>
+                      <button type="button" class="btn btn-danger remove-component"
+                        style="{{ $loop->first && $proposal->expenseComponents->count() == 1 ? 'display: none;' : 'display: block;' }}">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                  @endforeach
+
+                  @if($proposal->expenseComponents->count() === 0)
+                  <div class="expense-component row g-3 mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Category</label>
+                      <select name="expense_components[0][category_id]" class="form-select expense-category" required>
+                        <option value="">Select Category</option>
+                        @foreach($expenseCategories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Component</label>
+                      <input type="text" name="expense_components[0][component]" class="form-control"
+                        placeholder="Component name" required>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label">Amount (₹)</label>
+                      <input type="number" step="0.01" min="0" name="expense_components[0][amount]"
+                        class="form-control expense-amount" placeholder="0.00" required>
+                    </div>
+                    <div class="col-md-1">
+                      <label class="form-label">&nbsp;</label>
+                      <button type="button" class="btn btn-danger remove-component" style="display: none;">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                  @endif
+                </div>
+
+                <button type="button" id="add-component" class="btn btn-secondary btn-sm mt-2">
+                  <i class="fas fa-plus"></i> Add Component
+                </button>
+
+                <div class="mt-3">
+                  <strong>Total Estimated Expense: ₹<span id="total-expense">{{
+                      number_format($proposal->estimated_expense, 2) }}</span></strong>
+                </div>
+
+                <input type="hidden" name="estimated_expense" id="estimated_expense"
+                  value="{{ old('estimated_expense', $proposal->estimated_expense) }}">
+
+                @error('estimated_expense')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+                @error('expense_components.*')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+              </div>
+            </div>
+            {{-- <div class="col-md-4">
               <label for="estimated_expense" class="form-label">Estimated Expense (₹ Without Tax)</label>
               <input type="number" step="0.01" min="0" name="estimated_expense" id="estimated_expense"
                 class="form-control" value="{{ old('estimated_expense', $proposal->estimated_expense) }}" required>
               @error('estimated_expense')
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
-            </div>
+            </div> --}}
             <div class="col-md-4">
               <label for="revenue" class="form-label">Expected Revenue (₹ Without Tax)</label>
               <input type="number" step="0.01" min="0" name="revenue" id="revenue" class="form-control"

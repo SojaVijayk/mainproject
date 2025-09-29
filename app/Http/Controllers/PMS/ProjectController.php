@@ -9,6 +9,7 @@ use App\Models\PMS\Proposal;
 use App\Models\PMS\Project;
 use App\Models\PMS\Requirement;
 use App\Models\ProjectCategory;
+use App\Models\PMS\ExpenseCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -117,8 +118,9 @@ class ProjectController extends Controller
     $faculty = User::whereHas('roles', function($q) {
         $q->where('name', 'faculty');
     })->get();
+     $expenseCategories = ExpenseCategory::whereNotIn('id',[2])->get();
 
-    return view('pms.projects.create', compact('proposal', 'categories', 'faculty'),['pageConfigs'=> $pageConfigs]);
+    return view('pms.projects.create', compact('proposal', 'categories', 'faculty','expenseCategories'),['pageConfigs'=> $pageConfigs]);
 }
 
     // public function store(ProjectStoreRequest $request, Proposal $proposal)
@@ -233,6 +235,17 @@ class ProjectController extends Controller
     //     'user_id' => $request->project_investigator_id,
     //     'role' => 'lead',
     // ]);
+
+    // Save project expense components (separate from proposal components)
+        foreach ($data['expense_components'] as $component) {
+            $project->expenseComponents()->create([
+                'expense_category_id' => $component['category_id'],
+                'component' => $component['component'],
+                'amount' => $component['amount'],
+            ]);
+        }
+
+
     $project->teamMembers()->create([
             'user_id' => $request->project_investigator_id,
             'role' => 'lead',
@@ -300,8 +313,9 @@ class ProjectController extends Controller
         //     $q->where('name', 'staff');
         // })->get();
          $staff = User::where('active', 1)->get();
+          $expenseCategories = ExpenseCategory::whereNotIn('id',[2])->get();
 
-        return view('pms.projects.edit', compact('project', 'faculty', 'staff', 'teamMemberIds','teamMembersData'),['pageConfigs'=> $pageConfigs]);
+        return view('pms.projects.edit', compact('project', 'faculty', 'staff', 'teamMemberIds','teamMembersData','expenseCategories'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function update(ProjectUpdateRequest $request, Project $project)
@@ -313,6 +327,18 @@ class ProjectController extends Controller
 
         $data = $request->validated();
         $project->update($data);
+
+         // Update project expense components
+        $project->expenseComponents()->delete();
+        foreach ($data['expense_components'] as $component) {
+            $project->expenseComponents()->create([
+                'expense_category_id' => $component['category_id'],
+                'component' => $component['component'],
+                'amount' => $component['amount'],
+            ]);
+        }
+
+
 
         // Update team members
         // $project->teamMembers()->where('role', 'member')->delete();

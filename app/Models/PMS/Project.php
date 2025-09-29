@@ -144,4 +144,23 @@ public function getTotalExpensesAttribute()
 {
     return $this->expenses->sum('total_amount');
 }
+
+public function expenseComponents()
+{
+    return $this->hasMany(ProjectExpenseComponent::class);
+}
+
+// Add this method to calculate total expense from components
+public function getTotalEstimatedExpenseAttribute()
+{
+    return $this->expenseComponents->sum('amount');
+}
+
+// Add this method to get proposal expense components (for initial creation)
+public function getProposalExpenseComponentsAttribute()
+{
+    return $this->proposal ? $this->proposal->expenseComponents : collect();
+}
+
+
 }

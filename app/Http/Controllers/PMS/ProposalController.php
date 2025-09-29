@@ -8,6 +8,7 @@ use App\Http\Requests\PMS\ProposalUpdateRequest;
 use App\Models\PMS\Proposal;
 use App\Models\PMS\ProposalStatusLog;
 use App\Models\PMS\Requirement;
+use App\Models\PMS\ExpenseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,13 +30,14 @@ class ProposalController extends Controller
     public function create(Requirement $requirement)
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
+      $expenseCategories = ExpenseCategory::whereNotIn('id',[2])->get();
       if(!in_array($requirement->status, [Requirement::STATUS_APPROVED_BY_DIRECTOR,Requirement::STATUS_APPROVED_BY_PAC]) || $requirement->allocated_to != Auth::id()){
         // if ($requirement->status != Requirement::STATUS_APPROVED_BY_DIRECTOR || $requirement->allocated_to != Auth::id()) {
             return redirect()->route('pms.requirements.show', $requirement->id)
                 ->with('error', 'You cannot create a proposal for this requirement.');
         }
 
-        return view('pms.proposals.create', compact('requirement'),['pageConfigs'=> $pageConfigs]);
+        return view('pms.proposals.create', compact('requirement','expenseCategories'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function store(ProposalStoreRequest $request, Requirement $requirement)
@@ -51,8 +53,19 @@ class ProposalController extends Controller
         $data['requirement_id'] = $requirement->id;
         $data['created_by'] = Auth::id();
         $data['status'] = Proposal::STATUS_CREATED;
-
+        // DB::transaction(function () use ($data, $requirement) {
         $proposal = Proposal::create($data);
+
+
+        // Save expense components
+        foreach ($data['expense_components'] as $component) {
+            $proposal->expenseComponents()->create([
+                'expense_category_id' => $component['category_id'],
+                'component' => $component['component'],
+                'amount' => $component['amount'],
+            ]);
+        }
+
 
         // Handle document uploads if any
         if ($request->hasFile('documents')) {
@@ -70,6 +83,8 @@ class ProposalController extends Controller
         }
         $requirement->update(['proposal_status' =>1]);
 
+        //  });
+
         return redirect()->route('pms.proposals.show', $proposal->id)
             ->with('success', 'Proposal created successfully.');
     }
@@ -81,6 +96,7 @@ class ProposalController extends Controller
             'requirement',
             'creator',
             'documents',
+            'expenseComponents',
             'workOrderDocuments',
             'statusLogs.changedBy',
             'clientStatusLogs.changedBy'
@@ -101,8 +117,9 @@ class ProposalController extends Controller
             return redirect()->back()
                 ->with('error', 'You are not authorized to edit this proposal.');
         }
+           $expenseCategories = ExpenseCategory::whereNotIn('id',[2])->get();
 
-        return view('pms.proposals.edit', compact('proposal'),['pageConfigs'=> $pageConfigs]);
+        return view('pms.proposals.edit', compact('proposal','expenseCategories'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function update(ProposalUpdateRequest $request, Proposal $proposal)
@@ -119,6 +136,20 @@ class ProposalController extends Controller
 
         $data = $request->validated();
         $proposal->update($data);
+
+
+          // Delete existing expense components and create new ones
+        $proposal->expenseComponents()->delete();
+
+        foreach ($data['expense_components'] as $component) {
+            $proposal->expenseComponents()->create([
+                'expense_category_id' => $component['category_id'],
+                'component' => $component['component'],
+                'amount' => $component['amount'],
+            ]);
+        }
+
+
 
         // Handle document uploads if any
         if ($request->hasFile('documents')) {
