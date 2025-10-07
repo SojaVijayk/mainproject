@@ -11,6 +11,8 @@
 
 @php
 $user = Auth::user();
+use App\Models\PMS\Requirement;
+use App\Models\PMS\Proposal;
 @endphp
 @section('content')
 
@@ -164,7 +166,23 @@ $user = Auth::user();
               <div class="card-header header-elements">
                 <span class=" me-2">Project Management BETA</span>
                 <div class="card-header-elements">
-                  {{-- <span class="badge "></span> --}}
+                  @if($user->hasRole('director'))
+                  @php
+                  $requirement = Requirement::whereIn('status', [
+                  Requirement::STATUS_SENT_TO_DIRECTOR,
+                  Requirement::STATUS_SENT_TO_PAC
+                  ])->count();
+                  $proposlas = Proposal::where('status', Proposal::STATUS_SENT_TO_DIRECTOR)->count();
+                  @endphp
+
+
+                  @if($requirement > 0 ) <span
+                    class="badge  rounded-pill {{ $requirement  > 0 ? 'bg-danger' : 'bg-secondary'}}">Requirements
+                    -{{ $requirement}} </span>@endif
+                  @if($proposlas > 0 ) <span
+                    class="badge mt-2 rounded-pill {{  $proposlas > 0 ? 'bg-danger' : 'bg-secondary'}}">
+                    Proposals -{{ $proposlas}}</span>@endif
+                  @endif
                 </div>
               </div>
               <div class="card-body">
