@@ -51,8 +51,10 @@ class ProjectController extends Controller
             }
         })
         ->where('status',1)
-            ->latest()
-            ->paginate(20);
+            // ->latest()
+            // ->paginate(20);
+            ->get();
+
             $projects_completed = Project::with(['requirement', 'proposal', 'investigator'])
         ->where(function ($query) use ($user) {
             $query->where('project_investigator_id', $user->id) // Investigator

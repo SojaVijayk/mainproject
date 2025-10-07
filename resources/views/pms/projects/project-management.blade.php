@@ -399,7 +399,7 @@ $user = Auth::user();
 
           @endforelse
 
-          {{ $projects_ongoing->links('pagination::bootstrap-5') }}
+          {{-- {{ $projects_ongoing->links('pagination::bootstrap-5') }} --}}
         </div>
       </div>
       <div class="tab-pane fade" id="navs-pills-within-card-completed" role="tabpanel">
