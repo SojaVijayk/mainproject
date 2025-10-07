@@ -26,7 +26,7 @@ class ReportController extends Controller
 
         $query = Project::query();
 
-          if (!$user->hasRole('director')) {
+          if (!$user->hasRole('director') && !$user->hasRole('finance')) {
 
             $investigatorId =$user->id;
                $query->where('project_investigator_id', $investigatorId);

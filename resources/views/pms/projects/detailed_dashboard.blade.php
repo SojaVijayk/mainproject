@@ -271,8 +271,10 @@
     <div class="col-md-3">
       <div class="card stat-card bg-label-info text-white">
         <div class="card-body text-center">
-          <h6 class="card-title">Total Expenses</h6>
-          <h3 class="card-text">{{ number_format($expenses, 2) }}</h3>
+          <h6 class="card-title">Estimated Expenses</h6>
+          <h3 class="card-text">{{ $project->estimated_expense }}</h3>
+          <small class="card-text text-dark">Actual Expenses</small>
+          <small class="card-text text-danger">{{ number_format($expenses, 2) }}</small>
         </div>
       </div>
     </div>
