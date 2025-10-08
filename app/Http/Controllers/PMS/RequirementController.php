@@ -21,16 +21,17 @@ class RequirementController extends Controller
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
         $requirements = Requirement::with(['category', 'subcategory', 'client', 'contactPerson'])
-        ->where('proposal_statuss', 0)
+        ->where('proposal_status', 0)
             // ->where('created_by', Auth::id())
             // ->orWhere('allocated_to', Auth::id())
              ->where(function ($q) {
         $q->where('created_by', Auth::id())
           ->orWhere('allocated_to', Auth::id());
     })
+->get();
 
-            ->latest()
-            ->paginate(20);
+            // ->latest()
+            // ->paginate(20);
 
         return view('pms.requirements.index', compact('requirements'),['pageConfigs'=> $pageConfigs]);
     }
