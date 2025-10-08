@@ -468,6 +468,9 @@ Route::prefix('pms')->name('pms.')->middleware(['auth'])->group(function () {
     Route::post('requirements/{requirement}/reject', [RequirementController::class, 'reject'])->name('requirements.reject');
     Route::post('requirements/{requirement}/allocate', [RequirementController::class, 'allocate'])->name('requirements.allocate');
 
+    Route::post('requirements/bulk-actions/process', [RequirementController::class, 'process'])
+    ->name('requirements.bulk-actions.process');
+
     // Dynamic data loading for requirements
 
     // Proposals

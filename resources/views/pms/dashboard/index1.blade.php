@@ -191,6 +191,283 @@ $tq->where('user_id', $user->id);
     });
     @endif
 });
+
+// Bulk Actions Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // State management
+    let selectedItems = {
+        requirements: [],
+        proposals: []
+    };
+
+    let currentAction = '';
+    let currentType = '';
+
+    // Initialize bulk actions
+    setupBulkActionEventListeners();
+
+    function setupBulkActionEventListeners() {
+        // Select all checkboxes
+        const selectAllRequirements = document.getElementById('selectAllRequirements');
+        const selectAllProposals = document.getElementById('selectAllProposals');
+
+        if (selectAllRequirements) {
+            selectAllRequirements.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.requirement-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                    toggleRequirementSelection(checkbox.value, this.checked);
+                });
+                updateBulkActionsPanel();
+            });
+        }
+
+        if (selectAllProposals) {
+            selectAllProposals.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.proposal-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                    toggleProposalSelection(checkbox.value, this.checked);
+                });
+                updateBulkActionsPanel();
+            });
+        }
+
+        // Individual checkbox changes
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('requirement-checkbox')) {
+                toggleRequirementSelection(e.target.value, e.target.checked);
+                updateBulkActionsPanel();
+                updateSelectAllCheckbox('requirements');
+            }
+
+            if (e.target.classList.contains('proposal-checkbox')) {
+                toggleProposalSelection(e.target.value, e.target.checked);
+                updateBulkActionsPanel();
+                updateSelectAllCheckbox('proposals');
+            }
+        });
+
+        // Bulk action buttons
+        document.getElementById('bulkApproveBtn').addEventListener('click', function() {
+            showBulkActionModal('approve');
+        });
+
+        document.getElementById('bulkSendToPacBtn').addEventListener('click', function() {
+            showBulkActionModal('send_to_pac');
+        });
+
+        document.getElementById('bulkRejectBtn').addEventListener('click', function() {
+            showBulkActionModal('reject');
+        });
+
+        document.getElementById('clearSelectionBtn').addEventListener('click', function() {
+            clearAllSelections();
+        });
+
+        // Confirm bulk action
+        document.getElementById('confirmBulkAction').addEventListener('click', function() {
+            performBulkAction();
+        });
+
+        // Tab change event
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function() {
+                updateBulkActionsPanel();
+            });
+        });
+    }
+
+    // Toggle requirement selection
+    function toggleRequirementSelection(id, isSelected) {
+        id = parseInt(id);
+        if (isSelected) {
+            if (!selectedItems.requirements.includes(id)) {
+                selectedItems.requirements.push(id);
+            }
+        } else {
+            selectedItems.requirements = selectedItems.requirements.filter(item => item !== id);
+        }
+    }
+
+    // Toggle proposal selection
+    function toggleProposalSelection(id, isSelected) {
+        id = parseInt(id);
+        if (isSelected) {
+            if (!selectedItems.proposals.includes(id)) {
+                selectedItems.proposals.push(id);
+            }
+        } else {
+            selectedItems.proposals = selectedItems.proposals.filter(item => item !== id);
+        }
+    }
+
+    // Update select all checkbox state
+    function updateSelectAllCheckbox(type) {
+        const selectAllCheckbox = document.getElementById(`selectAll${type.charAt(0).toUpperCase() + type.slice(1)}`);
+        if (selectAllCheckbox) {
+            const checkboxes = document.querySelectorAll(`.${type}-checkbox`);
+            const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(checkbox => checkbox.checked);
+            selectAllCheckbox.checked = allChecked;
+        }
+    }
+
+    // Update bulk actions panel visibility and selected count
+    function updateBulkActionsPanel() {
+        const container = document.getElementById('bulkActionsContainer');
+        const selectedCountElement = document.getElementById('selectedCount');
+
+        // Determine which tab is active and get the count
+        const activeTab = document.querySelector('.tab-pane.active');
+        let selectedCount = 0;
+        let type = '';
+
+        if (activeTab && activeTab.id === 'requirements') {
+            selectedCount = selectedItems.requirements.length;
+            type = 'requirements';
+        } else if (activeTab && activeTab.id === 'proposals') {
+            selectedCount = selectedItems.proposals.length;
+            type = 'proposals';
+        }
+
+        // Update UI
+        if (selectedCount > 0) {
+            container.style.display = 'block';
+            selectedCountElement.textContent = `${selectedCount} ${type} selected`;
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    // Show bulk action confirmation modal
+    function showBulkActionModal(action) {
+        const activeTab = document.querySelector('.tab-pane.active');
+        let selectedCount = 0;
+        let type = '';
+
+        if (activeTab && activeTab.id === 'requirements') {
+            selectedCount = selectedItems.requirements.length;
+            type = 'requirements';
+        } else if (activeTab && activeTab.id === 'proposals') {
+            selectedCount = selectedItems.proposals.length;
+            type = 'proposals';
+        }
+
+        if (selectedCount === 0) {
+            alert('Please select at least one item to perform this action.');
+            return;
+        }
+
+        currentAction = action;
+        currentType = type;
+
+        const modal = new bootstrap.Modal(document.getElementById('bulkActionModal'));
+        const actionText = getActionText(action);
+        document.getElementById('bulkActionMessage').textContent =
+            `Are you sure you want to ${actionText} ${selectedCount} ${type}?`;
+
+        modal.show();
+    }
+
+    // Get action text for display
+    function getActionText(action) {
+        switch(action) {
+            case 'approve': return 'approve';
+            case 'send_to_pac': return 'send to PAC';
+            case 'reject': return 'reject';
+            default: return 'perform this action on';
+        }
+    }
+
+    // Perform the bulk action
+    function performBulkAction() {
+        const actionText = getActionText(currentAction);
+        const selectedIds = selectedItems[currentType];
+
+        // Create form data
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('action', currentAction);
+        formData.append('type', currentType);
+        selectedIds.forEach(id => {
+            formData.append('ids[]', id);
+        });
+
+        // Show loading state
+        const confirmBtn = document.getElementById('confirmBulkAction');
+        const originalText = confirmBtn.innerHTML;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        confirmBtn.disabled = true;
+
+        // Make AJAX request
+        fetch('{{ route("pms.requirements.bulk-actions.process") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('bulkActionModal'));
+            modal.hide();
+
+            if (data.success) {
+                // Show success message
+                showAlert('success', data.message || `Successfully ${actionText}d ${selectedIds.length} ${currentType}.`);
+
+                // Reload the page to reflect changes
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showAlert('error', data.message || 'An error occurred while processing your request.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'An error occurred while processing your request.');
+        })
+        .finally(() => {
+            // Reset button state
+            confirmBtn.innerHTML = originalText;
+            confirmBtn.disabled = false;
+        });
+    }
+
+    // Clear all selections
+    function clearAllSelections() {
+        selectedItems.requirements = [];
+        selectedItems.proposals = [];
+
+        document.querySelectorAll('.requirement-checkbox, .proposal-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        const selectAllRequirements = document.getElementById('selectAllRequirements');
+        const selectAllProposals = document.getElementById('selectAllProposals');
+
+        if (selectAllRequirements) selectAllRequirements.checked = false;
+        if (selectAllProposals) selectAllProposals.checked = false;
+
+        updateBulkActionsPanel();
+    }
+
+    // Show alert message
+    function showAlert(type, message) {
+        // You can use your existing alert system or create a simple one
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+
+        // Prepend alert to the card body
+        const cardBody = document.querySelector('.card-body');
+        if (cardBody) {
+            cardBody.insertAdjacentHTML('afterbegin', alertHtml);
+        }
+    }
+});
 </script>
 @endsection
 @section('header', 'Project Management System Dashboard')
@@ -447,6 +724,30 @@ $tq->where('user_id', $user->id);
           <h5 class="mb-0">Approvals Dashboard</h5>
         </div>
         <div class="card-body">
+
+          <!-- Bulk Actions Panel -->
+          <div class="bulk-actions-container" id="bulkActionsContainer" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <span class="selected-count" id="selectedCount">0 items selected</span>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-success" id="bulkApproveBtn">
+                  <i class="fas fa-check"></i> Approve Selected
+                </button>
+                <button type="button" class="btn btn-primary" id="bulkSendToPacBtn">
+                  <i class="fas fa-paper-plane"></i> Send to PAC
+                </button>
+                <button type="button" class="btn btn-danger" id="bulkRejectBtn">
+                  <i class="fas fa-times"></i> Reject Selected
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="clearSelectionBtn">
+                  <i class="fas fa-times"></i> Clear Selection
+                </button>
+              </div>
+            </div>
+          </div>
+
           <ul class="nav nav-tabs" id="approvalsTab" role="tablist">
             <li class="nav-item" role="presentation">
               <button class="nav-link active" id="requirements-tab" data-bs-toggle="tab" data-bs-target="#requirements"
@@ -473,6 +774,11 @@ $tq->where('user_id', $user->id);
                 <table class="table table-sm">
                   <thead>
                     <tr>
+                      <th width="50">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="selectAllRequirements">
+                        </div>
+                      </th>
                       <th>Temp No</th>
                       <th>Client</th>
                       <th>Category</th>
@@ -480,9 +786,15 @@ $tq->where('user_id', $user->id);
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="requirementsTableBody">
                     @foreach($requirements as $requirement)
                     <tr>
+                      <td>
+                        <div class="form-check">
+                          <input class="form-check-input requirement-checkbox" type="checkbox"
+                            value="{{ $requirement->id }}" data-type="requirement">
+                        </div>
+                      </td>
                       <td>{{ $requirement->temp_no }}</td>
                       <td>{{ $requirement->client->client_name }}</td>
                       <td>{{ $requirement->category->name }}</td>
@@ -551,6 +863,28 @@ $tq->where('user_id', $user->id);
           </div>
         </div>
       </div>
+
+      <!-- Bulk Action Confirmation Modal -->
+      <div class="modal fade" id="bulkActionModal" tabindex="-1" aria-labelledby="bulkActionModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="bulkActionModalLabel">Confirm Bulk Action</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p id="bulkActionMessage">Are you sure you want to perform this action on the selected items?</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="confirmBulkAction">Confirm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
       @endif
 
 
