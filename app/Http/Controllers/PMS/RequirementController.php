@@ -21,7 +21,7 @@ class RequirementController extends Controller
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
         $requirements = Requirement::with(['category', 'subcategory', 'client', 'contactPerson'])
-        ->where('proposal_status', 0)
+        ->where('proposal_statuss', 0)
             // ->where('created_by', Auth::id())
             // ->orWhere('allocated_to', Auth::id())
              ->where(function ($q) {
@@ -290,4 +290,107 @@ class RequirementController extends Controller
         $contacts = $client->contactPersons;
         return response()->json($contacts);
     }
+
+     public function process(Request $request)
+    {
+        $action = $request->input('action');
+        $type = $request->input('type');
+        $ids = $request->input('ids', []);
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No items selected.'
+            ]);
+        }
+
+        try {
+            switch ($type) {
+                case 'requirements':
+                    $result = $this->processRequirements($action, $ids);
+                    break;
+                // case 'proposals':
+                //     $result = $this->processProposals($action, $ids);
+                //     break;
+                default:
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid type specified.'
+                    ]);
+            }
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    private function processRequirements($action, $ids)
+    {
+        $requirements = Requirement::whereIn('id', $ids)->get();
+        $processed = 0;
+        $errors = [];
+
+        foreach ($requirements as $requirement) {
+            try {
+                switch ($action) {
+                    case 'approve':
+                        if (!in_array($requirement->status, [Requirement::STATUS_SENT_TO_DIRECTOR])) {
+                            $errors[] = "Requirement {$requirement->temp_no} cannot be approved in its current status.";
+                            continue 2;
+                        }
+
+                        $requirement->update([
+                            'status' => Requirement::STATUS_APPROVED_BY_DIRECTOR,
+                            'allocated_by' => Auth::id(),
+                            'allocated_at' => now(),
+                            'allocated_to' => $requirement->created_by,
+                        ]);
+                        break;
+
+                    case 'send_to_pac':
+                        if (!in_array($requirement->status, [Requirement::STATUS_SENT_TO_DIRECTOR])) {
+                            $errors[] = "Requirement {$requirement->temp_no} cannot be sent to PAC in its current status.";
+                            continue 2;
+                        }
+
+                        $requirement->update([
+                            'status' => Requirement::STATUS_SENT_TO_PAC,
+                        ]);
+                        break;
+
+                    case 'reject':
+                        if (!in_array($requirement->status, [Requirement::STATUS_SENT_TO_DIRECTOR, Requirement::STATUS_SENT_TO_PAC])) {
+                            $errors[] = "Requirement {$requirement->temp_no} cannot be rejected in its current status.";
+                            continue 2;
+                        }
+
+                        $requirement->update([
+                            'status' => Requirement::STATUS_REJECTED,
+                        ]);
+                        break;
+
+                    default:
+                        $errors[] = "Invalid action for requirement {$requirement->temp_no}.";
+                        continue 2;
+                }
+
+                $processed++;
+
+            } catch (\Exception $e) {
+                $errors[] = "Error processing requirement {$requirement->temp_no}: " . $e->getMessage();
+            }
+        }
+
+        return [
+            'success' => true,
+            'message' => "Successfully processed {$processed} requirements. " .
+                        ($errors ? 'Errors: ' . implode(', ', $errors) : '')
+        ];
+    }
+
 }
