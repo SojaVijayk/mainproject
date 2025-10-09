@@ -217,8 +217,9 @@ class RequirementController extends Controller
 
         // TODO: Notify allocated user and creator
 
-        return redirect()->back()
-            ->with('success', 'Requirement approved successfully.');
+        // return redirect()->back()
+        //     ->with('success', 'Requirement approved successfully.');
+            return redirect()->route('pms.dashboard');
     }
 
     public function reject(Requirement $requirement)
