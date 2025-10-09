@@ -587,6 +587,7 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
                 <th>Invoice No</th>
                 <th>Date</th>
                 <th>Amount</th>
+                <th>Type</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -597,6 +598,11 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
                 <td>{{ $invoice->invoice_number ?? 'Draft' }}</td>
                 <td>{{ $invoice->invoice_date->format('d M Y') }}</td>
                 <td>{{ number_format($invoice->amount, 2) }}</td>
+                <td>
+                  <span class="badge bg-{{$invoice->invoice_type == 1 ? 'primary' : 'success'}}">
+                    {{ $invoice->invoice_type == 1 ? 'Proforma Invoice' : 'Tax Invoice' }}
+                  </span>
+                </td>
                 <td>
                   <span class="badge bg-{{ $invoice->status_badge_color }}">
                     {{ $invoice->status_name }}

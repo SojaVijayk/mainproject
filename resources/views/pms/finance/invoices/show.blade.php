@@ -13,6 +13,9 @@ use \App\Models\PMS\Invoice;
     <div class="card mb-4">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Invoice #{{ $invoice->invoice_number ?? 'Draft' }}</h5>
+        <span class="badge bg-{{$invoice->invoice_type == 1 ? 'primary' : 'success'}}">
+          {{ $invoice->invoice_type == 1 ? 'Proforma Invoice' : 'Tax Invoice' }}
+        </span>
         <span class="badge bg-{{ $invoice->status_badge_color }}">
           {{ $invoice->status_name }}
         </span>

@@ -36,6 +36,7 @@ use \App\Models\PMS\Invoice;
                 <thead>
                   <tr>
                     <th>Invoice #</th>
+                    <th>Type</th>
                     <th>Status</th>
                     <th>Date</th>
                     <th>Amount</th>
@@ -52,6 +53,11 @@ use \App\Models\PMS\Invoice;
                       @else
                       <span class="text-muted">Draft</span>
                       @endif
+                    </td>
+                    <td>
+                      <span class="badge bg-{{$invoice->invoice_type == 1 ? 'primary' : 'success'}}">
+                        {{ $invoice->invoice_type == 1 ? 'Proforma Invoice' : 'Tax Invoice' }}
+                      </span>
                     </td>
                     <td>
                       <span class="badge bg-{{ $invoice->status_badge_color }}">

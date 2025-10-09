@@ -37,6 +37,9 @@
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
           <h5 class="card-title mb-0">Invoice Details</h5>
+          <span class="badge bg-{{$invoice->invoice_type == 1 ? 'primary' : 'success'}}">
+            {{ $invoice->invoice_type == 1 ? 'Proforma Invoice' : 'Tax Invoice' }}
+          </span>
           <span class="badge bg-{{ $invoice->status_badge_color }}">
             {{ $invoice->status_name }}
           </span>

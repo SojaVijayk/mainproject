@@ -21,6 +21,7 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
     protected $fillable = [
         'project_id',
         'milestone_id',
+          'invoice_type',
         'invoice_number',
         'invoice_date',
         'due_date',

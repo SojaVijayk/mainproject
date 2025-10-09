@@ -66,6 +66,19 @@
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
+            <div class="col-md-6">
+              <label for="invoice_type" class="form-label">Invoice Type</label>
+              <select name="invoice_type" id="invoice_type" class="form-select">
+                <option value="">Select Invoice Type</option>
+
+                <option value="1">Proforma Invoice</option>
+                <option value="2">Tax Invoice</option>
+
+              </select>
+              @error('milestone_id')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+              @enderror
+            </div>
           </div>
 
           <div class="row mb-3">

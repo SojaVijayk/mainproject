@@ -15,8 +15,10 @@ class InvoiceStoreRequest extends FormRequest
     {
         return [
             'milestone_id' => 'nullable|exists:milestones,id',
+
             // 'invoice_date' => 'required|date|after_or_equal:today',
             'invoice_date' => 'required|date',
+             'invoice_type' => 'required',
             'due_date' => 'required|date|after:invoice_date',
             'amount' => 'required|numeric|min:0',
             'description' => 'nullable|string',
