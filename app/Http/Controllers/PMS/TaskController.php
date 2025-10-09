@@ -269,8 +269,8 @@ public function comments(Project $project,Task $task)
                      'id' => $c->id,
                      'comment' => $c->comment,
                      'user' => $c->user,
-                     'created_at' => $c->created_at->diffForHumans(),
-                     'updated_at' => $c->updated_at->diffForHumans(),
+                    'created_at' => $c->created_at ? $c->created_at->diffForHumans() : '',
+                     'updated_at' => $c->updated_at ? $c->updated_at->diffForHumans() : '',
                  ];
              })
     );
@@ -291,8 +291,8 @@ public function addComment(Request $request,Project $project, Task $task)
         'id' => $comment->id,
         'comment' => $comment->comment,
         'user' => $comment->user()->select('id','name')->first(),
-        'created_at' => $comment->created_at->diffForHumans(),
-        'updated_at' => $comment->updated_at->diffForHumans(),
+       'created_at' => $comment->created_at ? $comment->created_at->diffForHumans() : '',
+                     'updated_at' => $comment->updated_at ? $comment->updated_at->diffForHumans() : '',
     ]);
 }
 
@@ -312,8 +312,8 @@ public function updateComment(Request $request,Project $project,  Task $task, Ta
         'id' => $comment->id,
         'comment' => $comment->comment,
         'user' => $comment->user()->select('id','name')->first(),
-        'created_at' => $comment->created_at->diffForHumans(),
-        'updated_at' => $comment->updated_at->diffForHumans(),
+         'created_at' => $comment->created_at ? $comment->created_at->diffForHumans() : '',
+                     'updated_at' => $comment->updated_at ? $comment->updated_at->diffForHumans() : '',
     ]);
 }
 

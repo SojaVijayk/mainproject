@@ -105,9 +105,9 @@
             });
     }
 
-    document.getElementById("milestone-filter").addEventListener("change", reloadKanban);
+    {{--  document.getElementById("milestone-filter").addEventListener("change", reloadKanban);
     document.getElementById("priority-filter").addEventListener("change", reloadKanban);
-    document.getElementById("due-filter").addEventListener("change", reloadKanban);
+    document.getElementById("due-filter").addEventListener("change", reloadKanban);  --}}
 
 
      document.querySelectorAll(".task").forEach(task => {
