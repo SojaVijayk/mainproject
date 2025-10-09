@@ -137,8 +137,10 @@ function renderTeamList() {
                 <div class="col-md-4">${member.name}</div>
                 <div class="col-md-3">
                     <select class="form-select role-select">
+                       <option value="lead" ${member.role == 'lead' ? 'selected' : ''}>Lead</option>
+                        <option value="lead" ${member.role == 'leadMember' ? 'selected' : ''}>Lead Member</option>
                         <option value="member" ${member.role == 'member' ? 'selected' : ''}>Member</option>
-                        <option value="lead" ${member.role == 'lead' ? 'selected' : ''}>Lead</option>
+
                     </select>
                 </div>
                 <div class="col-md-3">

@@ -41,7 +41,7 @@
 
 $userIsInvestigator = auth()->id() === $project->project_investigator_id;
 $userIsTeamLead = $project->teamMembers()->where('user_id',
-auth()->id())->where('role','lead')->exists();
+auth()->id())->whereIn('role',['lead','leadMember'])->exists();
 @endphp
 <div class="faq-header d-flex flex-column justify-content-center align-items-center rounded ">
   <h3 class="text-center text-white">{{ $project->title }} - CODE : {{ $project->project_code }}<span class="text-bold">
