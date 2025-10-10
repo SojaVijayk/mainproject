@@ -93,7 +93,7 @@
             <div class="col-md-6">
               <label for="due_date" class="form-label">Due Date</label>
               <input type="date" name="due_date" id="due_date" class="form-control"
-                value="{{ old('due_date', date('Y-m-d', strtotime('+30 days'))) }}" required>
+                value="{{ old('due_date', date('Y-m-d', strtotime('+30 days'))) }}">
               @error('due_date')
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
@@ -102,7 +102,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="amount" class="form-label">Amount (₹)</label>
+              <label for="amount" class="form-label">Amount (₹ without tax)</label>
               <input type="number" step="0.01" min="0" name="amount" id="amount" class="form-control"
                 value="{{ old('amount') }}" required>
               @error('amount')

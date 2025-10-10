@@ -104,7 +104,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="type_id" class="form-label">Type</label>
+              <label for="type_id" class="form-label">Type *</label>
               <select name="type_id" id="type_id" class="form-select" required>
                 <option value="">Select Type</option>
                 @foreach($types as $key => $value)
@@ -119,7 +119,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="project_category_id" class="form-label">Category</label>
+              <label for="project_category_id" class="form-label">Category *</label>
               <select name="project_category_id" id="project_category_id" class="form-select" required>
                 <option value="">Select Category</option>
                 @foreach($categories as $category)
@@ -150,7 +150,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="ref_no" class="form-label">Project Title</label>
+              <label for="ref_no" class="form-label">Project Title *</label>
               <input type="text" name="project_title" id="project_title" class="form-control"
                 value="{{ old('project_title') }}">
               @error('project_title')
@@ -160,7 +160,7 @@
           </div>
           <div class="row mb-3">
             <div class="col-md-12">
-              <label for="ref_no" class="form-label">Project Description</label>
+              <label for="ref_no" class="form-label">Project Description *</label>
               <textarea name="project_description" id="project_description"
                 class="form-control"> {{ old('project_description') }} </textarea>
               @error('project_description')
@@ -171,7 +171,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="client_id" class="form-label">Client</label>
+              <label for="client_id" class="form-label">Client *</label>
               <select name="client_id" id="client_id" class="form-select" required>
                 <option value="">Select Client</option>
                 @foreach($clients as $client)
@@ -184,7 +184,7 @@
               @enderror
             </div>
             <div class="col-md-6">
-              <label for="client_contact_person_id" class="form-label">Contact Person</label>
+              <label for="client_contact_person_id" class="form-label">Contact Person *</label>
               <select name="client_contact_person_id" id="client_contact_person_id" class="form-select" required>
                 <option value="">Select Contact Person</option>
                 {{-- @if(old('client_id'))

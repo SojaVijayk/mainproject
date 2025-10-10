@@ -228,7 +228,7 @@ function updateTeamJson() {
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="title" class="form-label">Project Title</label>
+              <label for="title" class="form-label">Project Title *</label>
               {{-- <input type="text" name="title" id="title" class="form-control"
                 value="{{ old('title', $proposal->requirement->client->client_name . ' - ' . $proposal->requirement->category->name) }}"
                 required> --}}
@@ -242,7 +242,7 @@ function updateTeamJson() {
               <label for="project_investigator_id" class="form-label">Principal investigator</label>
               <select name="project_investigator_id" id="project_investigator_id" class="form-select"
                 style="pointer-events: none; background-color: #e9ecef;" tabindex="-1" required>
-                <option value="">Select Investigator</option>
+                <option value="">Select Investigator *</option>
                 @foreach($faculty as $user)
                 <option value="{{ $user->id }}" @if($proposal->requirement->allocated_to == $user->id) Selected
                   @endif
@@ -262,7 +262,7 @@ function updateTeamJson() {
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="start_date" class="form-label">Start Date</label>
+              <label for="start_date" class="form-label">Start Date *</label>
               <input type="date" name="start_date" id="start_date" class="form-control"
                 value="{{ old('start_date', $proposal->expected_start_date->format('Y-m-d')) }}" required>
               @error('start_date')
@@ -270,7 +270,7 @@ function updateTeamJson() {
               @enderror
             </div>
             <div class="col-md-6">
-              <label for="end_date" class="form-label">End Date</label>
+              <label for="end_date" class="form-label">End Date *</label>
               <input type="date" name="end_date" id="end_date" class="form-control"
                 value="{{ old('end_date', $proposal->expected_end_date->format('Y-m-d')) }}" required>
               @error('end_date')
@@ -281,7 +281,7 @@ function updateTeamJson() {
 
           <div class="row mb-3">
             <div class="col-md-4">
-              <label for="budget" class="form-label">Budget (₹ Without Tax)</label>
+              <label for="budget" class="form-label">Budget (₹ Without Tax) *</label>
               <input type="number" step="0.01" min="0" name="budget" id="budget" class="form-control"
                 value="{{ old('budget', $proposal->budget) }}" required>
               @error('budget')
@@ -291,7 +291,7 @@ function updateTeamJson() {
             <!-- Expense Components Section -->
             <div class="row mb-3">
               <div class="col-md-12">
-                <label class="form-label">Estimated Expense Components</label>
+                <label class="form-label">Estimated Expense Components *</label>
                 <div id="expense-components-container">
                   @foreach($proposal->expenseComponents as $index => $component)
                   <div class="expense-component row g-3 mb-3">
@@ -391,7 +391,7 @@ function updateTeamJson() {
               @enderror
             </div> --}}
             <div class="col-md-4">
-              <label for="revenue" class="form-label">Expected Revenue (₹ Without Tax)</label>
+              <label for="revenue" class="form-label">Expected Revenue (₹ Without Tax) </label>
               <input type="number" step="0.01" min="0" name="revenue" id="revenue" class="form-control"
                 value="{{ old('revenue', $proposal->revenue) }}" required>
               @error('revenue')
@@ -402,7 +402,7 @@ function updateTeamJson() {
 
           <div class="row mb-3">
             <div class="col-md-12">
-              <label for="description" class="form-label">Description</label>
+              <label for="description" class="form-label">Description *</label>
               <textarea name="description" id="description" class="form-control"
                 rows="3">{{ old('description', $proposal->technical_details) }}</textarea>
               @error('description')
@@ -432,7 +432,7 @@ function updateTeamJson() {
           use App\Models\User;
           @endphp
           <div class="mb-3">
-            <label class="form-label">Add Team Member</label>
+            <label class="form-label">Add Team Member *</label>
             <select id="user_selector" class="form-select">
               <option value="">Select a user</option>
               @foreach(User::where('id', '!=', auth()->id())->get() as $user)
@@ -460,7 +460,7 @@ function updateTeamJson() {
   <div class="col-md-4">
     <div class="card">
       <div class="card-header">
-        <h5 class="card-title">Proposal Details</h5>
+        <h5 class="card-title">Proposal Details </h5>
       </div>
       <div class="card-body">
         <p><strong>Client:</strong> {{ $proposal->requirement->client->client_name }}</p>

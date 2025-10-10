@@ -17,7 +17,7 @@ class InvoiceUpdateRequest extends FormRequest
             'milestone_id' => 'nullable|exists:milestones,id',
             'invoice_date' => 'required|date',
                'invoice_type' => 'required',
-            'due_date' => 'required|date|after:invoice_date',
+            // 'due_date' => 'required|date|after:invoice_date',
             'amount' => 'required|numeric|min:0',
             'description' => 'nullable|string',
         ];
