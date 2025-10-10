@@ -91,7 +91,7 @@
                 @foreach($expenses as $expense)
                 <tr>
                   <td>{{ $expense->id }}</td>
-                  <td> {{$project->project_code }}</td>
+                  <td> {{$expense->project->project_code }}</td>
                   <td>{{ $expense->project->title }}</td>
 
                   <td>{{ $expense->category->name }}</td>
