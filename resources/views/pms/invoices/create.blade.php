@@ -67,7 +67,7 @@
               @enderror
             </div>
             <div class="col-md-6">
-              <label for="invoice_type" class="form-label">Invoice Type</label>
+              <label for="invoice_type" class="form-label">Invoice Type *</label>
               <select name="invoice_type" id="invoice_type" class="form-select">
                 <option value="">Select Invoice Type</option>
 
@@ -83,7 +83,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="invoice_date" class="form-label">Invoice Date</label>
+              <label for="invoice_date" class="form-label">Invoice Date *</label>
               <input type="date" name="invoice_date" id="invoice_date" class="form-control"
                 value="{{ old('invoice_date', date('Y-m-d')) }}" required>
               @error('invoice_date')
@@ -91,7 +91,7 @@
               @enderror
             </div>
             <div class="col-md-6">
-              <label for="due_date" class="form-label">Due Date</label>
+              <label for="due_date" class="form-label">Due Date *</label>
               <input type="date" name="due_date" id="due_date" class="form-control"
                 value="{{ old('due_date', date('Y-m-d', strtotime('+30 days'))) }}">
               @error('due_date')
@@ -102,7 +102,7 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="amount" class="form-label">Amount (₹ without tax)</label>
+              <label for="amount" class="form-label">Amount (₹ without tax) *</label>
               <input type="number" step="0.01" min="0" name="amount" id="amount" class="form-control"
                 value="{{ old('amount') }}" required>
               @error('amount')
