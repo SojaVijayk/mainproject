@@ -108,7 +108,7 @@
               @enderror
             </div>
             <div class="col-md-6">
-              <label for="due_date" class="form-label">Due Date</label>
+              <label for="due_date" class="form-label">Due Date *</label>
               <input type="date" name="due_date" id="due_date" class="form-control"
                 value="{{ old('due_date', $invoice->due_date->format('Y-m-d')) }}">
               @error('due_date')

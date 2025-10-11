@@ -211,7 +211,8 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
                   </div>
                   <div>
                     <h5 class="mb-0">{{ $member->user->name }}</h5>
-                    <span class="badge bg-{{ $member->role == 'lead' ? 'danger' : 'primary' }}">
+                    <span
+                      class="badge bg-{{ $member->role == 'lead' ? 'danger' : ($member->role == 'leadMember' ? 'warning' : 'primary') }}">
                       {{ ucfirst($member->role) }}
                     </span>
                   </div>
