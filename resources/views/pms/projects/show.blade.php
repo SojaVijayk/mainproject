@@ -613,6 +613,12 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
                   <a href="{{ route('pms.invoices.show', [$project->id, $invoice->id]) }}" class="btn btn-sm btn-info">
                     <i class="fas fa-eye"></i>
                   </a>
+                  @if($invoice->status == \App\Models\PMS\Invoice::STATUS_DRAFT)
+                  <a href="{{ route('pms.invoices.edit', [$project->id, $invoice->id]) }}"
+                    class="btn btn-sm btn-primary">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  @endif
                 </td>
               </tr>
               @endforeach

@@ -45,14 +45,61 @@
     const milestoneSelect = document.getElementById('milestone_id');
     const amountInput = document.getElementById('amount');
 
-    milestoneSelect.addEventListener('change', function() {
+    {{--  milestoneSelect.addEventListener('change', function() {
         if (this.value) {
             const milestone = @json($milestones->keyBy('id'));
             const milestoneData = milestone[this.value];
             const amount = (milestoneData.weightage / 100) * {{ $project->budget }};
             amountInput.value = amount.toFixed(2);
         }
+    });  --}}
+
+    function recalculateTotals() {
+    let grandTotal = 0;
+    let total_amount_without_tax = 0;
+    document.querySelectorAll('#items-table tbody tr').forEach(row => {
+      const amount = parseFloat(row.querySelector('.amount')?.value || 0);
+      const taxPercentage = parseFloat(row.querySelector('.tax-percentage')?.value || 0);
+      const taxAmount = amount * taxPercentage / 100;
+      const total = amount + taxAmount;
+
+
+      row.querySelector('.tax-amount').value = taxAmount.toFixed(2);
+      row.querySelector('.total-with-tax').value = total.toFixed(2);
+      grandTotal += total;
+      total_amount_without_tax +=amount;
     });
+    document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+    document.getElementById('amount').value = total_amount_without_tax.toFixed(2);
+  }
+
+  document.getElementById('items-table').addEventListener('input', recalculateTotals);
+
+  document.getElementById('add-item').addEventListener('click', function() {
+    const tbody = document.querySelector('#items-table tbody');
+    const index = tbody.rows.length;
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td><input type="text" name="items[${index}][description]" class="form-control" required></td>
+      <td><input type="number" step="0.01" min="0" name="items[${index}][amount]" class="form-control amount" required></td>
+      <td><input type="number" step="0.01" min="0" max="100" name="items[${index}][tax_percentage]" class="form-control tax-percentage" required></td>
+      <td><input type="number" step="0.01" name="items[${index}][tax_amount]" class="form-control tax-amount" readonly></td>
+      <td><input type="number" step="0.01" name="items[${index}][total_with_tax]" class="form-control total-with-tax" readonly></td>
+      <td><button type="button" class="btn btn-sm btn-danger remove-item">X</button></td>
+    `;
+    tbody.appendChild(newRow);
+  });
+
+  document.querySelector('#items-table').addEventListener('click', e => {
+    if (e.target.classList.contains('remove-item')) {
+      e.target.closest('tr').remove();
+      recalculateTotals();
+    }
+  });
+
+  recalculateTotals();
+
+
 });
 </script>
 @endsection
@@ -87,9 +134,9 @@
               <select name="invoice_type" id="invoice_type" class="form-select">
                 <option value="">Select Invoice Type</option>
 
-                <option value="1" {{ $invoice->invoice_type == 'Proforma Invoice' ? 'selected' : ''
+                <option value="1" {{ $invoice->invoice_type == 1 ? 'selected' : ''
                   }}>Proforma Invoice</option>
-                <option value="2" {{ $invoice->invoice_type == 'tax' ? 'selected' : '' }}>Tax Invoice</option>
+                <option value="2" {{ $invoice->invoice_type == 2 ? 'selected' : '' }}>Tax Invoice</option>
 
               </select>
               @error('milestone_id')
@@ -116,17 +163,56 @@
               @enderror
             </div>
           </div>
+          <h6 class="mb-3">Invoice Items</h6>
+          <table class="table table-bordered" id="items-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Amount (₹)</th>
+                <th>Tax (%)</th>
+                <th>Tax Amount (₹)</th>
+                <th>Total (₹)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach($invoice->items as $index => $item)
+              <tr>
+                <td><input type="text" name="items[{{ $index }}][description]" class="form-control"
+                    value="{{ $item->description }}" required></td>
+                <td><input type="number" step="0.01" min="0" name="items[{{ $index }}][amount]"
+                    class="form-control amount" value="{{ $item->amount }}" required></td>
+                <td><input type="number" step="0.01" min="0" max="100" name="items[{{ $index }}][tax_percentage]"
+                    class="form-control tax-percentage" value="{{ $item->tax_percentage }}" required></td>
+                <td><input type="number" step="0.01" name="items[{{ $index }}][tax_amount]"
+                    class="form-control tax-amount" value="{{ $item->tax_amount }}" readonly></td>
+                <td><input type="number" step="0.01" name="items[{{ $index }}][total_with_tax]"
+                    class="form-control total-with-tax" value="{{ $item->total_with_tax }}" readonly></td>
+                <td><button type="button" class="btn btn-sm btn-danger remove-item">X</button></td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
 
+          <button type="button" class="btn btn-sm btn-secondary mb-3" id="add-item">+ Add Item</button>
+
+          <div class="text-end mt-3">
+            <strong>Total (₹): </strong> <span id="grand-total">0.00</span>
+          </div>
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="amount" class="form-label">Amount (₹ without tax)</label>
-              <input type="number" step="0.01" min="0" name="amount" id="amount" class="form-control"
-                value="{{ old('amount', $invoice->amount) }}" required>
+              {{-- <label for="amount" class="form-label">Amount (₹ without tax)</label> --}}
+              <input type="hidden" step="0.01" min="0" name="amount" id="amount" class="form-control"
+                value="{{ old('amount', $invoice->amount) }}" required readonly>
               @error('amount')
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
+
+
           </div>
+
+
 
           <div class="row mb-3">
             <div class="col-md-12">

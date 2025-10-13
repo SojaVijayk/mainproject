@@ -21,11 +21,13 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
     protected $fillable = [
         'project_id',
         'milestone_id',
-          'invoice_type',
+        'invoice_type',
         'invoice_number',
         'invoice_date',
         'due_date',
         'amount',
+        'tax_amount',
+        'total_amount',
         'description',
         'status',
         'requested_by',
@@ -68,6 +70,10 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
     {
         return $this->hasMany(InvoicePayment::class);
     }
+    public function items()
+{
+    return $this->hasMany(InvoiceItem::class);
+}
 
     public function getStatusNameAttribute()
     {
@@ -98,7 +104,7 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
 
     public function getBalanceAmountAttribute()
     {
-        return $this->amount - $this->paid_amount;
+        return $this->total_amount - $this->paid_amount;
     }
 
     public function getIsPaidAttribute()

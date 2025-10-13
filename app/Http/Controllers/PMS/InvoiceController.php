@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PMS\InvoiceStoreRequest;
 use App\Http\Requests\PMS\InvoiceUpdateRequest;
 use App\Models\PMS\Invoice;
+use App\Models\PMS\InvoiceItem;
 use App\Models\PMS\InvoicePayment;
 use App\Models\PMS\Project;
 use Illuminate\Http\Request;
@@ -52,7 +53,44 @@ class InvoiceController extends Controller
         $data['requested_by'] = Auth::id();
         $data['status'] = Invoice::STATUS_DRAFT;
 
+          $items = $request->input('items', []);
+
+    $subtotal = 0;
+    $totalTax = 0;
+    $grandTotal = 0;
+
+        foreach ($items as $item) {
+        $amount = (float) $item['amount'];
+        $taxPercentage = (float) ($item['tax_percentage'] ?? 0);
+        $taxAmount = ($amount * $taxPercentage) / 100;
+        $totalWithTax = $amount + $taxAmount;
+
+        $subtotal += $amount;
+        $totalTax += $taxAmount;
+        $grandTotal += $totalWithTax;
+    }
+
+    $data['amount'] = $amount;
+     $data['tax_amount'] = $taxAmount;
+       $data['total_amount'] = $grandTotal;
+
+
         $invoice = Invoice::create($data);
+         foreach ($items as $item) {
+        $amount = (float) $item['amount'];
+        $taxPercentage = (float) ($item['tax_percentage'] ?? 0);
+        $taxAmount = ($amount * $taxPercentage) / 100;
+        $totalWithTax = $amount + $taxAmount;
+
+        $invoice->items()->create([
+            'description' => $item['description'],
+            'amount' => $amount,
+            'tax_percentage' => $taxPercentage,
+            'tax_amount' => $taxAmount,
+            'total_with_tax' => $totalWithTax,
+        ]);
+    }
+
 
         return redirect()->route('pms.invoices.show', [$project->id, $invoice->id])
             ->with('success', 'Invoice created successfully.');
@@ -73,8 +111,12 @@ class InvoiceController extends Controller
             return redirect()->back()
                 ->with('error', 'Only draft invoices can be edited.');
         }
+         $milestones = $project->milestones()
+            ->where('invoice_trigger', true)
+            ->whereDoesntHave('invoice')
+            ->get();
 
-        return view('pms.invoices.edit', compact('project', 'invoice'),['pageConfigs'=> $pageConfigs]);
+        return view('pms.invoices.edit', compact('project', 'invoice','milestones'),['pageConfigs'=> $pageConfigs]);
     }
 
     public function update(InvoiceUpdateRequest $request, Project $project, Invoice $invoice)
@@ -85,7 +127,28 @@ class InvoiceController extends Controller
         }
 
         $data = $request->validated();
-        $invoice->update($data);
+        // $invoice->update($data);
+         $invoice->update([
+        'milestone_id' => $data['milestone_id'] ?? null,
+        'invoice_date' => $data['invoice_date'],
+        'due_date' => $data['due_date'],
+        'invoice_type' => $data['invoice_type'],
+        'description' => $data['description'],
+    ]);
+     // Remove old items and re-add new ones
+    $invoice->items()->delete();
+     $total_with_tax = 0;
+     $total_tax = 0;
+     $total_amount = 0;
+    foreach ($data['items'] as $item) {
+        $invoice->items()->create($item);
+        $total_tax += $item['tax_amount'];
+        $total_with_tax += $item['total_with_tax'];
+        $total_amount += $item['amount'];
+    }
+
+    $invoice->update(['amount' => $total_amount,'tax_amount' => $total_tax,'total_amount'=> $total_with_tax]);
+
 
         return redirect()->route('pms.invoices.show', [$project->id, $invoice->id])
             ->with('success', 'Invoice updated successfully.');

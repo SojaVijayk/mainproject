@@ -40,6 +40,62 @@
             dueDateInput.value = this.value;
         }
     });
+      let itemIndex = 1;
+ // Add new item
+  document.getElementById('addItem').addEventListener('click', function() {
+    const tableBody = document.querySelector('#itemsTable tbody');
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td><input type="text" name="items[${itemIndex}][description]" class="form-control" required></td>
+      <td><input type="number" name="items[${itemIndex}][amount]" class="form-control item-amount" step="0.01" min="0" required></td>
+      <td><input type="number" name="items[${itemIndex}][tax_percentage]" class="form-control item-tax" step="0.01" min="0" value="0"></td>
+      <td><input type="number" name="items[${itemIndex}][tax_amount]" class="form-control item-tax-amount" readonly></td>
+      <td><input type="number" name="items[${itemIndex}][total_with_tax]" class="form-control item-total" readonly></td>
+      <td><button type="button" class="btn btn-sm btn-danger remove-item">×</button></td>`;
+    tableBody.appendChild(newRow);
+    itemIndex++;
+  });
+
+  // Remove item
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-item')) {
+      e.target.closest('tr').remove();
+      calculateTotals();
+    }
+  });
+
+  // Recalculate on change
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('item-amount') || e.target.classList.contains('item-tax')) {
+      calculateTotals();
+    }
+  });
+
+  function calculateTotals() {
+    let subtotal = 0, totalTax = 0, grandTotal = 0;
+
+    document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
+      const amount = parseFloat(row.querySelector('.item-amount')?.value) || 0;
+      const taxPercent = parseFloat(row.querySelector('.item-tax')?.value) || 0;
+      const taxAmt = (amount * taxPercent) / 100;
+      const total = amount + taxAmt;
+
+      row.querySelector('.item-tax-amount').value = taxAmt.toFixed(2);
+      row.querySelector('.item-total').value = total.toFixed(2);
+
+      subtotal += amount;
+      totalTax += taxAmt;
+      grandTotal += total;
+    });
+
+    document.getElementById('subtotal').value = subtotal.toFixed(2);
+    document.getElementById('total_tax').value = totalTax.toFixed(2);
+    document.getElementById('grand_total').value = grandTotal.toFixed(2);
+    document.getElementById('amount').value = subtotal.toFixed(2);
+  }
+
+
+
 });
 </script>
 @endsection
@@ -101,15 +157,69 @@
           </div>
 
           <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="amount" class="form-label">Amount (₹ without tax) *</label>
-              <input type="number" step="0.01" min="0" name="amount" id="amount" class="form-control"
-                value="{{ old('amount') }}" required>
+            <div class="col-md-12">
+              <label class="form-label">Invoice Items (with GST)</label>
+              <table class="table table-bordered" id="itemsTable">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Amount (₹)</th>
+                    <th>GST (%)</th>
+                    <th>Tax (₹)</th>
+                    <th>Total (₹)</th>
+                    <th>#</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><input type="text" name="items[0][description]" class="form-control" required></td>
+                    <td><input type="number" name="items[0][amount]" class="form-control item-amount" step="0.01"
+                        min="0" required></td>
+                    <td><input type="number" name="items[0][tax_percentage]" class="form-control item-tax" step="0.01"
+                        min="0" value="0"></td>
+                    <td><input type="number" name="items[0][tax_amount]" class="form-control item-tax-amount" readonly>
+                    </td>
+                    <td><input type="number" name="items[0][total_with_tax]" class="form-control item-total" readonly>
+                    </td>
+                    <td><button type="button" class="btn btn-sm btn-danger remove-item">×</button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button type="button" id="addItem" class="btn btn-sm btn-primary">+ Add Item</button>
+            </div>
+          </div>
+
+          <div class="row mt-3">
+            <div class="col-md-4">
+              <label class="form-label">Subtotal (₹)</label>
+              <input type="number" id="subtotal" class="form-control" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Total Tax (₹)</label>
+              <input type="number" id="total_tax" class="form-control" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label"><strong>Grand Total (₹)</strong></label>
+              <input type="number" id="grand_total" name="amount" class="form-control" readonly>
+            </div>
+          </div>
+
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              {{-- <label for="amount" class="form-label">Total Amount (₹ without tax) *</label> --}}
+              <input type="hidden" step="0.01" min="0" name="amount" id="amount" class="form-control"
+                value="{{ old('amount') }}" required readonly>
               @error('amount')
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
+
+
+
           </div>
+
+
 
           <div class="row mb-3">
             <div class="col-md-12">

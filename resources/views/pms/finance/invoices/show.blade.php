@@ -38,7 +38,7 @@ use \App\Models\PMS\Invoice;
           </div>
         </div>
 
-        <div class="table-responsive mb-4">
+        {{-- <div class="table-responsive mb-4">
           <table class="table">
             <thead>
               <tr>
@@ -74,6 +74,79 @@ use \App\Models\PMS\Invoice;
               </tr>
               @endif
             </tfoot>
+          </table>
+        </div> --}}
+
+        {{-- ✅ Items Table with GST --}}
+        <div class="table-responsive mb-4">
+          <table class="table table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Description</th>
+                <th class="text-end">Amount (₹)</th>
+                <th class="text-end">GST (%)</th>
+                <th class="text-end">Tax (₹)</th>
+                <th class="text-end">Total (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @php
+              $subTotal = 0;
+              $totalTax = 0;
+              $grandTotal = 0;
+              @endphp
+
+              @forelse($invoice->items as $item)
+              @php
+              $subTotal += $item->amount;
+              $totalTax += $item->tax_amount;
+              $grandTotal += $item->total_with_tax;
+              @endphp
+              <tr>
+                <td>{{ $item->description }}</td>
+                <td class="text-end">{{ number_format($item->amount, 2) }}</td>
+                <td class="text-end">{{ number_format($item->tax_percentage, 2) }}</td>
+                <td class="text-end">{{ number_format($item->tax_amount, 2) }}</td>
+                <td class="text-end">{{ number_format($item->total_with_tax, 2) }}</td>
+              </tr>
+              @empty
+              <tr>
+                <td colspan="5" class="text-center text-muted">No items added to this invoice</td>
+              </tr>
+              @endforelse
+            </tbody>
+            @if($invoice->items->count() > 0)
+            <tfoot>
+              <tr>
+                <th colspan="4" class="text-end">Subtotal</th>
+                <th class="text-end">{{ number_format($subTotal, 2) }}</th>
+              </tr>
+              <tr>
+                <th colspan="4" class="text-end">Total GST</th>
+                <th class="text-end">{{ number_format($totalTax, 2) }}</th>
+              </tr>
+              <tr class="table-active">
+                <th colspan="4" class="text-end">Grand Total</th>
+                <th class="text-end">{{ number_format($grandTotal, 2) }}</th>
+              </tr>
+              @if($invoice->paid_amount > 0)
+              <tr>
+                <th colspan="4" class="text-end text-success">Paid</th>
+                <th class="text-end text-success">{{ number_format($invoice->paid_amount, 2) }}</th>
+              </tr>
+              <tr>
+                <th colspan="4" class="text-end">Balance</th>
+                <th class="text-end">
+                  @if($invoice->balance_amount > 0)
+                  <span class="text-danger">{{ number_format($invoice->balance_amount, 2) }}</span>
+                  @else
+                  <span class="text-success">Paid</span>
+                  @endif
+                </th>
+              </tr>
+              @endif
+            </tfoot>
+            @endif
           </table>
         </div>
 

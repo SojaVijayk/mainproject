@@ -93,7 +93,7 @@
           <p>{{ $invoice->description ?? 'No description provided' }}</p>
         </div>
 
-        <div class="table-responsive mb-4">
+        {{-- <div class="table-responsive mb-4">
           <table class="table">
             <thead>
               <tr>
@@ -114,6 +114,54 @@
                 <th>Total Amount</th>
                 <th class="text-end">{{ number_format($invoice->amount * (1 + (config('app.tax_rate', 18) / 100)), 2) }}
                 </th>
+              </tr>
+            </tbody>
+          </table>
+        </div> --}}
+
+        <div class="table-responsive mb-4">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th class="text-end">Amount (₹)</th>
+                <th class="text-end">Tax (%)</th>
+                <th class="text-end">Tax Amount (₹)</th>
+                <th class="text-end">Total (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @php
+              $subTotal = 0;
+              $totalTax = 0;
+              $grandTotal = 0;
+              @endphp
+
+              @foreach($invoice->items as $item)
+              @php
+              $subTotal += $item->amount;
+              $totalTax += $item->tax_amount;
+              $grandTotal += $item->total_with_tax;
+              @endphp
+              <tr>
+                <td>{{ $item->description }}</td>
+                <td class="text-end">{{ number_format($item->amount, 2) }}</td>
+                <td class="text-end">{{ number_format($item->tax_percentage, 2) }}</td>
+                <td class="text-end">{{ number_format($item->tax_amount, 2) }}</td>
+                <td class="text-end">{{ number_format($item->total_with_tax, 2) }}</td>
+              </tr>
+              @endforeach
+
+              <tr>
+                <th>Subtotal</th>
+                <th class="text-end">{{ number_format($subTotal, 2) }}</th>
+                <th></th>
+                <th class="text-end">{{ number_format($totalTax, 2) }}</th>
+                <th></th>
+              </tr>
+              <tr class="table-active">
+                <th colspan="4">Grand Total</th>
+                <th class="text-end">{{ number_format($grandTotal, 2) }}</th>
               </tr>
             </tbody>
           </table>
