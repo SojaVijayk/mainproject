@@ -126,7 +126,9 @@ class InvoiceController extends Controller
                 ->with('error', 'Only draft invoices can be edited.');
         }
 
+
         $data = $request->validated();
+        $request->input('invoice_number');
         // $invoice->update($data);
          $invoice->update([
         'milestone_id' => $data['milestone_id'] ?? null,
@@ -134,6 +136,7 @@ class InvoiceController extends Controller
         'due_date' => $data['due_date'],
         'invoice_type' => $data['invoice_type'],
         'description' => $data['description'],
+        'invoice_number' => $request->filled('invoice_number') ? $request->input('invoice_number') : null,
     ]);
      // Remove old items and re-add new ones
     $invoice->items()->delete();

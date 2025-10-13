@@ -143,10 +143,10 @@ class FinanceDashboardController extends Controller
         $project = $invoice->project;
 
         // Generate invoice number based on project
-        $invoiceNumber = 'INV-' . strtoupper(substr($project->project_code, 0, 3)) . '-' . now()->format('Ymd') . '-' . str_pad($project->invoices()->count() + 1, 3, '0', STR_PAD_LEFT);
+        // $invoiceNumber = 'INV-' . strtoupper(substr($project->project_code, 0, 3)) . '-' . now()->format('Ymd') . '-' . str_pad($project->invoices()->count() + 1, 3, '0', STR_PAD_LEFT);
 
         $invoice->update([
-            'invoice_number' => $invoiceNumber,
+            // 'invoice_number' => $invoiceNumber,
             'status' => Invoice::STATUS_SENT,
             'generated_by' => auth()->id(),
         ]);
