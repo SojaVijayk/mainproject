@@ -30,7 +30,7 @@ class ProposalController extends Controller
     public function create(Requirement $requirement)
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
-      $expenseCategories = ExpenseCategory::whereNotIn('id',[2])->get();
+      $expenseCategories = ExpenseCategory::all();
       if(!in_array($requirement->status, [Requirement::STATUS_APPROVED_BY_DIRECTOR,Requirement::STATUS_APPROVED_BY_PAC]) || $requirement->allocated_to != Auth::id()){
         // if ($requirement->status != Requirement::STATUS_APPROVED_BY_DIRECTOR || $requirement->allocated_to != Auth::id()) {
             return redirect()->route('pms.requirements.show', $requirement->id)

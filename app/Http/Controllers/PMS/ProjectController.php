@@ -120,7 +120,7 @@ class ProjectController extends Controller
     $faculty = User::whereHas('roles', function($q) {
         $q->where('name', 'faculty');
     })->get();
-     $expenseCategories = ExpenseCategory::whereNotIn('id',[2])->get();
+     $expenseCategories = ExpenseCategory::all();
 
     return view('pms.projects.create', compact('proposal', 'categories', 'faculty','expenseCategories'),['pageConfigs'=> $pageConfigs]);
 }
