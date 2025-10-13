@@ -47,6 +47,16 @@
           <input type="number" step="0.01" min="0.01" class="form-control" id="amount" name="amount"
             value="{{ old('amount', $invoice->amount) }}" required>
         </div>
+        <div class="col-md-6">
+          <label for="tax_amount" class="form-label">GST Amount*</label>
+          <input type="number" step="0.01" min="0.01" class="form-control" id="tax_amount" name="tax_amount"
+            value="{{ old('amount', $invoice->tax_amount) }}" required>
+        </div>
+        <div class="col-md-6">
+          <label for="total_amount" class="form-label">Total Amount*</label>
+          <input type="number" step="0.01" min="0.01" class="form-control" id="total_amount" name="total_amount"
+            value="{{ old('amount', $invoice->total_amount) }}" required>
+        </div>
       </div>
 
       <div class="mb-3">

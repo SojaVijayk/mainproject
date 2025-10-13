@@ -122,6 +122,8 @@ class FinanceDashboardController extends Controller
             'invoice_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:invoice_date',
             'amount' => 'required|numeric|min:0.01',
+            'total_amount' => 'required|numeric|min:0.01',
+            'tax_amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string',
         ]);
 
