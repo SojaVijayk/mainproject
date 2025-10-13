@@ -70,8 +70,8 @@ class InvoiceController extends Controller
         $grandTotal += $totalWithTax;
     }
 
-    $data['amount'] = $amount;
-     $data['tax_amount'] = $taxAmount;
+    $data['amount'] =  $subtotal;
+     $data['tax_amount'] = $totalTax;
        $data['total_amount'] = $grandTotal;
 
 
