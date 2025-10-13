@@ -52,6 +52,7 @@
         <thead>
           <tr>
             <th>Requirement</th>
+            <th>Title</th>
             <th>Budget</th>
             <th>Tenure</th>
             <th>Status</th>
@@ -64,6 +65,7 @@
           @forelse ($proposals as $proposal)
           <tr>
             <td>{{ $proposal->requirement->temp_no }}</td>
+            <td>{{ $proposal->requirement->project_title }}</td>
             <td>₹{{ number_format($proposal->budget, 2) }}</td>
             <td>{{ $proposal->tenure }}</td>
             <td>
