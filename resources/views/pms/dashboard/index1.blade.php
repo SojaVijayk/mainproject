@@ -829,6 +829,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   <thead>
                     <tr>
                       <th>Requirement</th>
+                      <th>Category</th>
                       <th>Client</th>
                       <th>Budget</th>
                       <th>Status</th>
@@ -839,6 +840,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     @foreach($proposals as $proposal)
                     <tr>
                       <td>{{ $proposal->requirement->temp_no }}</td>
+                      <td>{{ $proposal->requirement->category->name }}</td>
                       <td>{{ $proposal->requirement->client->client_name }}</td>
                       <td>₹{{ number_format($proposal->budget, 2) }}</td>
                       <td>
