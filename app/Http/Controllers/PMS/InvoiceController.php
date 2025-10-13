@@ -161,11 +161,11 @@ class InvoiceController extends Controller
                 ->with('error', 'Only draft invoices can be generated.');
         }
 
-        // Generate invoice number (you might have your own format)
-        $invoiceNumber = 'INV-' . strtoupper(substr($project->project_code, 0, 3)) . '-' . now()->format('Ymd') . '-' . str_pad($project->invoices()->count() + 1, 3, '0', STR_PAD_LEFT);
+        // // Generate invoice number (you might have your own format)
+        // $invoiceNumber = 'INV-' . strtoupper(substr($project->project_code, 0, 3)) . '-' . now()->format('Ymd') . '-' . str_pad($project->invoices()->count() + 1, 3, '0', STR_PAD_LEFT);
 
         $invoice->update([
-            'invoice_number' => $invoiceNumber,
+           // 'invoice_number' => $invoiceNumber,
             'status' => Invoice::STATUS_SENT,
             'generated_by' => Auth::id(),
         ]);
