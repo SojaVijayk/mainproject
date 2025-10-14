@@ -309,7 +309,10 @@ class MasterFunctionController extends Controller
         }
         $total_leave= $days;
       }
-      else{
+      if($leave_type==5){
+        $total_leave= 0;
+      }
+      else {
         $total_leave= $leave_detail->total_credit;
       }
 
