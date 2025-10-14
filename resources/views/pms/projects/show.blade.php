@@ -571,7 +571,7 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
           <h5 class="card-title mb-0">Invoices</h5>
-          @if($project->status != \App\Models\PMS\Project::STATUS_COMPLETED && ($userIsInvestigator ||
+          @if($project->status != \App\Models\PMS\Project::STATUS_ARCHIVED && ($userIsInvestigator ||
           $userIsTeamLead))
           <a href="{{ route('pms.invoices.create', $project->id) }}" class="btn btn-sm btn-primary">
             <i class="fas fa-plus"></i> Add Invoice

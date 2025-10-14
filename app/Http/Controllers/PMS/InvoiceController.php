@@ -28,7 +28,7 @@ class InvoiceController extends Controller
     public function create(Project $project)
     {
         $pageConfigs = ['myLayout' => 'horizontal'];
-        if ($project->status == Project::STATUS_COMPLETED) {
+        if ($project->status == Project::STATUS_ARCHIVED) {
             return redirect()->back()
                 ->with('error', 'Cannot create invoices for a completed project.');
         }
@@ -43,7 +43,7 @@ class InvoiceController extends Controller
 
     public function store(InvoiceStoreRequest $request, Project $project)
     {
-        if ($project->status == Project::STATUS_COMPLETED) {
+        if ($project->status == Project::STATUS_ARCHIVED) {
             return redirect()->back()
                 ->with('error', 'Cannot create invoices for a completed project.');
         }
