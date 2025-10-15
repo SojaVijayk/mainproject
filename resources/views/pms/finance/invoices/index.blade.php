@@ -222,10 +222,14 @@ use \App\Models\Client;
                     </td>
                     <td>
                       <div class="btn-group">
+                        @if($invoice->type == 2)
                         <a href="{{ route('pms.finance.invoices.show', $invoice->id) }}" class="btn btn-sm btn-icon"
                           title="View">
                           <i class="fas fa-eye"></i>
                         </a>
+                        @else
+                        <span class="badge  bg-secondary">Disabled</span>
+                        @endif
                         @if($invoice->status == Invoice::STATUS_DRAFT)
                         <a href="{{ route('pms.finance.invoices.process', $invoice->id) }}" class="btn btn-sm btn-icon"
                           title="Edit">
