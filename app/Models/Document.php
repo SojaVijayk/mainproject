@@ -52,4 +52,14 @@ class Document extends Model
     {
         return $this->belongsTo(User::class, 'revision_requested_by');
     }
+
+    public function despatches()
+{
+    return $this->hasMany(DocumentDespatch::class);
+}
+
+public function latestDespatch()
+{
+    return $this->hasOne(DocumentDespatch::class)->latest();
+}
 }

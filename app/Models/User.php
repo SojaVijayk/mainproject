@@ -8,6 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\PMS\Project;
+use App\Models\PMS\Invoice;
+
+
+
 
 class User extends Authenticatable
 {
@@ -81,4 +86,16 @@ public function bookingRequests()
 {
     return $this->hasMany(BookingRequest::class, 'requested_by');
 }
+
+public function investigatorProjects()
+{
+    return $this->hasMany(Project::class, 'project_investigator_id');
+}
+
+public function requestedInvoices()
+{
+    return $this->hasMany(Invoice::class, 'requested_by');
+}
+
+
 }

@@ -11,6 +11,9 @@ use App\Models\PMS\InvoicePayment;
 use App\Models\PMS\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Imports\InvoiceImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -224,4 +227,17 @@ class InvoiceController extends Controller
         return redirect()->back()
             ->with('success', 'Invoice marked as paid successfully.');
     }
+   public function importFromPath()
+{
+    // Example: file is located in storage/app/imports/JASAR.xlsx
+    $filePath = storage_path('app/imports/import.xlsx');
+
+    if (!file_exists($filePath)) {
+        return "File not found at path: " . $filePath;
+    }
+
+    Excel::import(new InvoiceImport, $filePath);
+
+    return "Invoices imported successfully from file path!";
+}
 }

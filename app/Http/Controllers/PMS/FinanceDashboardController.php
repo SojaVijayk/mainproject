@@ -7,6 +7,8 @@ use App\Models\PMS\Invoice;
 use App\Models\PMS\InvoicePayment;
 use App\Models\PMS\Project;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Client;
 use Carbon\Carbon;
 
 class FinanceDashboardController extends Controller
@@ -80,7 +82,7 @@ class FinanceDashboardController extends Controller
         ];
     }
 
-    public function invoiceIndex()
+    public function invoiceIndex_old()
     {
         $pageConfigs = ['myLayout' => 'horizontal'];
 
@@ -93,6 +95,93 @@ class FinanceDashboardController extends Controller
         ->get();
 
         return view('pms.finance.invoices.index', compact('projects', 'pageConfigs'));
+    }
+     public function invoiceIndex(Request $request)
+    {
+       $pageConfigs = ['myLayout' => 'horizontal'];
+           // Get filter values
+        $projectId = $request->get('project_id');
+        $clientId = $request->get('client_id');
+        $investigatorId = $request->get('investigator_id');
+        $requestedBy = $request->get('requested_by');
+        $invoiceDateFrom = $request->get('invoice_date_from');
+        $invoiceDateTo = $request->get('invoice_date_to');
+        $status = $request->get('status');
+
+        // Base query for projects with invoices
+        $projectsQuery = Project::with([
+            'invoices' => function($query) use ($requestedBy, $invoiceDateFrom, $invoiceDateTo, $status) {
+                if ($requestedBy) {
+                    $query->where('requested_by', $requestedBy);
+                }
+                if ($invoiceDateFrom) {
+                    $query->whereDate('invoice_date', '>=', $invoiceDateFrom);
+                }
+                if ($invoiceDateTo) {
+                    $query->whereDate('invoice_date', '<=', $invoiceDateTo);
+                }
+                if ($status) {
+                    $query->where('status', $status);
+                }
+            },
+            'requirement.client',
+            'investigator',
+            'invoices.requestedBy'
+        ])->whereHas('invoices');
+
+        // Apply project filters
+        if ($projectId) {
+            $projectsQuery->where('id', $projectId);
+        }
+
+        // Filter by client through requirement
+        if ($clientId) {
+            $projectsQuery->whereHas('requirement', function($query) use ($clientId) {
+                $query->where('client_id', $clientId);
+            });
+        }
+
+        // Filter by project investigator
+        if ($investigatorId) {
+            $projectsQuery->where('project_investigator_id', $investigatorId);
+        }
+
+        // Get filtered projects
+        $filteredProjects = $projectsQuery->get();
+
+        // Get all data for filter dropdowns
+        $allProjects = Project::has('invoices')->get();
+
+        // Get clients that have projects with invoices
+        $clients = Client::whereHas('requirements', function($query) {
+            $query->whereHas('project', function($projectQuery) {
+                $projectQuery->whereHas('invoices');
+            });
+        })->get();
+
+        // Get investigators (users) who have projects with invoices
+        $investigators = User::whereHas('investigatorProjects', function($query) {
+            $query->whereHas('invoices');
+        })->get();
+
+        // Get users who have requested invoices
+        $users = User::whereHas('requestedInvoices')->get();
+
+        // Calculate total filtered invoices count
+        $filteredInvoices = collect();
+        foreach ($filteredProjects as $project) {
+            $filteredInvoices = $filteredInvoices->merge($project->invoices);
+        }
+
+        return view('pms.finance.invoices.index', compact(
+            'filteredProjects',
+            'allProjects',
+            'clients',
+            'investigators',
+            'users',
+            'filteredInvoices',
+            'pageConfigs'
+        ));
     }
 
     public function processDraft(Invoice $invoice)

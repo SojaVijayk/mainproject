@@ -64,6 +64,12 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
         return $this->hasMany(ProposalDocument::class);
     }
 
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
+
+
 //     public function workOrderDocuments()
 // {
 //     return $this->morphMany(ProjectDocument::class, 'documentable')->where('type', 'Work Order');

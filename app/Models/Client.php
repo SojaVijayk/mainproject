@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\PMS\Requirement;
 
 class Client extends Model
 {
@@ -17,4 +18,8 @@ class Client extends Model
     {
         return $this->hasMany(ClientContactPerson::class,'client_id');
     }
+    public function requirements()
+{
+    return $this->hasMany(Requirement::class, 'client_id');
+}
 }

@@ -189,6 +189,7 @@
     <div class="card h-100">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Overdue Invoices</h5>
+        <a href="{{ route('pms.finance.invoices.index') }}" class="btn btn-sm btn-outline-primary">View All Invoices</a>
         <span class="badge bg-danger">{{ $overdueInvoices->count() }}</span>
       </div>
       <div class="card-body p-0">
@@ -230,6 +231,7 @@
     <div class="card h-100">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Draft Invoices</h5>
+        <a href="{{ route('pms.finance.invoices.index') }}" class="btn btn-sm btn-outline-secondary">Process Drafts</a>
         <span class="badge bg-secondary">{{ $invoices->get(0, collect())->count() }}</span>
       </div>
       <div class="card-body p-0">
