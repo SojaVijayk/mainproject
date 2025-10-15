@@ -282,7 +282,12 @@
       <div class="card stat-card bg-label-warning text-white">
         <div class="card-body text-center">
           <h6 class="card-title">Total Invoiced</h6>
+
           <h3 class="card-text">{{ number_format($totalInvoiced, 2) }}</h3>
+          <small class="card-text text-primary">Proforma Invoice - {{ number_format($totalInvoiced_proforma,
+            2)}}</small><br>
+          <small class="card-text text-success">Tax Invoice - {{ number_format($totalInvoiced_tax, 2) }}</small>
+
         </div>
       </div>
     </div>

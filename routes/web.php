@@ -6,7 +6,7 @@ use App\Http\Controllers\Leave\LeaveRequestController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\DespatchController;
+
 
 use App\Http\Controllers\PMS\RequirementController;
 use App\Http\Controllers\PMS\ProposalController;
@@ -349,23 +349,6 @@ Route::resource('documents', DocumentController::class);
     ->name('documents.user.statistics');
 
 
-
-    Route::prefix('documents/{document}/despatch')->name('documents.despatch.')->group(function () {
-    Route::get('/create', [DespatchController::class, 'create'])->name('create');
-    Route::post('/store', [DespatchController::class, 'store'])->name('store');
-    Route::get('/{despatch}/edit', [DespatchController::class, 'edit'])->name('edit');
-    Route::put('/{despatch}/update', [DespatchController::class, 'update'])->name('update');
-
-    // Attachment routes
-    Route::post('/{despatch}/upload-attachment', [DespatchController::class, 'uploadAttachment'])->name('attachment.upload');
-    Route::delete('/{despatch}/attachments/{attachment}', [DespatchController::class, 'removeAttachment'])->name('attachment.remove');
-
-    // Acknowledgement routes
-    Route::put('/{despatch}/update-acknowledgement', [DespatchController::class, 'updateAcknowledgement'])->name('acknowledgement.update');
-});
-
-// Download route for despatch attachments
-Route::get('/despatch-attachments/{attachment}/download', [DespatchController::class, 'downloadAttachment'])->name('documents.despatch.attachment.download');
 
 
 //     Route::prefix('pms')->name('pms.')->middleware(['auth'])->group(function () {

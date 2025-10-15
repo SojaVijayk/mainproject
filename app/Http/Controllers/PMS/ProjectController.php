@@ -542,7 +542,9 @@ if ($request->has('team_members_json')) {
         $budgetUtilization = $budget > 0 ? ($expenses / $budget) * 100 : 0;
 
         // Revenue vs Invoices
-        $totalInvoiced = $project->invoices->sum('amount');
+        $totalInvoiced = $project->invoices->sum('total_amount');
+        $totalInvoiced_tax = $project->invoices->where('invoice_type',2)->sum('total_amount');
+        $totalInvoiced_proforma = $project->invoices->where('invoice_type',1)->sum('total_amount');
         $totalPaid = $project->invoices->sum(function($invoice) {
             return $invoice->payments->sum('amount');
         });
@@ -579,6 +581,8 @@ if ($request->has('team_members_json')) {
             'budgetRemaining',
             'budgetUtilization',
             'totalInvoiced',
+              'totalInvoiced_tax',
+                'totalInvoiced_proforma',
             'totalPaid',
             'outstanding',
             'milestoneProgress',
@@ -597,7 +601,7 @@ if ($request->has('team_members_json')) {
         $financialData = [
             'budget' => $project->proposal ? $project->proposal->budget : 0,
             'expenses' => $project->expenses->sum('total_amount'),
-            'invoiced' => $project->invoices->sum('amount'),
+            'invoiced' => $project->invoices->sum('total_amount'),
             'paid' => $project->invoices->sum(function($invoice) {
                 return $invoice->payments->sum('amount');
             })

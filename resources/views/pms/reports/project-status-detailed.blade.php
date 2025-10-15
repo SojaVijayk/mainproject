@@ -98,9 +98,14 @@
         data: {
             labels: {!! json_encode(array_keys($categorySummary->toArray())) !!},
             datasets: [
+             {
+                label: 'Proforma Invoice',
+                data: {!! json_encode($categorySummary->pluck('total_invoice_raised_proforma')->toArray()) !!},
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+            },
             {
-                label: 'Invoice',
-                data: {!! json_encode($categorySummary->pluck('total_invoice_raised')->toArray()) !!},
+                label: 'Tax Invoice',
+                data: {!! json_encode($categorySummary->pluck('total_invoice_raised_tax')->toArray()) !!},
                 backgroundColor: 'rgba(255, 165, 0, 0.6)',
             },
             {
@@ -359,24 +364,30 @@ $user = Auth::user();
           <table class="table table-bordered">
             <thead>
               <tr>
-                <th>Category</th>
-                <th>Budget (Lakhs)</th>
-                <th>Revenue (Lakhs)</th>
-                <th><span class="badge bg-label-primary">Invoice Raised (Lakhs)</span></th>
-                <th><span class="badge bg-label-success">Invoice Paid (Lakhs)</span></th>
-                <th><span class="badge bg-label-danger">Balance (Lakhs)</span></th>
-                <th><span class="badge bg-label-warning">Initiated</span></th>
-                <th><span class="badge bg-label-success">Ongoing</span></th>
-                <th><span class="badge bg-label-danger">Delayed</span></th>
-                <th><span class="badge bg-label-primary">Completed</span></th>
-                <th><span class="badge bg-label-dark">Archived</span></th>
+                <th rowspan="2">Category</th>
+                <th rowspan="2">Budget (Lakhs)</th>
+                <th rowspan="2">Revenue (Lakhs)</th>
+                <th colspan="3"><span class="badge bg-label-primary">Invoice Raised (Lakhs)</span></th>
+                <th rowspan="2"><span class="badge bg-label-success">Invoice Paid (Lakhs)</span></th>
+                <th rowspan="2"><span class="badge bg-label-danger">Balance (Lakhs)</span></th>
+                <th rowspan="2"><span class="badge bg-label-warning">Initiated</span></th>
+                <th rowspan="2"><span class="badge bg-label-success">Ongoing</span></th>
+                <th rowspan="2"><span class="badge bg-label-danger">Delayed</span></th>
+                <th rowspan="2"><span class="badge bg-label-primary">Completed</span></th>
+                <th rowspan="2"><span class="badge bg-label-dark">Archived</span></th>
 
+              </tr>
+              <tr>
+                <th>Tax</th>
+                <th>Proforma</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
               @php
               $totalBudget = $totalRevenue = $totalInvoiceRaised = $totalInvoicePaid = $totalBalance = 0;
               $totalInitiated = $totalOngoing = $totalCompleted = $totalArchived = $totalDelayed = 0;
+              $totalInvoiceRaisedTax = $totalInvoiceRaisedProforma = 0;
               @endphp
               @foreach($categorySummary as $cat => $data)
               <tr>
@@ -384,7 +395,11 @@ $user = Auth::user();
                   </span>{{ $cat }}</td>
                 <td>{{ number_format($data['total_budget'], 2) }}</td>
                 <td>{{ number_format($data['total_revenue'], 2) }}</td>
+
+                <td>{{ number_format($data['total_invoice_raised_tax'], 2) }}</td>
+                <td>{{ number_format($data['total_invoice_raised_proforma'], 2) }}</td>
                 <td>{{ number_format($data['total_invoice_raised'], 2) }}</td>
+
                 <td>{{ number_format($data['total_invoice_paid'], 2) }}</td>
                 <td>{{ number_format($data['total_balance'], 2) }}</td>
                 <td>{{ $data['initiated_count'] }}</td>
@@ -398,6 +413,8 @@ $user = Auth::user();
               $totalBudget += $data['total_budget'];
               $totalRevenue += $data['total_revenue'];
               $totalInvoiceRaised += $data['total_invoice_raised'];
+              $totalInvoiceRaisedTax += $data['total_invoice_raised_tax'];
+              $totalInvoiceRaisedProforma += $data['total_invoice_raised_proforma'];
               $totalInvoicePaid += $data['total_invoice_paid'];
               $totalBalance += $data['total_balance'];
               $totalInitiated += $data['initiated_count'];
@@ -411,6 +428,9 @@ $user = Auth::user();
                 <td class="text-end">Grand Total</td>
                 <td>{{ number_format($totalBudget, 2) }}</td>
                 <td>{{ number_format($totalRevenue, 2) }}</td>
+
+                <td>{{ number_format($totalInvoiceRaisedTax, 2) }}</td>
+                <td>{{ number_format($totalInvoiceRaisedProforma, 2) }}</td>
                 <td>{{ number_format($totalInvoiceRaised, 2) }}</td>
                 <td>{{ number_format($totalInvoicePaid, 2) }}</td>
                 <td>{{ number_format($totalBalance, 2) }}</td>
