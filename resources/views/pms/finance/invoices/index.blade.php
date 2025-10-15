@@ -222,7 +222,7 @@ use \App\Models\Client;
                     </td>
                     <td>
                       <div class="btn-group">
-                        @if($invoice->type == 2)
+                        @if($invoice->invoice_type == 2)
                         <a href="{{ route('pms.finance.invoices.show', $invoice->id) }}" class="btn btn-sm btn-icon"
                           title="View">
                           <i class="fas fa-eye"></i>
