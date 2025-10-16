@@ -55,8 +55,9 @@
     });  --}}
 
     function recalculateTotals() {
-    let grandTotal = 0;
-    let total_amount_without_tax = 0;
+    {{--  let grandTotal = 0;
+    let total_amount_without_tax = 0;  --}}
+     let subtotal = 0, totalTax = 0, grandTotal = 0;
     document.querySelectorAll('#items-table tbody tr').forEach(row => {
       const amount = parseFloat(row.querySelector('.amount')?.value || 0);
       const taxPercentage = parseFloat(row.querySelector('.tax-percentage')?.value || 0);
@@ -66,11 +67,19 @@
 
       row.querySelector('.tax-amount').value = taxAmount.toFixed(2);
       row.querySelector('.total-with-tax').value = total.toFixed(2);
+      {{--  grandTotal += total;
+      total_amount_without_tax +=amount;  --}}
+
+      subtotal += amount;
+      totalTax += taxAmount;
       grandTotal += total;
-      total_amount_without_tax +=amount;
     });
-    document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
-    document.getElementById('amount').value = total_amount_without_tax.toFixed(2);
+    {{--  document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+    document.getElementById('amount').value = total_amount_without_tax.toFixed(2);  --}}
+    document.getElementById('subtotal').value = subtotal.toFixed(2);
+    document.getElementById('total_tax').value = totalTax.toFixed(2);
+    document.getElementById('grand_total').value = grandTotal.toFixed(2);
+    {{--  document.getElementById('amount').value = subtotal.toFixed(2);  --}}
   }
 
   document.getElementById('items-table').addEventListener('input', recalculateTotals);
@@ -196,12 +205,29 @@
 
           <button type="button" class="btn btn-sm btn-secondary mb-3" id="add-item">+ Add Item</button>
 
-          <div class="text-end mt-3">
+
+          <div class="row mt-3">
+            <div class="col-md-4">
+              <label class="form-label">Subtotal (₹)</label>
+              <input type="number" id="subtotal" class="form-control" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Total Tax (₹)</label>
+              <input type="number" id="total_tax" class="form-control" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label"><strong>Grand Total (₹)</strong></label>
+              <input type="number" id="grand_total" name="amount" class="form-control" readonly>
+            </div>
+          </div>
+
+
+          {{-- <div class="text-end mt-3">
             <strong>Total (₹): </strong> <span id="grand-total">0.00</span>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
-              {{-- <label for="amount" class="form-label">Amount (₹ without tax)</label> --}}
+              <label for="amount" class="form-label">Amount (₹ without tax)</label>
               <input type="hidden" step="0.01" min="0" name="amount" id="amount" class="form-control"
                 value="{{ old('amount', $invoice->amount) }}" required readonly>
               @error('amount')
@@ -210,7 +236,7 @@
             </div>
 
 
-          </div>
+          </div> --}}
 
 
 

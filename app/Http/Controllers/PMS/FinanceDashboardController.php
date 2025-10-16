@@ -214,7 +214,28 @@ class FinanceDashboardController extends Controller
             'total_amount' => 'required|numeric|min:0.01',
             'tax_amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string',
+            'items'                          => 'required|array|min:1',
+        'items.*.description'            => 'required|string|max:255',
+        'items.*.amount'                 => 'required|numeric|min:0',
+        'items.*.tax_percentage'         => 'nullable|numeric|min:0|max:100',
+        'items.*.tax_amount'             => 'nullable|numeric|min:0',
+        'items.*.total_with_tax'         => 'nullable|numeric|min:0',
         ]);
+
+         // Remove old items and re-add new ones
+    $invoice->items()->delete();
+     $total_with_tax = 0;
+     $total_tax = 0;
+     $total_amount = 0;
+    foreach ($validated['items'] as $item) {
+        $invoice->items()->create($item);
+        $total_tax += $item['tax_amount'];
+        $total_with_tax += $item['total_with_tax'];
+        $total_amount += $item['amount'];
+    }
+
+      // $invoice->update(['amount' => $total_amount,'tax_amount' => $total_tax,'total_amount'=> $total_with_tax]);
+
 
         $invoice->update($validated);
 
