@@ -282,7 +282,13 @@ $investigatorCategoryWise = $projects
             'total_revenue' => $projects->sum('revenue'),
             'total_expense' => $projects->sum('estimated_expense'),
             'total_invoiced' => $projects->sum(function($project) {
-                return $project->invoices->sum('amount');
+                return $project->invoices->sum('total_amount');
+            }),
+              'total_proforma_invoiced' => $projects->sum(function($project) {
+                return $project->invoices->where('invoice_type',1)->sum('total_amount');
+            }),
+             'total_tax_invoiced' => $projects->sum(function($project) {
+                return $project->invoices->where('invoice_type',2)->sum('total_amount');
             }),
             'total_paid' => $projects->sum(function($project) {
                 return $project->invoices->sum(function($invoice) {
@@ -290,7 +296,7 @@ $investigatorCategoryWise = $projects
                 });
             }),
             'total_pending' => $projects->sum(function($project) {
-                return $project->invoices->sum('amount') - $project->invoices->sum(function($invoice) {
+                return $project->invoices->sum('total_amount') - $project->invoices->sum(function($invoice) {
                     return $invoice->payments->sum('amount');
                 });
             }),

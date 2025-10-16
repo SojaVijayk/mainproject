@@ -152,7 +152,7 @@
 
     <div class="row mb-4">
       <div class="col-md-3">
-        <div class="card bg-primary text-white">
+        <div class="card bg-label-primary text-white">
           <div class="card-body">
             <h5 class="card-title">Total Budget</h5>
             <h3 class="card-text">₹{{ number_format($financialData['total_budget'], 2) }}</h3>
@@ -160,7 +160,7 @@
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card bg-success text-white">
+        <div class="card bg-label-success text-white">
           <div class="card-body">
             <h5 class="card-title">Total Revenue</h5>
             <h3 class="card-text">₹{{ number_format($financialData['total_revenue'], 2) }}</h3>
@@ -168,15 +168,20 @@
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card bg-info text-white">
+        <div class="card bg-label-info text-white">
           <div class="card-body">
             <h5 class="card-title">Total Invoiced</h5>
             <h3 class="card-text">₹{{ number_format($financialData['total_invoiced'], 2) }}</h3>
+            <small class="card-text text-primary">Proforma Invoice -
+              ₹{{number_format($financialData['total_proforma_invoiced'], 2) }}</small><br>
+            <small class="card-text text-success">Tax Invoice - ₹{{ number_format($financialData['total_tax_invoiced'],
+              2) }}</small>
+
           </div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card bg-warning text-dark">
+        <div class="card bg-label-warning text-dark">
           <div class="card-body">
             <h5 class="card-title">Total Pending</h5>
             <h3 class="card-text">₹{{ number_format($financialData['total_pending'], 2) }}</h3>
