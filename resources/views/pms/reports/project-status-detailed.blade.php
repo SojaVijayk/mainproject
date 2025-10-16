@@ -357,7 +357,8 @@ $user = Auth::user();
       <div class="col-md-12  mb-4">
         {{-- Category Summary Table --}}
         <div class="alert alert-success" role="alert">
-          <h5>Summary by Category(O+C+D Projects)</h5>
+          <h5>Summary by Category(O+C+D Projects)</h5><small class="text-secondary">Note: All amounts are without
+            GST.</small>
         </div>
 
         <div class="table-responsive mb-4">
@@ -451,7 +452,8 @@ $user = Auth::user();
     <div class="row mt-2">
       <div class="col-md-12  mb-4">
         <div class="alert alert-primary" role="alert">
-          <h5>Summary by Category(Proposal Submitted)</h5>
+          <h5>Summary by Category(Proposal Submitted)</h5><small class="text-secondary">Note: All amounts are without
+            GST.</small>
         </div>
         <table class="table table-bordered">
           <thead>
@@ -596,7 +598,8 @@ $user = Auth::user();
 
       <div class="col-md-6 mt-4">
         <div class="alert alert-dark" role="alert">
-          <h4 class="">Invoice Status</h4>
+          <h4 class="">Invoice Status</h4><small class="text-secondary">Note: All amounts are without
+            GST.</small>
         </div>
         <canvas id="invoiceChart"></canvas>
       </div>
@@ -624,7 +627,8 @@ $user = Auth::user();
 
     <div class="col-md-12 mt-2 mb-4">
       <div class="alert alert-dark" role="alert">
-        <h5>Principal investigator </h5>
+        <h5>Principal investigator </h5><small class="text-secondary">Note: All amounts are without
+          GST.</small>
 
       </div>
       @php

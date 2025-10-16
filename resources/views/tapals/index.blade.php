@@ -90,6 +90,8 @@
                 }
             }
         });
+
+
     });
 </script>
 @endsection
@@ -209,6 +211,35 @@
     </div>
   </div>
   <div class="card-body">
+    <form action="{{ route('tapals.index') }}" method="GET" class="mb-4">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="form-group">
+            <input type="text" name="search" class="form-control" placeholder="Search by Tapal No, Subject..."
+              value="{{ request('search') }}">
+          </div>
+        </div>
+
+
+        <div class="col-md-2">
+          <div class="form-group">
+            <input type="text" name="from_date" class="form-control datepicker" placeholder="From Date"
+              value="{{ request('from_date') }}">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-group">
+            <input type="text" name="to_date" class="form-control datepicker" placeholder="To Date"
+              value="{{ request('to_date') }}">
+          </div>
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary btn-block">Filter</button>
+        </div>
+      </div>
+    </form>
+
+
     <table class="table table-bordered">
       <thead>
         <tr>

@@ -17,20 +17,59 @@ use DB;
 
 class TapalController extends Controller
 {
-    public function index()
+    public function index(Request $request)
 
     {
        $pageConfigs = ['myLayout' => 'horizontal'];
       $user = auth()->user();
+
+      $search = $request->input('search');
+    $status = $request->input('status');
+    $fromDate = $request->input('from_date');
+    $toDate = $request->input('to_date');
+
        $stats = $this->getTapalStatistics($user);
 
-        $query = Tapal::with(['creator', 'currentHolder'])
+
+          $query = Tapal::with(['creator', 'currentHolder'])
             ->where('created_by', Auth::id())
             ->orWhereHas('movements', function($query) {
                 $query->where('to_user_id', Auth::id());
-            })
-            ->orderBy('created_at', 'desc');
-             $tapals = $query->latest()->paginate(25);
+            });
+
+
+    // Apply filters
+    if ($search) {
+        $query->where(function($q) use ($search) {
+            $q->where('tapal_number', 'like', "%$search%")
+              ->orWhere('subject', 'like', "%$search%")
+              ->orWhere('ref_number', 'like', "%{$search}%")
+              ->orWhere('from_name', 'like', "%{$search}%")
+              ->orWhere('from_address', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+
+
+    if ($fromDate && $fromDate != '') {
+        $query->whereDate('created_at', '>=', $fromDate);
+    }
+
+    if ($toDate && $toDate != '') {
+        $query->whereDate('created_at', '<=', $toDate);
+    }
+
+    $tapals = $query->orderBy('created_at', 'desc')->paginate(25);
+
+
+
+        // $query = Tapal::with(['creator', 'currentHolder'])
+        //     ->where('created_by', Auth::id())
+        //     ->orWhereHas('movements', function($query) {
+        //         $query->where('to_user_id', Auth::id());
+        //     })
+        //     ->orderBy('created_at', 'desc');
+        //      $tapals = $query->latest()->paginate(25);
 
         return view('tapals.index', compact('tapals','stats'),['pageConfigs'=> $pageConfigs]);
     }
