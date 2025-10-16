@@ -201,7 +201,7 @@ class FinanceDashboardController extends Controller
     public function updateDraft(Request $request, Invoice $invoice)
     {
         $pageConfigs = ['myLayout' => 'horizontal'];
-        if ($invoice->status != Invoice::STATUS_DRAFT) {
+        if ($invoice->status != Invoice::STATUS_DRAFT && $invoice->status != Invoice::STATUS_SENT) {
             return redirect()->back()
                 ->with('error', 'Only draft invoices can be processed.');
         }
