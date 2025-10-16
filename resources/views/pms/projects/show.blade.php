@@ -566,7 +566,7 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
 </div>
 
 <div class="row mt-4">
-  <div class="col-md-6">
+  <div class="col-md-8">
     <div class="card mt-4">
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
@@ -598,7 +598,7 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
               <tr>
                 <td>{{ $invoice->invoice_number ?? 'Draft' }}</td>
                 <td>{{ $invoice->invoice_date->format('d M Y') }}</td>
-                <td>{{ number_format($invoice->amount, 2) }}</td>
+                <td>{{ number_format($invoice->total_amount, 2) }}</td>
                 <td>
                   <span class="badge bg-{{$invoice->invoice_type == 1 ? 'primary' : 'success'}}">
                     {{ $invoice->invoice_type == 1 ? 'Proforma Invoice' : 'Tax Invoice' }}
@@ -632,7 +632,7 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
     </div>
   </div>
 
-  <div class="col-md-6">
+  <div class="col-md-4">
     <div class="card mt-4">
       <div class="card-header">
         <h5 class="card-title">Documents</h5>
