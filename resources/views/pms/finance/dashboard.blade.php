@@ -245,6 +245,10 @@
                     <div>
                       <h6 class="mb-1">{{ $invoice->project->title ?? 'N/A'}}</h6>
                       <small class="text-muted">Requested by {{ $invoice->requestedBy->name }}</small>
+                      <a href="{{ route('pms.finance.invoices.process', $invoice->id) }}"
+                        class="btn btn-sm btn-primary p-2" title="Edit">
+                        Process
+                      </a>
                     </div>
                     <div class="text-end">
                       <span class="d-block fw-semibold">{{ number_format($invoice->amount, 2) }}</span>
