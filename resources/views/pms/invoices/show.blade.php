@@ -50,10 +50,10 @@
           <div class="col-md-6">
             <h6>From:</h6>
             <p>
-              <strong>{{ config('app.name') }}</strong><br>
+              <strong>Centre for Management Development</strong><br>
               {{ config('app.address') }}<br>
               {{ config('app.city') }}, {{ config('app.state') }}<br>
-              {{ config('app.country') }} - {{ config('app.postal_code') }}<br>
+              {{ config('app.country') }} - 695014<br>
               GSTIN: {{ config('app.gstin') }}
             </p>
           </div>
