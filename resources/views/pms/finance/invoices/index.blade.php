@@ -140,9 +140,9 @@ use \App\Models\Client;
           @if(request('invoice_date_from') || request('invoice_date_to'))
           | Date Range: {{ request('invoice_date_from') }} to {{ request('invoice_date_to') }}
           @endif
-          @if(request('status'))
+          {{-- @if(request('status'))
           | Status: {{ Invoice::find(1)->getStatusNameAttribute() }}
-          @endif
+          @endif --}}
         </div>
       </div>
     </div>
@@ -164,8 +164,23 @@ use \App\Models\Client;
                   Investigator: {{ $project->investigator->name ?? 'N/A' }}
                 </small>
               </div>
-              <span class="badge bg-primary rounded-pill ms-2">
-                {{ $project->invoices->count() }} invoices
+              <span class="badge bg-label-dark rounded-pill ms-2 mt-4 p-2">
+                Total invoices - {{ $project->invoices->count() }}
+
+
+
+              </span>
+              <span
+                class="badge bg-label-{{ $project->invoices->where('invoice_type',2)->count() > 0 ? 'success' :'secondary' }} rounded-pill ms-2 mt-4 p-2">
+                Tax invoices - {{ $project->invoices->where('invoice_type',2)->count() }}
+              </span>
+              <span
+                class="badge bg-label-{{ $project->invoices->where('invoice_type',1)->count() > 0 ? 'primary' :'secondary' }} rounded-pill ms-2 mt-4 p-2">
+                Proforma invoices - {{ $project->invoices->where('invoice_type',1)->count() }}
+              </span>
+              <span
+                class="badge bg-label-{{ $project->invoices->where('status',0)->count() > 0 ? 'danger' : 'secondary' }} rounded-pill ms-2 mt-4 p-2">
+                Draft invoices - {{ $project->invoices->where('status',0)->count() }}
               </span>
             </div>
           </button>
