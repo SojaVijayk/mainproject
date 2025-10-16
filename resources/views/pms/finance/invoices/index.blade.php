@@ -245,7 +245,7 @@ use \App\Models\Client;
                         @else
                         <span class="badge  bg-secondary">Disabled</span>
                         @endif
-                        @if($invoice->status == Invoice::STATUS_DRAFT)
+                        @if($invoice->status == Invoice::STATUS_DRAFT || $invoice->status == Invoice::STATUS_SENT)
                         <a href="{{ route('pms.finance.invoices.process', $invoice->id) }}" class="btn btn-sm btn-icon"
                           title="Edit">
                           <i class="fas fa-edit"></i>
