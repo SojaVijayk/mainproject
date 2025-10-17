@@ -234,10 +234,10 @@ class FinanceDashboardController extends Controller
         $total_amount += $item['amount'];
     }
 
-      // $invoice->update(['amount' => $total_amount,'tax_amount' => $total_tax,'total_amount'=> $total_with_tax]);
+      $invoice->update(['amount' => $total_amount,'tax_amount' => $total_tax,'total_amount'=> $total_with_tax,'invoice_number'=>$validated['invoice_number'],'invoice_date'=>$validated['invoice_date'],'due_date'=>$validated['due_date'],'description'=>$validated['description']]);
 
 
-        $invoice->update($validated);
+        // $invoice->update($validated);
 
         return redirect()->route('pms.finance.invoices.show', $invoice->id)
             ->with('success', 'Draft invoice updated successfully.');
