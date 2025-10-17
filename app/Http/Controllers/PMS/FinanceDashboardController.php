@@ -206,13 +206,14 @@ class FinanceDashboardController extends Controller
                 ->with('error', 'Only draft invoices can be processed.');
         }
 
+    try {
         $validated = $request->validate([
             'invoice_number' => 'required|string|max:255|unique:invoices,invoice_number,'.$invoice->id,
             'invoice_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:invoice_date',
             'amount' => 'required|numeric|min:0.01',
             'total_amount' => 'required|numeric|min:0.01',
-            'tax_amount' => 'required|numeric|min:0.01',
+            'tax_amount' => 'required|numeric|min:0.00',
             'description' => 'nullable|string',
             'items'                          => 'required|array|min:1',
         'items.*.description'            => 'required|string|max:255',
@@ -221,7 +222,13 @@ class FinanceDashboardController extends Controller
         'items.*.tax_amount'             => 'nullable|numeric|min:0',
         'items.*.total_with_tax'         => 'nullable|numeric|min:0',
         ]);
-
+ } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'status' => 'validation_error',
+            'errors' => $e->errors(),
+        ], 422);
+    }
+// dd($validated);
          // Remove old items and re-add new ones
     $invoice->items()->delete();
      $total_with_tax = 0;
