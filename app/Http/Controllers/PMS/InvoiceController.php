@@ -230,7 +230,7 @@ class InvoiceController extends Controller
    public function importFromPath()
 {
     // Example: file is located in storage/app/imports/JASAR.xlsx
-    $filePath = storage_path('app/imports/import.xlsx');
+    $filePath = storage_path('app/imports/imports_proforma.xlsx');
 
     if (!file_exists($filePath)) {
         return "File not found at path: " . $filePath;
