@@ -98,6 +98,7 @@
             </thead>
             <tbody>
               @php
+              if (!function_exists('formatBytes')) {
               function formatBytes($bytes, $decimals = 2)
               {
               if ($bytes == 0) return '0 Bytes';
@@ -105,6 +106,7 @@
               $sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
               $i = floor(log($bytes, $k));
               return round($bytes / pow($k, $i), $decimals) . ' ' . $sizes[$i];
+              }
               }
               @endphp
               @foreach($folderDocuments as $document)
