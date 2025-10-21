@@ -270,7 +270,7 @@ class FinanceDashboardController extends Controller
             'generated_by' => auth()->id(),
         ]);
 
-        // TODO: Send invoice to client
+        // TODO: Send invoice to client0
 
         return redirect()->back()
             ->with('success', 'Invoice generated and sent to client successfully.');

@@ -953,23 +953,77 @@ else{
 {
     $dates = LeaveRequestDetails::where('request_id', $id)
         ->where('status', 1) // approved
-        ->pluck('date');
+        // ->pluck('date');
+         ->get(['date', 'leave_day_type']);
 
     return response()->json($dates);
 }
+
+// public function cancelRequest(Request $request)
+// {
+//     $leaveRequestId = $request->leave_request_id;
+//     $dates = $request->dates ?? [];
+
+//     foreach ($dates as $date) {
+//         LeaveRequestDetails::where('request_id', $leaveRequestId)
+//             ->whereDate('date', $date)
+//             ->update(['cancel_status' => 3,'cancel_requested_at'=>now()]); // 3 = Cancel Requested
+//     }
+
+//     return back()->with('success', 'Cancel request submitted.');
+// }
 
 public function cancelRequest(Request $request)
 {
     $leaveRequestId = $request->leave_request_id;
     $dates = $request->dates ?? [];
+    $partials = $request->partial ?? [];
+
+     $leave=  LeaveRequest::find($leaveRequestId);
+
+
 
     foreach ($dates as $date) {
-        LeaveRequestDetails::where('request_id', $leaveRequestId)
-            ->whereDate('date', $date)
-            ->update(['cancel_status' => 3,'cancel_requested_at'=>now()]); // 3 = Cancel Requested
+        $query = LeaveRequestDetails::where('request_id', $leaveRequestId)
+            ->whereDate('date', $date);
+
+        // Check if partial cancel requested
+        if (isset($partials[$date])) {
+            $partialType = $partials[$date];
+
+            // Update the original to mark partial cancel
+            $query->update([
+                // 'leave_day_type' => $partialType,
+                'cancel_status' => 3, // cancel requested
+                'cancel_requested_at' => now()
+            ]);
+             $leave_details =  LeaveRequestDetails::where('request_id',$leaveRequestId)->where('date',$date)->first();
+            LeaveRequestDetails::create(['leave_type_id' => $leave->leave_type_id,
+          'request_id' => $leaveRequestId,
+          'leave_day_type' => $partialType,
+          'leave_duration' =>  0.5,
+           'date' => $date,
+           'user_id' => $leave->user_id,'status' => 1,'requested_at' => $date,
+           'leave_period_start' => $leave_details->leave_period_start,
+           'leave_period_end' => $leave_details->leave_period_end
+        ]);
+
+
+            // Also adjust duration if needed (0.5 for partial)
+            LeaveRequest::where('id', $leaveRequestId)->decrement('duration', 0.5);
+        } else {
+            // Full cancel for the date
+            $query->update([
+                'cancel_status' => 3,
+                'cancel_requested_at' => now()
+            ]);
+
+            // Decrease duration by 1 full day
+            LeaveRequest::where('id', $leaveRequestId)->decrement('duration', 1);
+        }
     }
 
-    return back()->with('success', 'Cancel request submitted.');
+    return back()->with('success', 'Cancel request submitted successfully.');
 }
 
 public function hrCancelRequests()

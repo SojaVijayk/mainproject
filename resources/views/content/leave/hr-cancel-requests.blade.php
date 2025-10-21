@@ -54,7 +54,12 @@
       <tr>
         <td>{{ $detail->leaveRequest->user->name }}</td>
         <td>{{ $detail->leaveRequest->leaveType->leave_type }}</td>
-        <td>{{ $detail->date }}</td>
+        <td>{{ $detail->date }}
+          @if($detail->leave_day_type == 1) Full Day
+          @elseif($detail->leave_day_type == 2) AN
+          @else
+          FN @endif
+        </td>
         <td><span class="badge bg-warning">Pending HR</span></td>
         <td>
           @if($detail->attendance_exists)

@@ -53,7 +53,12 @@
       <tr>
         <td>{{ $detail->leaveRequest->user->name }}</td>
         <td>{{ $detail->leaveRequest->leaveType->leave_type }}</td>
-        <td>{{ $detail->date }}</td>
+        <td>{{ $detail->date }}
+          @if($detail->leave_day_type == 1) Full Day
+          @elseif($detail->leave_day_type == 2) AN
+          @else
+          FN @endif
+        </td>
         <td><span class="badge bg-info">HR Approved</span></td>
         <td>
           <form method="POST" action="{{ route('leave.cancel.ro.action', $detail->id) }}" class="d-inline">

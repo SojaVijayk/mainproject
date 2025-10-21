@@ -867,7 +867,7 @@ $('.duty-assignment-entry').each(function () {
 
 
 
-    var cancelModal = document.getElementById('cancelModal');
+    {{--  var cancelModal = document.getElementById('cancelModal');
     cancelModal.addEventListener('show.bs.modal', function(event) {
         var button = event.relatedTarget;
         var leaveId = button.getAttribute('data-id');
@@ -886,7 +886,48 @@ $('.duty-assignment-entry').each(function () {
                 });
                 document.getElementById('datesContainer').innerHTML = html;
             });
-    });
+    });  --}}
+    var cancelModal = document.getElementById('cancelModal');
+cancelModal.addEventListener('show.bs.modal', function(event) {
+    var button = event.relatedTarget;
+    var leaveId = button.getAttribute('data-id');
+    document.getElementById('leave_request_id').value = leaveId;
+
+    // fetch dates via AJAX
+    fetch("/leave/" + leaveId + "/dates")
+        .then(res => res.json())
+        .then(data => {
+            let html = "";
+            data.forEach(item => {
+                let dayTypeLabel = '';
+                switch (item.leave_day_type) {
+                    case 1: dayTypeLabel = 'Full Day'; break;
+                    case 2: dayTypeLabel = 'FN'; break;
+                    case 3: dayTypeLabel = 'AN'; break;
+                }
+
+                html += `
+                    <div class="border rounded p-2 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="dates[]" value="${item.date}">
+                            <label class="form-check-label fw-bold">${item.date} (${dayTypeLabel})</label>
+                        </div>`;
+
+                if (item.leave_day_type == 1) {
+                    html += `
+                        <div class="ms-4 mt-1">
+                            <label class="form-label small">Cancel partially as:</label><br>
+                            <input type="radio" name="partial[${item.date}]" value="3"> FN
+                            <input type="radio" name="partial[${item.date}]" value="2" class="ms-2"> AN
+                        </div>`;
+                }
+
+                html += `</div>`;
+            });
+
+            document.getElementById('datesContainer').innerHTML = html;
+        });
+});
 
 
 });
