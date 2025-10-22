@@ -24,9 +24,7 @@
 
 @section('page-script')
 <script>
-
-
-$(function () {
+  $(function () {
   var dataTablePermissions = $('.datatables-designation'),
     dt_permission,
     statusObj = {
@@ -299,7 +297,7 @@ $(function () {
           buttonsStyling: false
         }).then(function(result) {
           if (result.value) {
-            if(status== 2){
+            {{--  if(status== 2){  --}}
 
               const { value: text } = Swal.fire({
                 input: 'textarea',
@@ -370,7 +368,8 @@ $(function () {
 
 
 
-            }else{
+            {{--  }
+            else{
 
 
             $.ajaxSetup({
@@ -407,7 +406,7 @@ $(function () {
           }
       });
 
-    }
+    }  --}}
 
           }
         });
@@ -550,10 +549,10 @@ $(function () {
           <th>User</th>
           <th>Movement Details</th>
           <th>TIME</th>
-          {{--  <th>To</th>  --}}
+          {{-- <th>To</th> --}}
           <th>Status</th>
-           <th>Report</th>
-          {{--  <th>Action By</th>  --}}
+          <th>Report</th>
+          {{-- <th>Action By</th> --}}
           <th>Actions</th>
         </tr>
       </thead>
