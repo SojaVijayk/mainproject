@@ -297,12 +297,14 @@
           buttonsStyling: false
         }).then(function(result) {
           if (result.value) {
+            var remark_placeholder;
             {{--  if(status== 2){  --}}
 
               const { value: text } = Swal.fire({
                 input: 'textarea',
                 inputLabel: 'Remark',
                 inputPlaceholder: 'Type your Remark here...',
+                 inputValue: 'Nil',
                 inputAttributes: {
                   'aria-label': 'Type your Remark here'
                 },
