@@ -315,7 +315,8 @@ class ProjectController extends Controller
         //     $q->where('name', 'staff');
         // })->get();
          $staff = User::where('active', 1)->get();
-          $expenseCategories = ExpenseCategory::whereNotIn('id',[2])->get();
+          // $expenseCategories = ExpenseCategory::whereNotIn('id',[2])->get();
+           $expenseCategories = ExpenseCategory::all();
 
         return view('pms.projects.edit', compact('project', 'faculty', 'staff', 'teamMemberIds','teamMembersData','expenseCategories'),['pageConfigs'=> $pageConfigs]);
     }
