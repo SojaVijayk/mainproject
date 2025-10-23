@@ -867,7 +867,7 @@ $('.duty-assignment-entry').each(function () {
 
 
 
-    {{--  var cancelModal = document.getElementById('cancelModal');
+    var cancelModal = document.getElementById('cancelModal');
     cancelModal.addEventListener('show.bs.modal', function(event) {
         var button = event.relatedTarget;
         var leaveId = button.getAttribute('data-id');
@@ -886,8 +886,8 @@ $('.duty-assignment-entry').each(function () {
                 });
                 document.getElementById('datesContainer').innerHTML = html;
             });
-    });  --}}
-    var cancelModal = document.getElementById('cancelModal');
+    });
+    {{--  var cancelModal = document.getElementById('cancelModal');
 cancelModal.addEventListener('show.bs.modal', function(event) {
     var button = event.relatedTarget;
     var leaveId = button.getAttribute('data-id');
@@ -927,7 +927,7 @@ cancelModal.addEventListener('show.bs.modal', function(event) {
 
             document.getElementById('datesContainer').innerHTML = html;
         });
-});
+});  --}}
 
 
 });

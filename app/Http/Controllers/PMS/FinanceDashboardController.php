@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Client;
 use Carbon\Carbon;
+use DB;
 
 class FinanceDashboardController extends Controller
 {
@@ -351,4 +352,277 @@ class FinanceDashboardController extends Controller
         return redirect()->back()
             ->with('success', 'Invoice marked as paid successfully.');
     }
+
+ public function convert($id)
+{
+    $invoice = Invoice::with('items')->findOrFail($id);
+
+    return response()->json([
+        'invoiceId'       => $invoice->id,
+        'invoiceNumber'   => $invoice->invoice_number,
+        'description'     => $invoice->description,
+        'amount'          => $invoice->amount,
+        'total_amount'    => $invoice->total_amount,
+        'tax_amount'      => $invoice->tax_amount,
+        'view'            => view('pms.finance.invoices.partials.proforma-view', compact('invoice'))->render(),
+        'edit'            => view('pms.finance.invoices.partials.proforma-edit', compact('invoice'))->render(),
+        'tax'             => view('pms.finance.invoices.partials.tax-create', compact('invoice'))->render(),
+    ]);
+}
+
+public function storeConverted(Request $request, $id)
+{
+    $proforma = Invoice::with('items')->findOrFail($id);
+
+    $validated = $request->validate([
+        // 🔹 Tax Invoice Fields
+        'invoice_number'         => 'required|string|max:255|unique:invoices,invoice_number',
+        'invoice_date'           => 'required|date',
+        'due_date'               => 'required|date|after_or_equal:invoice_date',
+        'tax_subtotal'           => 'required|numeric|min:0.01',
+        'tax_total_tax'          => 'required|numeric|min:0',
+        'tax_total_amount'       => 'required|numeric|min:0.01',
+
+        // 🔹 Tax Invoice Items
+        'tax_items'                       => 'required|array|min:1',
+        'tax_items.*.description'         => 'required|string|max:255',
+        'tax_items.*.amount'              => 'required|numeric|min:0',
+        'tax_items.*.tax_percentage'      => 'nullable|numeric|min:0',
+
+        // 🔹 Proforma Invoice Items
+        'proforma_items'                  => 'required|array|min:1',
+        'proforma_items.*.description'    => 'required|string|max:255',
+        'proforma_items.*.amount'         => 'required|numeric|min:0',
+        'proforma_items.*.tax_percentage' => 'nullable|numeric|min:0',
+    ]);
+
+    DB::transaction(function () use ($proforma, $validated) {
+
+        // ✅ Create Tax Invoice
+        $taxInvoice = new Invoice();
+        $taxInvoice->invoice_number = $validated['invoice_number'];
+        $taxInvoice->invoice_date   = $validated['invoice_date'];
+        $taxInvoice->due_date       = $validated['due_date'];
+        $taxInvoice->invoice_type   = 2;
+        $taxInvoice->amount         = $validated['tax_subtotal'];
+        $taxInvoice->tax_amount     = $validated['tax_total_tax'];
+        $taxInvoice->total_amount   = $validated['tax_total_amount'];
+        $taxInvoice->proforma_id    = $proforma->id;
+        $taxInvoice->project_id     = $proforma->project_id;
+        $taxInvoice->requested_by   = auth()->id();
+        $taxInvoice->status         = Invoice::STATUS_SENT;
+        $taxInvoice->generated_by   = auth()->id();
+
+        // ✅ Store old Proforma summary as JSON
+        $taxInvoice->meta = json_encode([
+            'proforma_id'     => $proforma->id,
+            'proforma_number' => $proforma->invoice_number,
+            'proforma_amount' => $proforma->amount,
+            'proforma_tax'    => $proforma->tax_amount,
+            'proforma_total'  => $proforma->total_amount,
+        ]);
+        $taxInvoice->save();
+
+        // ✅ Save Tax Invoice Items
+        foreach ($validated['tax_items'] as $item) {
+            $amount = (float) $item['amount'];
+            $tax    = (float) ($item['tax_percentage'] ?? 0);
+            $taxInvoice->items()->create([
+                'description'     => $item['description'],
+                'amount'          => $amount,
+                'tax_percentage'  => $tax,
+                'total_with_tax'  => $amount + ($amount * $tax / 100),
+            ]);
+        }
+
+        // ✅ Update Proforma Items
+        $proforma->items()->delete();
+        foreach ($validated['proforma_items'] as $item) {
+            $amount = (float) $item['amount'];
+            $tax    = (float) ($item['tax_percentage'] ?? 0);
+            $proforma->items()->create([
+                'description'     => $item['description'],
+                'amount'          => $amount,
+                'tax_percentage'  => $tax,
+                'total_with_tax'  => $amount + ($amount * $tax / 100),
+            ]);
+        }
+
+        // ✅ Update Proforma Totals
+        $proforma->amount = collect($validated['proforma_items'])->sum(fn($i) => $i['amount']);
+        $proforma->tax_amount = collect($validated['proforma_items'])->sum(fn($i) => $i['amount'] * ($i['tax_percentage'] ?? 0) / 100);
+        $proforma->total_amount = $proforma->amount + $proforma->tax_amount;
+        $proforma->status = $proforma->total_amount > $taxInvoice->total_amount
+            ? 'Converted Partially'
+            : 'Converted Fully';
+        $proforma->save();
+    });
+
+    return response()->json([
+        'status'  => true,
+        'message' => 'Tax Invoice created and Proforma updated successfully.',
+    ]);
+}
+public function getConvertView(Invoice $invoice)
+{
+  $pageConfigs = ['myLayout' => 'horizontal'];
+    // Ensure only proforma invoices (type = 1) can be converted
+    if ($invoice->invoice_type != 1) {
+        return redirect()
+            ->route('pms.finance.invoices.show', $invoice->id)
+            ->with('error', 'Only Proforma invoices can be converted.');
+    }
+
+    // Optional: prevent conversion of already converted/cancelled invoices
+    if (in_array($invoice->status, ['converted', 'partial_converted', Invoice::STATUS_CANCELLED])) {
+        return redirect()
+            ->route('pms.finance.invoices.show', $invoice->id)
+            ->with('error', 'This proforma invoice is already converted or cancelled.');
+    }
+
+    // Render the conversion form
+    return view('pms.finance.invoices.convert', compact('invoice','pageConfigs'));
+}
+
+public function convertProformaToTaxInvoice(Request $request, Invoice $invoice)
+{
+    if ($invoice->invoice_type != 1) {
+        return back()->with('error', 'Only Proforma invoices can be converted.');
+    }
+
+    $request->validate([
+        'conversion_type' => 'required|in:cancel,full,partial',
+        'remark'          => 'required_if:conversion_type,cancel|string|nullable',
+        'invoice_number'  => 'required_if:conversion_type,full,partial|string|max:255',
+        'invoice_date'    => 'required_if:conversion_type,full,partial|date',
+        'due_date'        => 'required_if:conversion_type,full,partial|date|after_or_equal:invoice_date',
+    ]);
+// print_r($request->all());exit;
+    try {
+        \DB::beginTransaction();
+
+        $conversionType = $request->conversion_type;
+        $newTaxInvoice = null;
+        $newProforma = null;
+
+        if ($conversionType === 'cancel') {
+            $invoice->update([
+                'status' => Invoice::STATUS_CANCELLED,
+                'description' => $invoice->description . "\nCancelled Remark: " . $request->remark,
+            ]);
+        } elseif ($conversionType === 'full') {
+            $newTaxInvoice = $invoice->replicate();
+            $newTaxInvoice->invoice_type = 2;
+            $newTaxInvoice->invoice_number = $request->invoice_number;
+            $newTaxInvoice->invoice_date = $request->invoice_date;
+            $newTaxInvoice->due_date = $request->due_date;
+            $newTaxInvoice->status = Invoice::STATUS_DRAFT;
+            $newTaxInvoice->proforma_id = $invoice->id;
+            $newTaxInvoice->save();
+
+            foreach ($invoice->items as $item) {
+                $newTaxInvoice->items()->create($item->toArray());
+            }
+
+            $invoice->update([
+                'status' => Invoice::STATUS_CONVERTED,
+                'invoice_number' => $invoice->invoice_number . '-CONVERTED',
+            ]);
+        } elseif ($conversionType === 'partial') {
+          $old_invoice_number =$invoice->invoice_number;
+             $invoice->update([
+                'status' => Invoice::STATUS_PARTIAL_CONVERTED,
+                'invoice_number' => $invoice->invoice_number . '-CONVERTED',
+            ]);
+
+            $newProforma = $invoice->replicate();
+            $newProforma->invoice_type = 1;
+            // $newProforma->invoice_number = $invoice->invoice_number . '-P1';
+            $newProforma->invoice_number = $old_invoice_number;
+            $newProforma->status = Invoice::STATUS_DRAFT;
+            $newProforma->save();
+            foreach ($invoice->items as $item) {
+                $newProforma->items()->create($item->toArray());
+            }
+
+
+
+
+
+            $newTaxInvoice = $invoice->replicate();
+            $newTaxInvoice->invoice_type = 2;
+            $newTaxInvoice->invoice_number = $request->invoice_number;
+            $newTaxInvoice->invoice_date = $request->invoice_date;
+            $newTaxInvoice->due_date = $request->due_date;
+            $newTaxInvoice->status = Invoice::STATUS_DRAFT;
+             $newTaxInvoice->proforma_id = $invoice->id;
+            $newTaxInvoice->save();
+            foreach ($invoice->items as $item) {
+                $newTaxInvoice->items()->create($item->toArray());
+            }
+
+              \DB::commit();
+              return redirect()
+            ->route('pms.finance.invoices.show', $newTaxInvoice ? $newTaxInvoice->id : $invoice->id)
+            ->with('success', 'Invoice conversion completed successfully.');
+
+            // return redirect()->route('pms.finance.invoices.partial.edit', [
+            //     'proforma' => $newProforma->id,
+            //     'tax' => $newTaxInvoice->id,
+            // ]);
+        }
+         // PARTIAL CONVERSION (No new Proforma)
+        elseif ($conversionType === 'partial_no_proforma') {
+            $invoice->update([
+                'status' => Invoice::STATUS_PARTIAL_NO_PROFORMA,
+                'invoice_number' => $invoice->invoice_number . '-PARTIAL',
+            ]);
+
+            // Create only new Tax Invoice
+            $newTaxInvoice = new Invoice([
+                'project_id' => $invoice->project_id,
+                'milestone_id' => $invoice->milestone_id,
+                'invoice_type' => 2,
+                'invoice_number' => $request->invoice_number,
+                'invoice_date' => $request->invoice_date,
+                'due_date' => $request->due_date,
+                'status' => Invoice::STATUS_DRAFT,
+                'requested_by' => $invoice->requested_by,
+                'generated_by' => $invoice->generated_by,
+                'description' => 'Created as Partial (No Proforma) conversion from ' . $invoice->invoice_number,
+            ]);
+            $newTaxInvoice->save();
+
+            \DB::commit();
+
+            return redirect()
+                ->route('pms.finance.invoices.show', $newTaxInvoice->id)
+                ->with('success', 'Partial (No Proforma) Tax Invoice created successfully.');
+        }
+
+        \DB::commit();
+
+
+
+        return redirect()
+            ->route('pms.finance.invoices.show', $newTaxInvoice ? $newTaxInvoice->id : $invoice->id)
+            ->with('success', 'Invoice conversion completed successfully.');
+
+    } catch (\Throwable $e) {
+        \DB::rollBack();
+        print_r($e->getMessage());
+        // return back()->with('error', 'Error converting invoice: ' . $e->getMessage());
+    }
+}
+public function editPartial(Request $request)
+{
+  $pageConfigs = ['myLayout' => 'horizontal'];
+    $proformaInvoice = Invoice::findOrFail($request->query('proforma'));
+    $taxInvoice = Invoice::findOrFail($request->query('tax'));
+
+    return view('pms.finance.invoices.partials.partial_edit', compact('proformaInvoice', 'taxInvoice','pageConfigs'));
+}
+
+
+
 }

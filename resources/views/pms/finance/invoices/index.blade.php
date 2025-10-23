@@ -2,6 +2,33 @@
 
 @section('title', 'Invoice Management')
 
+
+@section('vendor-style')
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/formvalidation/dist/css/formValidation.min.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
+
+@endsection
+
+@section('vendor-script')
+<script src="{{asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
+
+@endsection
+
+@section('page-script')
+@endsection
+
 @section('content')
 @php
 use \App\Models\PMS\Project;
@@ -243,6 +270,26 @@ use \App\Models\Client;
                           <i class="fas fa-eye"></i>
                         </a>
                         @else
+                        {{-- @if($invoice->invoice_type == 1)
+                        <button class="btn btn-sm btn-primary convert-invoice-btn" data-id="{{ $invoice->id }}">
+                          Convert to Invoice
+                        </button>
+                        @endif --}}
+                        {{-- @if ($invoice->invoice_type == 1 && !in_array($invoice->status, ['converted',
+                        'partial_converted', \App\Models\PMS\Invoice::STATUS_CANCELLED]))
+                        <a href="{{ route('pms.finance.invoices.convert.view', $invoice->id) }}"
+                          class="btn btn-primary">
+                          Convert Proforma
+                        </a>
+                        @endif --}}
+                        @if ($invoice->invoice_type == 1 && !in_array($invoice->status, [Invoice::STATUS_CONVERTED,
+                        Invoice::STATUS_PARTIAL_NO_PROFORMA,
+                        Invoice::STATUS_CANCELLED,Invoice::STATUS_DRAFT,Invoice::STATUS_PARTIAL_CONVERTED]) )
+                        <a href="{{ route('pms.finance.invoices.convert.view', $invoice->id) }}"
+                          class="btn btn-primary">
+                          Convert Proforma
+                        </a>
+                        @endif
                         <span class="badge  bg-secondary">Disabled</span>
                         @endif
                         @if($invoice->status == Invoice::STATUS_DRAFT || $invoice->status == Invoice::STATUS_SENT)
@@ -277,4 +324,36 @@ use \App\Models\Client;
     </div>
   </div>
 </div>
+
+<!-- Convert Modal -->
+<div class="modal fade" id="convertInvoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Convert Proforma to Tax Invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-12">
+            <h6>Proforma Invoice (View)</h6>
+            <div id="proformaViewPanel"></div>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-12">
+            <h6>Edit Proforma Invoice</h6>
+            <div id="proformaEditPanel"></div>
+          </div>
+
+          <div class="col-md-12">
+            <h6>Create Tax Invoice</h6>
+            <div id="taxInvoicePanel"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection

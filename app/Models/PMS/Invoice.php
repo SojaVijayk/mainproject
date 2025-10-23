@@ -45,6 +45,9 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
     const STATUS_PAID = 2;
     const STATUS_OVERDUE = 3;
     const STATUS_CANCELLED = 4;
+    const STATUS_CONVERTED = 5;
+const STATUS_PARTIAL_CONVERTED = 6;
+const STATUS_PARTIAL_NO_PROFORMA = 7;
 
     public function project()
     {
@@ -83,6 +86,9 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
             self::STATUS_PAID => 'Paid',
             self::STATUS_OVERDUE => 'Overdue',
             self::STATUS_CANCELLED => 'Cancelled',
+              self::STATUS_CONVERTED => 'Converted',
+                self::STATUS_PARTIAL_CONVERTED => 'Partial Converted',
+                 self::STATUS_PARTIAL_NO_PROFORMA => 'Partial (No Proforma)',
         ][$this->status] ?? 'Unknown';
     }
 
@@ -94,6 +100,8 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
         self::STATUS_PAID => 'success',
          self::STATUS_OVERDUE => 'warning',      // green
            self::STATUS_CANCELLED => 'danger',
+            self::STATUS_CONVERTED => 'dark',
+                self::STATUS_PARTIAL_CONVERTED => 'primary',
     ][$this->status] ?? 'dark'; // fallback color
 }
 

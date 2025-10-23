@@ -603,6 +603,19 @@ Route::get('expense-dashboard', [ExpenseController::class, 'report'])->name('exp
             ->name('invoices.pay');
         Route::get('/invoices/{invoice}/payment', [FinanceDashboardController::class, 'recordPayment'])->name('invoices.payment');
         Route::post('/invoices/{invoice}/payment', [FinanceDashboardController::class, 'storePayment'])->name('invoices.store-payment');
+
+
+        // web.php
+// Route::get('/invoices/{invoice}/convert', [FinanceDashboardController::class, 'convert'])->name('invoices.convert');
+// Route::post('/invoices/{invoice}/convert', [FinanceDashboardController::class, 'storeConverted'])->name('invoices.storeConverted');
+Route::get('/invoices/{invoice}/convert', [FinanceDashboardController::class, 'getConvertView'])
+    ->name('invoices.convert.view');
+
+Route::post('/invoices/{invoice}/convert', [FinanceDashboardController::class, 'convertProformaToTaxInvoice'])
+    ->name('invoices.convert');
+    Route::get('/invoices/partial/edit', [FinanceDashboardController::class, 'editPartial'])
+    ->name('invoices.partial.edit');
+
     });
 
 

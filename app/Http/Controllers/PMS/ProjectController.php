@@ -7,6 +7,7 @@ use App\Http\Requests\PMS\ProjectStoreRequest;
 use App\Http\Requests\PMS\ProjectUpdateRequest;
 use App\Models\PMS\Proposal;
 use App\Models\PMS\Project;
+use APP\Models\PMS\Invoice;
 use App\Models\PMS\Requirement;
 use App\Models\ProjectCategory;
 use App\Models\PMS\ExpenseCategory;
@@ -543,9 +544,9 @@ if ($request->has('team_members_json')) {
         $budgetUtilization = $budget > 0 ? ($expenses / $budget) * 100 : 0;
 
         // Revenue vs Invoices
-        $totalInvoiced = $project->invoices->sum('total_amount');
-        $totalInvoiced_tax = $project->invoices->where('invoice_type',2)->sum('total_amount');
-        $totalInvoiced_proforma = $project->invoices->where('invoice_type',1)->sum('total_amount');
+        $totalInvoiced = $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount');
+        $totalInvoiced_tax = $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',2)->sum('total_amount');
+        $totalInvoiced_proforma = $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',1)->sum('total_amount');
         $totalPaid = $project->invoices->sum(function($invoice) {
             return $invoice->payments->sum('amount');
         });
