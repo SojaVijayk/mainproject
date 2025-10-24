@@ -249,6 +249,11 @@ $user = Auth::user();
       <div>
         <a type="button" class="btn btn-label-primary" href="{{ route('pms.reports.project-status') }}">Project Progress
           Report</a>
+        @if(Auth::user()->hasRole('director') || Auth::user()->hasRole('finance'))
+        <a type="button" class="btn btn-label-primary" href="{{ route('pms.reports.project-status-report') }}">Project
+          Financial
+          Report</a>
+        @endif
       </div>
     </div>
   </div>

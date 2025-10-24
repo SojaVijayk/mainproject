@@ -641,6 +641,13 @@ Route::post('/invoices/{invoice}/convert', [FinanceDashboardController::class, '
         Route::get('project-status', [ReportController::class, 'projectStatus'])->name('project-status');
          Route::get('project-status-detailed', [ReportController::class, 'projectStatusDetailed'])->name('project-status-detailed');
 
+           Route::get('/project-status-report', [ReportController::class, 'projectDetailedReport'])
+        ->name('project-status-report');
+    // Route::get('/project-status-report/export', [ReportController::class, 'exportProjectStatusReport'])
+    //     ->name('pms.reports.project-status-report.export');
+
+
+
          Route::get('financial', [ReportController::class, 'financial'])->name('financial');
         Route::get('timesheet', [ReportController::class, 'timesheet'])->name('timesheet');
         Route::get('resource-utilization', [ReportController::class, 'resourceUtilization'])->name('resource-utilization');

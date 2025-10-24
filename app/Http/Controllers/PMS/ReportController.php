@@ -9,6 +9,7 @@ use App\Models\PMS\Invoice;
 use App\Models\PMS\Proposal;
 use App\Models\PMS\Requirement;
 use App\Models\User;
+use App\Models\Client;
 use App\Models\ProjectCategory;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -489,4 +490,167 @@ $investigatorCategoryWise = $projects
                 return 20; // Default for custom range
         }
     }
+
+
+
+    public function projectDetailedReport1(Request $request)
+{
+    $pageConfigs = ['myLayout' => 'horizontal'];
+    $user = Auth::user();
+
+    // Filters
+    $status = $request->input('status', 'all');
+    $client = $request->input('client', 'all');
+    $investigator = $request->input('investigator', 'all');
+    $category = $request->input('category', 'all');
+    $dateRange = $request->input('date_range', 'this_year');
+
+    $query = Project::with([
+        'requirement.client',
+        'requirement.category',
+        'investigator',
+        'milestones.tasks',
+        'invoices.payments',
+        'expenses',
+        'teamMembers.user'
+    ]);
+
+    // Role restriction
+    if (!$user->hasRole('director') && !$user->hasRole('finance')) {
+        $query->where('project_investigator_id', $user->id);
+    }
+
+    // Filters
+    if ($status !== 'all') {
+        $query->where('status', $status);
+    }
+    if ($client !== 'all') {
+        $query->whereHas('requirement.client', function ($q) use ($client) {
+            $q->where('id', $client);
+        });
+    }
+    if ($investigator !== 'all') {
+        $query->where('project_investigator_id', $investigator);
+    }
+    if ($category !== 'all') {
+        $query->whereHas('requirement.category', function ($q) use ($category) {
+            $q->where('id', $category);
+        });
+    }
+
+    // Date range filter
+    $query = $this->applyDateRangeFilter($query, $dateRange);
+
+    $projects = $query->get();
+
+    // Dropdown data
+    $statuses = [
+        'all' => 'All Statuses',
+        0 => 'Initiated',
+        1 => 'Ongoing',
+        2 => 'Completed',
+        3 => 'Archived',
+    ];
+
+    $clients = Client::select('id', 'client_name')->get();
+    // $investigators = User::role('investigator')->select('id', 'name')->get();
+    $investigators = User::whereHas('employee', function($q) {
+$q->whereIn('designation', [2, 7, 9]);
+    })->get();
+    $categories = ProjectCategory::select('id', 'name')->get();
+
+    // Totals
+    $totals = [
+        'budget' => $projects->sum('budget'),
+        'estimated_expense' => $projects->sum('estimated_expense'),
+        'actual_expense' => $projects->sum(fn($p) => $p->expenses->sum('total_amount')),
+        'invoiced' => $projects->sum(fn($p) => $p->invoices->sum('total_amount')),
+        'paid' => $projects->sum(fn($p) => $p->invoices->sum(fn($i) => $i->payments->sum('amount'))),
+    ];
+    $totals['balance'] = $totals['invoiced'] - $totals['paid'];
+
+    return view('pms.reports.project-status-report', compact(
+        'projects', 'statuses', 'clients', 'investigators', 'categories',
+        'status', 'client', 'investigator', 'category', 'dateRange', 'totals'
+    ), ['pageConfigs' => $pageConfigs]);
+}
+
+   public function projectDetailedReport(Request $request)
+{
+
+  $pageConfigs = ['myLayout' => 'horizontal'];
+//  $investigators = User::whereHas('projects')->orderBy('name')->get();
+    $investigators = User::whereHas('employee', function($q) {
+$q->whereIn('designation', [2, 7, 9]);
+    })->get();
+
+    $clients = Client::orderBy('client_name')->get();
+
+
+
+    // Base query with relations
+    $query = Project::with([
+        'requirement.client',
+        'investigator',
+        'milestones.tasks',
+        'invoices.payments',
+        'expenses',
+        'teamMembers.user'
+    ]);
+
+    // Apply filters
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('investigator_id')) {
+        $query->where('project_investigator_id', $request->investigator_id);
+    }
+
+    if ($request->filled('client_id')) {
+        $query->whereHas('requirement', function ($q) use ($request) {
+            $q->where('client_id', $request->client_id);
+        });
+    }
+
+    $projects = $query->get();
+
+    // Calculate stats
+    $projects->map(function ($project) {
+        $budget = $project->budget ?? 0;
+        $expenses = $project->expenses->sum('total_amount');
+        $budgetRemaining = $budget - $expenses;
+        $budgetUtilization = $budget > 0 ? ($expenses / $budget) * 100 : 0;
+
+        $totalInvoiced = $project->invoices
+            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])
+            ->sum('total_amount');
+
+        $totalPaid = $project->invoices->sum(function ($invoice) {
+            return $invoice->payments->sum('amount');
+        });
+
+        $project->calculated = [
+            'budget' => $budget,
+            'expenses' => $expenses,
+            'budget_remaining' => $budgetRemaining,
+            'budget_utilization' => round($budgetUtilization, 2),
+            'total_invoiced' => $totalInvoiced,
+            'total_paid' => $totalPaid,
+            'outstanding' => $totalInvoiced - $totalPaid,
+        ];
+
+        return $project;
+    });
+
+    return view('pms.reports.project-status-report', compact(
+        'projects',
+        'pageConfigs',
+        'investigators',
+        'clients',
+        'request'
+    ));
+
+    // return view('pms.reports.project-status-report', compact('projects', 'pageConfigs'));
+}
 }
