@@ -100,11 +100,11 @@ class ExpenseController extends Controller
             $totalExpenses = Expense::where('project_id', $validated['project_id'])->sum('total_amount');
             $newTotal = $totalExpenses + $validated['amount'] + $validated['tax'];
 
-            if ($project->proposal && $newTotal > $project->proposal->budget) {
-                return back()->withErrors([
-                    'amount' => 'This expense would exceed the project budget. Please contact an administrator.'
-                ])->withInput();
-            }
+            // if ($project->proposal && $newTotal > $project->proposal->budget) {
+            //     return back()->withErrors([
+            //         'amount' => 'This expense would exceed the project budget. Please contact an administrator.'
+            //     ])->withInput();
+            // }
         }
 
         $validated['created_by'] = auth()->id();
@@ -161,11 +161,11 @@ class ExpenseController extends Controller
                 ->sum('total_amount');
             $newTotal = $totalExpenses + $validated['amount'] + $validated['tax'];
 
-            if ($project->proposal && $newTotal > $project->proposal->budget) {
-                return back()->withErrors([
-                    'amount' => 'This expense would exceed the project budget. Please contact an administrator.'
-                ])->withInput();
-            }
+            // if ($project->proposal && $newTotal > $project->proposal->budget) {
+            //     return back()->withErrors([
+            //         'amount' => 'This expense would exceed the project budget. Please contact an administrator.'
+            //     ])->withInput();
+            // }
         }
 
         $validated['total_amount'] = $validated['amount'] + $validated['tax'];
