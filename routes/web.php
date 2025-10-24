@@ -23,6 +23,10 @@ use App\Http\Controllers\PMS\ExpenseController;
 use App\Http\Controllers\PMS\ExpenseCategoryController;
 use App\Http\Controllers\PMS\VendorController;
 
+use App\Exports\ProjectsExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\Request;
+
 
 
 
@@ -643,6 +647,10 @@ Route::post('/invoices/{invoice}/convert', [FinanceDashboardController::class, '
 
            Route::get('/project-status-report', [ReportController::class, 'projectDetailedReport'])
         ->name('project-status-report');
+        Route::get('/projects/export', function (Request $request) {
+    $fileName = 'projects_export_' . now()->format('Ymd_His') . '.xlsx';
+    return Excel::download(new ProjectsExport($request), $fileName);
+})->name('projects.export');
     // Route::get('/project-status-report/export', [ReportController::class, 'exportProjectStatusReport'])
     //     ->name('pms.reports.project-status-report.export');
 

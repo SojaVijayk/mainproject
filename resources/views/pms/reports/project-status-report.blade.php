@@ -41,7 +41,11 @@
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
       <h4 class="mb-2 mb-sm-0">Projects Overview</h4>
       {{-- <a href="{{ route('projects.create') }}" class="btn btn-primary btn-sm">Add New Project</a> --}}
+      <a href="{{ route('pms.reports.projects.export', request()->all()) }}" class="btn btn-success btn-sm">
+        Export to Excel
+      </a>
     </div>
+
 
     <!-- 🔍 FILTER FORM -->
     <div class="card-body border-bottom">
