@@ -234,7 +234,7 @@
 
           <div class="mt-4">
             <button type="submit" class="btn btn-primary me-2">Create Invoice</button>
-            <a href="{{ route('pms.projects.show', $project->id) }}" class="btn btn-secondary">Cancel</a>
+            <a href="{{ route('pms.invoices.index', $project->id) }}" class="btn btn-secondary">Cancel</a>
           </div>
         </form>
       </div>

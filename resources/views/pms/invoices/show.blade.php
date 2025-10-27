@@ -222,14 +222,14 @@
         <h5 class="card-title">Actions</h5>
       </div>
       <div class="card-body">
-        @if($invoice->status == \App\Models\PMS\Invoice::STATUS_DRAFT && auth()->user()->hasRole('finance'))
+        {{-- @if($invoice->status == \App\Models\PMS\Invoice::STATUS_DRAFT && auth()->user()->hasRole('finance'))
         <form action="{{ route('pms.invoices.generate', [$project->id, $invoice->id]) }}" method="POST" class="mb-3">
           @csrf
           <button type="submit" class="btn btn-success w-100">
             <i class="fas fa-file-invoice"></i> Generate Invoice
           </button>
         </form>
-        @endif
+        @endif --}}
 
         @if($invoice->status == \App\Models\PMS\Invoice::STATUS_SENT && auth()->user()->hasRole('finance'))
         <form action="{{ route('pms.invoices.pay', [$project->id, $invoice->id]) }}" method="POST" class="mb-3">

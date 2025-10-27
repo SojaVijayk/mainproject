@@ -147,6 +147,10 @@
                 <a href="{{ route('pms.projects.dashboard', $project->id) }}" class="btn btn-sm btn-info">
                   <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
+                <a href="{{ route('pms.invoices.create', $project->id) }}" class="btn btn-sm btn-primary">
+                  <i class="fas fa-plus"></i> Add Invoice
+                </a>
+
               </td>
             </tr>
             @empty
