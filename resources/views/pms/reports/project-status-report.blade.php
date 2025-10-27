@@ -101,17 +101,23 @@
             <tr>
               <th>#</th>
               <th>Project Title</th>
+              <th>Category</th>
               <th>Client</th>
-              <th>Investigator</th>
-              <th>Status</th>
+
+
               <th>Budget</th>
-              <th>Expenses</th>
-              <th>Invoiced</th>
+              <th>Estimated Expenses</th>
+              <th>Actual Expenses</th>
+              <th>Invoiced (Proforma & Tax)</th>
+              <th>Invoiced (Proforma)</th>
+              <th>Invoiced (Tax)</th>
               <th>Paid</th>
               <th>Outstanding</th>
               <th>Completion</th>
+              <th>Investigator</th>
               <th>Start Date</th>
               <th>End Date</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -119,15 +125,17 @@
             @forelse($projects as $index => $project)
             <tr>
               <td>{{ $index + 1 }}</td>
-              <td>{{ $project->title }}</td>
-              <td>{{ $project->requirement->client->name ?? 'N/A' }}</td>
-              <td>{{ $project->investigator->name ?? 'N/A' }}</td>
-              <td>
-                <span class="badge bg-{{ $project->status_badge_color }}">{{ $project->status_name }}</span>
-              </td>
+              <td>{{ $project->title }} <br> <strong>{{ $project->project_code }}</strong> </td>
+              <td> {{ $project->requirement->category->name }}</td>
+              <td>{{ $project->requirement->client->client_name ?? 'N/A' }}</td>
+
+
               <td>{{ number_format($project->calculated['budget'], 2) }}</td>
+              <td>{{ number_format($project->calculated['estimated_expense'], 2) }}</td>
               <td>{{ number_format($project->calculated['expenses'], 2) }}</td>
               <td>{{ number_format($project->calculated['total_invoiced'], 2) }}</td>
+              <td>{{ number_format($project->calculated['total_invoiced_proforma'], 2) }}</td>
+              <td>{{ number_format($project->calculated['total_invoiced_tax'], 2) }}</td>
               <td>{{ number_format($project->calculated['total_paid'], 2) }}</td>
               <td>{{ number_format($project->calculated['outstanding'], 2) }}</td>
               <td>
@@ -139,8 +147,12 @@
                 </div>
                 <small>{{ $project->completion_percentage }}%</small>
               </td>
+              <td>{{ $project->investigator->name ?? 'N/A' }}</td>
               <td>{{ $project->start_date?->format('M d, Y') }}</td>
               <td>{{ $project->end_date?->format('M d, Y') }}</td>
+              <td>
+                <span class="badge bg-{{ $project->status_badge_color }}">{{ $project->status_name }}</span>
+              </td>
               <td>
                 {{-- <a href="{{ route('projects.dashboard', $project->id) }}" class="btn btn-sm btn-primary">View</a>
                 <a href="{{ route('projects.edit', $project->id) }}" class="btn btn-sm btn-warning">Edit</a> --}}

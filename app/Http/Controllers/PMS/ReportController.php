@@ -590,6 +590,7 @@ $q->whereIn('designation', [2, 7, 9]);
 
     // Base query with relations
     $query = Project::with([
+      'requirement',
         'requirement.client',
         'investigator',
         'milestones.tasks',
@@ -618,11 +619,20 @@ $q->whereIn('designation', [2, 7, 9]);
     // Calculate stats
     $projects->map(function ($project) {
         $budget = $project->budget ?? 0;
+        $estimated_expense=$project->estimated_expense ?? 0;
         $expenses = $project->expenses->sum('total_amount');
         $budgetRemaining = $budget - $expenses;
         $budgetUtilization = $budget > 0 ? ($expenses / $budget) * 100 : 0;
 
         $totalInvoiced = $project->invoices
+            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])
+            ->sum('total_amount');
+             $totalInvoiced_proforma = $project->invoices
+             ->where('invoice_type',1)
+            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])
+            ->sum('total_amount');
+             $totalInvoiced_tax = $project->invoices
+             ->where('invoice_type',2)
             ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])
             ->sum('total_amount');
 
@@ -632,10 +642,13 @@ $q->whereIn('designation', [2, 7, 9]);
 
         $project->calculated = [
             'budget' => $budget,
+            'estimated_expense'=>$estimated_expense,
             'expenses' => $expenses,
             'budget_remaining' => $budgetRemaining,
             'budget_utilization' => round($budgetUtilization, 2),
             'total_invoiced' => $totalInvoiced,
+              'total_invoiced_proforma' => $totalInvoiced_proforma,
+                'total_invoiced_tax' => $totalInvoiced_tax,
             'total_paid' => $totalPaid,
             'outstanding' => $totalInvoiced - $totalPaid,
         ];
