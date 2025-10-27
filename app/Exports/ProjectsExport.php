@@ -6,6 +6,7 @@ use App\Models\PMS\Project;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectsExport implements FromCollection, WithHeadings
 {
@@ -18,8 +19,8 @@ class ProjectsExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        $query = Project::with(['requirement.client', 'investigator', 'expenses', 'invoices.payments']);
-
+        $query = Project::with(['requirement.client', 'requirement', 'investigator', 'expenses', 'invoices.payments']);
+  $user = Auth::user();
         // Filters
         if ($this->request->filled('status')) {
             $query->where('status', $this->request->status);
@@ -32,28 +33,46 @@ class ProjectsExport implements FromCollection, WithHeadings
                 $q->where('client_id', $this->request->client_id);
             });
         }
+          if ($user->hasRole('director') || $user->hasRole('finance')) {
+
+            // $investigatorId =$user->id;
+            //    $query->where('project_investigator_id', $investigatorId);
+            if ($this->request->filled('investigator_id')) {
+                $query->where('project_investigator_id', $this->request->investigator_id);
+             }
+    }
+      else{
+            $investigatorId =$user->id;
+            $query->where('project_investigator_id', $investigatorId);
+      }
 
         $projects = $query->get();
 
         return $projects->map(function ($project) {
             $budget = $project->budget ?? 0;
+             $estimated_expense=$project->estimated_expense ?? 0;
             $expenses = $project->expenses->sum('total_amount');
             $totalInvoiced = $project->invoices->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])->sum('total_amount');
-            $totalPaid = $project->invoices->sum(function ($invoice) {
+              $totalInvoiced_proforma = $project->invoices->where('invoice_type',1)->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])->sum('total_amount');
+             $totalInvoiced_tax = $project->invoices->where('invoice_type',2)->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])->sum('total_amount');
+              $totalPaid = $project->invoices->sum(function ($invoice) {
                 return $invoice->payments->sum('amount');
             });
 
             return [
                 'Project Title' => $project->title,
                 'Project Code' => $project->project_code,
-                'Client' => $project->requirement->client->name ?? 'N/A',
+                'Client' => $project->requirement->client->client_name ?? 'N/A',
                 'Investigator' => $project->investigator->name ?? 'N/A',
                 'Status' => $project->status_name,
                 'Budget' => $budget,
-                'Expenses' => $expenses,
+                 'Estimated Expense' => $estimated_expense,
+                'Actual Expenses' => $expenses,
                 'Remaining Budget' => $budget - $expenses,
                 'Budget Utilization %' => $budget > 0 ? round(($expenses / $budget) * 100, 2) : 0,
-                'Invoiced' => $totalInvoiced,
+                'Total Invoiced' => $totalInvoiced,
+                  'Proforma Invoiced' => $totalInvoiced_proforma,
+                    'Tax Invoiced' => $totalInvoiced_tax,
                 'Paid' => $totalPaid,
                 'Outstanding' => $totalInvoiced - $totalPaid,
                 'Completion %' => $project->completion_percentage,
@@ -67,8 +86,8 @@ class ProjectsExport implements FromCollection, WithHeadings
     {
         return [
             'Project Title', 'Project Code', 'Client', 'Investigator', 'Status',
-            'Budget', 'Expenses', 'Remaining Budget', 'Budget Utilization %',
-            'Invoiced', 'Paid', 'Outstanding', 'Completion %', 'Start Date', 'End Date'
+            'Budget','Estimated Expenses', 'Actual Expenses', 'Remaining Budget', 'Budget Utilization %',
+            'Total Invoiced','Proforma Invoiced','Tax Invoiced', 'Paid', 'Outstanding', 'Completion %', 'Start Date', 'End Date'
         ];
     }
 }
