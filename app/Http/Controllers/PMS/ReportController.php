@@ -585,7 +585,7 @@ $q->whereIn('designation', [2, 7, 9]);
     })->get();
 
     $clients = Client::orderBy('client_name')->get();
-
+  $user = Auth::user();
 
 
     // Base query with relations
@@ -599,14 +599,26 @@ $q->whereIn('designation', [2, 7, 9]);
         'teamMembers.user'
     ]);
 
+     if ($user->hasRole('director') || $user->hasRole('finance')) {
+
+            // $investigatorId =$user->id;
+            //    $query->where('project_investigator_id', $investigatorId);
+            if ($request->filled('investigator_id')) {
+                $query->where('project_investigator_id', $request->investigator_id);
+             }
+    }
+      else{
+            $investigatorId =$user->id;
+            $query->where('project_investigator_id', $investigatorId);
+      }
+
+
     // Apply filters
     if ($request->filled('status')) {
         $query->where('status', $request->status);
     }
 
-    if ($request->filled('investigator_id')) {
-        $query->where('project_investigator_id', $request->investigator_id);
-    }
+
 
     if ($request->filled('client_id')) {
         $query->whereHas('requirement', function ($q) use ($request) {
