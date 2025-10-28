@@ -51,6 +51,8 @@
             <th>Date</th>
             <th>Due Date</th>
             <th>Amount</th>
+            <th>Tax</th>
+            <th>Total</th>
             <th>Paid</th>
             <th>Balance</th>
             <th>Status</th>
@@ -64,6 +66,8 @@
             <td>{{ $invoice->invoice_date->format('d M Y') }}</td>
             <td>{{ $invoice->due_date->format('d M Y') }}</td>
             <td>₹{{ number_format($invoice->amount, 2) }}</td>
+            <td>₹{{ number_format($invoice->tax_amount, 2) }}</td>
+            <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
             <td>₹{{ number_format($invoice->paid_amount, 2) }}</td>
             <td>₹{{ number_format($invoice->balance_amount, 2) }}</td>
             <td>

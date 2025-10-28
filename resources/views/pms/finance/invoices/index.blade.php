@@ -225,6 +225,8 @@ use \App\Models\Client;
                     <th>Status</th>
                     <th>Date</th>
                     <th>Amount</th>
+                    <th>Tax</th>
+                    <th>Total</th>
                     <th>Balance</th>
                     <th>Requested By</th>
                     <th>Actions</th>
@@ -252,6 +254,8 @@ use \App\Models\Client;
                     </td>
                     <td>{{ $invoice->invoice_date?->format('M d, Y') ?? '-' }}</td>
                     <td>₹{{ number_format($invoice->amount, 2) }}</td>
+                    <td>₹{{ number_format($invoice->tax_amount, 2) }}</td>
+                    <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
                     <td>
                       @if($invoice->status == Invoice::STATUS_PAID)
                       <span class="text-success">Paid</span>
