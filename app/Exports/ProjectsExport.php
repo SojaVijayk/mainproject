@@ -33,7 +33,7 @@ class ProjectsExport implements FromCollection, WithHeadings
                 $q->where('client_id', $this->request->client_id);
             });
         }
-          if ($user->hasRole('director') || $user->hasRole('finance')) {
+          if ($user->hasRole('director') || $user->hasRole('finance') || $user->hasRole('Project Report')) {
 
             // $investigatorId =$user->id;
             //    $query->where('project_investigator_id', $investigatorId);
