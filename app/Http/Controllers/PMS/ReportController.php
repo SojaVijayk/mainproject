@@ -27,7 +27,7 @@ class ReportController extends Controller
 
         $query = Project::query();
 
-          if (!$user->hasRole('director') && !$user->hasRole('finance')) {
+          if (!$user->hasRole('director') && !$user->hasRole('finance') && !$user->hasRole('Project Report')) {
 
             $investigatorId =$user->id;
                $query->where('project_investigator_id', $investigatorId);
@@ -71,7 +71,7 @@ class ReportController extends Controller
   $user = Auth::user();
 
     $categoryId = $request->input('category_id');
-       if ($user->hasRole('director') || $user->hasRole('finance')) {
+       if ($user->hasRole('director') || $user->hasRole('finance') || $user->hasRole('Project Report')) {
     $investigatorId = $request->input('investigator_id');
        }
        else {
@@ -599,7 +599,7 @@ $q->whereIn('designation', [2, 7, 9]);
         'teamMembers.user'
     ]);
 
-     if ($user->hasRole('director') || $user->hasRole('finance')) {
+     if ($user->hasRole('director') || $user->hasRole('finance') || $user->hasRole('Project Report')) {
 
             // $investigatorId =$user->id;
             //    $query->where('project_investigator_id', $investigatorId);

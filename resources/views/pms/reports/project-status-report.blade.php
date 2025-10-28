@@ -60,7 +60,8 @@
             <option value="3" {{ request('status')=='3' ? 'selected' : '' }}>Archived</option>
           </select>
         </div>
-        @if(Auth::user()->hasRole('director') || Auth::user()->hasRole('finance'))
+        @if(Auth::user()->hasRole('director') || Auth::user()->hasRole('Project Report') ||
+        Auth::user()->hasRole('finance'))
         <div class="col-md-3">
           <label for="investigator_id" class="form-label">Project Investigator</label>
           <select name="investigator_id" id="investigator_id" class="form-select select2">
