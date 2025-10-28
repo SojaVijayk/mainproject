@@ -63,6 +63,7 @@ class ProjectsExport implements FromCollection, WithHeadings
                 'Project Title' => $project->title,
                 'Project Code' => $project->project_code,
                 'Client' => $project->requirement->client->client_name ?? 'N/A',
+                'Category'=>$project->requirement->category->name,
                 'Investigator' => $project->investigator->name ?? 'N/A',
                 'Status' => $project->status_name,
                 'Budget' => $budget,
@@ -85,7 +86,7 @@ class ProjectsExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Project Title', 'Project Code', 'Client', 'Investigator', 'Status',
+            'Project Title', 'Project Code', 'Client','Category', 'Investigator', 'Status',
             'Budget','Estimated Expenses', 'Actual Expenses', 'Remaining Budget', 'Budget Utilization %',
             'Total Invoiced','Proforma Invoiced','Tax Invoiced', 'Paid', 'Outstanding', 'Completion %', 'Start Date', 'End Date'
         ];
