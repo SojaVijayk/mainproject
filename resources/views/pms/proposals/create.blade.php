@@ -210,7 +210,7 @@
             </div>
             <div class="col-md-6">
               <label for="expected_start_date" class="form-label">Expected Start Date</label>
-              <input type="date" name="expected_start_date" id="p" class="form-control"
+              <input type="date" name="expected_start_date" id="expected_start_date" class="form-control"
                 value="{{ old('expected_start_date') }}">
 
               @error('expected_start_date')
