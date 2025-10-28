@@ -105,10 +105,12 @@
             <p><strong>Requirement:</strong> {{ $proposal->requirement->temp_no }}</p>
             <p><strong>Budget:</strong> ₹{{ number_format($proposal->budget, 2) }}</p>
             <p><strong>Tenure:</strong> {{ $proposal->tenure }}</p>
-            <p><strong>Start Date:</strong> {{ $proposal->expected_start_date->format('d M Y') }}</p>
+            <p><strong>Start Date:</strong> @if(!is_null($proposal->expected_start_date)) {{
+              $proposal->expected_start_date->format('d M Y') }} @endif</p>
           </div>
           <div class="col-md-6">
-            <p><strong>End Date:</strong> {{ $proposal->expected_end_date->format('d M Y') }}</p>
+            <p><strong>End Date:</strong> @if(!is_null($proposal->expected_end_date)){{
+              $proposal->expected_end_date->format('d M Y') }} @endif</p>
             <p><strong>Estimated Expense:</strong> ₹{{ number_format($proposal->estimated_expense, 2) }}</p>
             @if($proposal->expenseComponents->count() > 0)
             <div class="card mt-4">

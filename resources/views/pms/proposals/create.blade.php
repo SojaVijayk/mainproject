@@ -210,8 +210,8 @@
             </div>
             <div class="col-md-6">
               <label for="expected_start_date" class="form-label">Expected Start Date</label>
-              <input type="date" name="expected_start_date" id="expected_start_date" class="form-control"
-                value="{{ old('expected_start_date') }}" min="{{ date('Y-m-d') }}" required>
+              <input type="date" name="expected_start_date" id="p" class="form-control"
+                value="{{ old('expected_start_date') }}">
 
               @error('expected_start_date')
               <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -226,7 +226,7 @@
             <div class="col-md-6">
               <label for="expected_end_date" class="form-label">Expected End Date</label>
               <input type="date" name="expected_end_date" id="expected_end_date" class="form-control"
-                value="{{ old('expected_end_date') }}" required>
+                value="{{ old('expected_end_date') }}">
               @error('expected_end_date')
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
