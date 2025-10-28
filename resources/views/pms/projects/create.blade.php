@@ -264,7 +264,8 @@ function updateTeamJson() {
             <div class="col-md-6">
               <label for="start_date" class="form-label">Start Date *</label>
               <input type="date" name="start_date" id="start_date" class="form-control"
-                value="{{ old('start_date', $proposal->expected_start_date->format('Y-m-d')) }}" required>
+                value="{{ old('start_date', $proposal->expected_start_date ? $proposal->expected_start_date->format('Y-m-d') : '') }}"
+                required>
               @error('start_date')
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
@@ -272,7 +273,8 @@ function updateTeamJson() {
             <div class="col-md-6">
               <label for="end_date" class="form-label">End Date *</label>
               <input type="date" name="end_date" id="end_date" class="form-control"
-                value="{{ old('end_date', $proposal->expected_end_date->format('Y-m-d')) }}" required>
+                value="{{ old('end_date', $proposal->expected_end_date ? $proposal->expected_end_date->format('Y-m-d') : '') }}"
+                required>
               @error('end_date')
               <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
@@ -465,8 +467,9 @@ function updateTeamJson() {
       <div class="card-body">
         <p><strong>Client:</strong> {{ $proposal->requirement->client->client_name }}</p>
         <p><strong>Budget:</strong> ₹{{ number_format($proposal->budget, 2) }}</p>
-        <p><strong>Duration:</strong> {{ $proposal->expected_start_date->format('d M Y') }} to {{
-          $proposal->expected_end_date->format('d M Y') }}</p>
+        <p><strong>Duration:</strong> From: @if(!is_null($proposal->expected_start_date))
+          {{$proposal->expected_start_date->format('d M Y') }}@endif to:
+          @if(!is_null($proposal->expected_end_date)) {{ $proposal->expected_end_date->format('d M Y') }} @endif</p>
         <p><strong>Work Order:</strong>
           @if($proposal->workOrderDocuments->count() > 0)
           <span class="badge bg-success">Uploaded</span>
