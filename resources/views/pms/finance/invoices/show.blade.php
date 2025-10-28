@@ -176,7 +176,7 @@ use \App\Models\PMS\Invoice;
       </div>
       <div class="card-body">
         <div class="d-grid">
-          @if($invoice->balance_amount > 0)
+          @if($invoice->balance_amount > 0 && $invoice->invoice_type == 2)
           <a href="{{ route('pms.finance.invoices.payment', $invoice->id) }}" class="btn btn-primary mb-3">
             <i class="fas fa-money-bill-wave me-2"></i>Record Payment
           </a>
