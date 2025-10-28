@@ -48,6 +48,7 @@
         <thead>
           <tr>
             <th>Invoice #</th>
+            <th>Type #</th>
             <th>Date</th>
             <th>Due Date</th>
             <th>Amount</th>
@@ -63,6 +64,9 @@
           @forelse ($invoices as $invoice)
           <tr>
             <td>{{ $invoice->invoice_number ?? 'Draft' }}</td>
+            <td> <span class="badge bg-{{$invoice->invoice_type == 1 ? 'primary' : 'success'}}">
+                {{ $invoice->invoice_type == 1 ? 'Proforma Invoice' : 'Tax Invoice' }}
+              </span></td>
             <td>{{ $invoice->invoice_date->format('d M Y') }}</td>
             <td>{{ $invoice->due_date->format('d M Y') }}</td>
             <td>₹{{ number_format($invoice->amount, 2) }}</td>
