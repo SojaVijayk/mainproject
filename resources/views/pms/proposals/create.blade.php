@@ -209,6 +209,20 @@ document.querySelectorAll('.mandays-input').forEach(input => {
     const amount = mandays * rate;
 
     amountField.value = amount.toFixed(2);
+
+     const min = parseFloat(this.getAttribute('min')) || 0;
+    const value = parseFloat(this.value) || 0;
+    const error = this.parentElement.querySelector('.error-message');
+
+    if (value < min) {
+      this.classList.add('is-invalid');     // Red border (Bootstrap)
+      error.style.display = 'block';        // Show warning text
+    } else {
+      this.classList.remove('is-invalid');
+      error.style.display = 'none';
+    }
+
+
     calculateTotalExpense();
   });
 });
@@ -341,11 +355,11 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                 <h6 class="mt-3 mb-2 text-primary fw-bold">HR</h6>
                 @php
                 $hrComponents = [
-                ['component' => 'Manpower-Faculty Cost', 'rate' => 14000],
-                ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000],
-                ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000],
-                ['component' => 'Manpower-Project Staff', 'rate' => 3200],
-                ['component' => 'Manpower-Consultants', 'rate' => 0],
+                ['component' => 'Manpower-Faculty Cost', 'rate' => 14000, 'min'=>0.5],
+                ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000,'min'=>0],
+                ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000,'min'=>0],
+                ['component' => 'Manpower-Project Staff', 'rate' => 3200,'min'=>0],
+                ['component' => 'Manpower-Consultants', 'rate' => 8000,'min'=>0],
                 ];
                 @endphp
 
@@ -364,13 +378,17 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                   <div class="col-md-2">
                     <label class="form-label">Persondays</label>
                     <input type="number" name="expense_components[hr_{{ $i }}][mandays]"
-                      class="form-control mandays-input" min="0" step="1" value="0" data-target="hr_{{ $i }}" required>
+                      class="form-control mandays-input" min="{{ $item['min'] }}" step="1" value="{{ $item['min'] }}"
+                      data-target="hr_{{ $i }}" required>
+                    <small class="text-danger error-message" style="display:none;">
+                      Must be at least {{ $item['min'] }} days.
+                    </small>
                   </div>
 
                   <div class="col-md-2">
                     <label class="form-label">Rate (₹)</label>
                     <input type="number" name="expense_components[hr_{{ $i }}][rate]" class="form-control rate-input"
-                      value="{{ $item['rate'] }}" data-target="hr_{{ $i }}">
+                      value="{{ $item['rate'] }}" data-target="hr_{{ $i }}" readonly>
                   </div>
 
                   <div class="col-md-2">

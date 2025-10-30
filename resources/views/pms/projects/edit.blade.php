@@ -108,6 +108,20 @@ const container = document.getElementById('expense-components-container');
                 amountField.value = amount.toFixed(2);
             }
 
+             const min = parseFloat(this.getAttribute('min')) || 0;
+    const value = parseFloat(this.value) || 0;
+    const error = this.parentElement.querySelector('.error-message');
+
+    if (value < min) {
+      this.classList.add('is-invalid');     // Red border (Bootstrap)
+      error.style.display = 'block';        // Show warning text
+    } else {
+      this.classList.remove('is-invalid');
+      error.style.display = 'none';
+    }
+
+
+
             calculateTotalExpense();
         });
     });
@@ -321,11 +335,11 @@ function updateTeamJson() {
                   <h6 class="mt-3 mb-2 text-primary fw-bold">HR</h6>
                   @php
                   $hrComponents = [
-                  ['component' => 'Manpower-Faculty Cost', 'rate' => 14000],
-                  ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000],
-                  ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000],
-                  ['component' => 'Manpower-Project Staff', 'rate' => 3200],
-                  ['component' => 'Manpower-Consultants', 'rate' => 0],
+                  ['component' => 'Manpower-Faculty Cost', 'rate' => 14000, 'min'=>0.5],
+                  ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000,'min'=>0],
+                  ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000,'min'=>0],
+                  ['component' => 'Manpower-Project Staff', 'rate' => 3200,'min'=>0],
+                  ['component' => 'Manpower-Consultants', 'rate' => 8000,'min'=>0],
                   ];
 
                   $existingHr = $project->expenseComponents->where('group_name', 'HR')->keyBy('component');
@@ -346,13 +360,16 @@ function updateTeamJson() {
 
                     <div class="col-md-2">
                       <input type="number" class="form-control mandays-input"
-                        name="expense_components[hr_{{ $i }}][mandays]" value="{{ $existing->mandays ?? 0 }}"
-                        placeholder="Persondays" data-target="hr_{{ $i }}">
+                        name="expense_components[hr_{{ $i }}][mandays]" min="{{ $item['min'] }}"
+                        value="{{ $existing->mandays ?? 0 }}" placeholder="Persondays" data-target="hr_{{ $i }}">
+                      <small class="text-danger error-message" style="display:none;">
+                        Must be at least {{ $item['min'] }} days.
+                      </small>
                     </div>
 
                     <div class="col-md-2">
                       <input type="number" class="form-control rate-input" name="expense_components[hr_{{ $i }}][rate]"
-                        value="{{ $existing->rate ?? $item['rate'] }}" data-target="hr_{{ $i }}">
+                        value="{{ $existing->rate ?? $item['rate'] }}" data-target="hr_{{ $i }}" readonly>
                     </div>
 
                     <div class="col-md-2">
