@@ -345,7 +345,7 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                 ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000],
                 ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000],
                 ['component' => 'Manpower-Project Staff', 'rate' => 3200],
-                ['component' => 'Manpower-Consultants', 'rate' => 4000],
+                ['component' => 'Manpower-Consultants', 'rate' => 0],
                 ];
                 @endphp
 
@@ -370,7 +370,7 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                   <div class="col-md-2">
                     <label class="form-label">Rate (₹)</label>
                     <input type="number" name="expense_components[hr_{{ $i }}][rate]" class="form-control rate-input"
-                      value="{{ $item['rate'] }}" readonly data-target="hr_{{ $i }}">
+                      value="{{ $item['rate'] }}" data-target="hr_{{ $i }}">
                   </div>
 
                   <div class="col-md-2">

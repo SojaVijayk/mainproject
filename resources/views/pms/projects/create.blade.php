@@ -401,7 +401,7 @@ function updateTeamJson() {
                     <div class="col-md-2">
                       <label class="form-label">Rate (₹)</label>
                       <input type="number" name="expense_components[{{ $groupName }}_{{ $index }}][rate]"
-                        class="form-control rate-input" value="{{ $component->rate }}" readonly
+                        class="form-control rate-input" value="{{ $component->rate }}"
                         data-target="{{ $groupName }}_{{ $index }}">
                     </div>
                     @endif

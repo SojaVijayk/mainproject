@@ -296,7 +296,7 @@
                 ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000],
                 ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000],
                 ['component' => 'Manpower-Project Staff', 'rate' => 3200],
-                ['component' => 'Manpower-Consultants', 'rate' => 4000],
+                ['component' => 'Manpower-Consultants', 'rate' => 0],
                 ];
 
                 $existingHr = $proposal->expenseComponents->where('group_name', 'HR')->keyBy('component');
@@ -323,7 +323,7 @@
 
                   <div class="col-md-2">
                     <input type="number" class="form-control rate-input" name="expense_components[hr_{{ $i }}][rate]"
-                      value="{{ $existing->rate ?? $item['rate'] }}" readonly data-target="hr_{{ $i }}">
+                      value="{{ $existing->rate ?? $item['rate'] }}" data-target="hr_{{ $i }}">
                   </div>
 
                   <div class="col-md-2">
