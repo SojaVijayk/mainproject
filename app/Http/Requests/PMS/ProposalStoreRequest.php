@@ -27,10 +27,17 @@ class ProposalStoreRequest extends FormRequest
             'methodology' => 'nullable|string',
             'documents' => 'nullable|array',
             'documents.*' => 'file|max:10240',
-             'expense_components' => 'required|array|min:1',
+        //      'expense_components' => 'required|array|min:1',
+        // 'expense_components.*.category_id' => 'required|exists:expense_categories,id',
+        // 'expense_components.*.component' => 'required|string|max:255',
+        // 'expense_components.*.amount' => 'required|numeric|min:0',// 10MB max
+        'expense_components' => 'required|array|min:1',
         'expense_components.*.category_id' => 'required|exists:expense_categories,id',
+        'expense_components.*.group' => 'nullable|string|max:100',
         'expense_components.*.component' => 'required|string|max:255',
-        'expense_components.*.amount' => 'required|numeric|min:0',// 10MB max
+        'expense_components.*.mandays' => 'nullable|numeric|min:0',
+        'expense_components.*.rate' => 'nullable|numeric|min:0',
+        'expense_components.*.amount' => 'required|numeric|min:0',
         ];
     }
 }

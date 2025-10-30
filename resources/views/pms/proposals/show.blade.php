@@ -101,56 +101,135 @@
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <p><strong>Requirement:</strong> {{ $proposal->requirement->temp_no }}</p>
             <p><strong>Budget:</strong> ₹{{ number_format($proposal->budget, 2) }}</p>
             <p><strong>Tenure:</strong> {{ $proposal->tenure }}</p>
             <p><strong>Start Date:</strong> @if(!is_null($proposal->expected_start_date)) {{
               $proposal->expected_start_date->format('d M Y') }} @endif</p>
           </div>
-          <div class="col-md-6">
-            <p><strong>End Date:</strong> @if(!is_null($proposal->expected_end_date)){{
-              $proposal->expected_end_date->format('d M Y') }} @endif</p>
-            <p><strong>Estimated Expense:</strong> ₹{{ number_format($proposal->estimated_expense, 2) }}</p>
-            @if($proposal->expenseComponents->count() > 0)
-            <div class="card mt-4">
-              <div class="card-header">
-                <h5 class="card-title">Estimated Expense Breakdown</h5>
-              </div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th>Category</th>
-                        <th>Component</th>
-                        <th>Amount (₹)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @foreach($proposal->expenseComponents as $component)
-                      <tr>
-                        <td>{{ $component->category->name }}</td>
-                        <td>{{ $component->component }}</td>
-                        <td>₹{{ number_format($component->amount, 2) }}</td>
-                      </tr>
-                      @endforeach
-                    </tbody>
-                    <tfoot>
-                      <tr>
-                        <th colspan="2" class="text-end">Total Estimated Expense:</th>
-                        <th>₹{{ number_format($proposal->estimated_expense, 2) }}</th>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
+        </div>
+        <div class="col-md-12">
+          <p><strong>End Date:</strong> @if(!is_null($proposal->expected_end_date)){{
+            $proposal->expected_end_date->format('d M Y') }} @endif</p>
+          <p><strong>Estimated Expense:</strong> ₹{{ number_format($proposal->estimated_expense, 2) }}</p>
+          {{-- @if($proposal->expenseComponents->count() > 0)
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5 class="card-title">Estimated Expense Breakdown</h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Component</th>
+                      <th>Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @foreach($proposal->expenseComponents as $component)
+                    <tr>
+                      <td>{{ $component->category->name }}</td>
+                      <td>{{ $component->component }}</td>
+                      <td>₹{{ number_format($component->amount, 2) }}</td>
+                    </tr>
+                    @endforeach
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="2" class="text-end">Total Estimated Expense:</th>
+                      <th>₹{{ number_format($proposal->estimated_expense, 2) }}</th>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             </div>
-            @endif
-            <p><strong>Expected Revenue:</strong> ₹{{ number_format($proposal->revenue, 2) }}</p>
-            <p><strong>Created By:</strong> {{ $proposal->creator->name }}</p>
           </div>
+          @endif --}}
+
+          @if($proposal->expenseComponents->count() > 0)
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Estimated Expense Breakdown</h5>
+            </div>
+            <div class="card-body">
+              @php
+              $grouped = $proposal->expenseComponents->groupBy('group_name');
+              $grandTotal = 0;
+              @endphp
+
+              <div class="accordion" id="proposalExpenseAccordion">
+                @foreach($grouped as $groupName => $components)
+                @php
+
+                $groupId = Str::slug($groupName ?? 'ungrouped', '_');
+                $groupTotal = $components->sum('amount');
+                $grandTotal += $groupTotal;
+                @endphp
+
+                <div class="accordion-item border rounded mb-2 shadow-sm">
+                  <h2 class="accordion-header" id="heading_{{ $groupId }}">
+                    <button class="accordion-button collapsed d-flex justify-content-between" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#collapse_{{ $groupId }}" aria-expanded="false"
+                      aria-controls="collapse_{{ $groupId }}">
+                      <div class="d-flex flex-column">
+                        <span class="fw-bold text-primary">{{ $groupName ?? 'Ungrouped' }}</span>
+                        <small class="text-muted">Subtotal: ₹{{ number_format($groupTotal, 2) }}</small>
+                      </div>
+                    </button>
+                  </h2>
+                  <div id="collapse_{{ $groupId }}" class="accordion-collapse collapse"
+                    aria-labelledby="heading_{{ $groupId }}" data-bs-parent="#proposalExpenseAccordion">
+                    <div class="accordion-body p-2">
+                      <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th style="width:25%">Category</th>
+                              <th style="width:35%">Component</th>
+                              @if($groupName === 'HR')
+                              <th style="width:10%" class="text-end">Mandays</th>
+                              <th style="width:15%" class="text-end">Rate (₹)</th>
+                              @endif
+                              <th style="width:20%" class="text-end">Amount (₹)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($components as $component)
+                            <tr>
+                              <td>{{ $component->category->name ?? 'N/A' }}</td>
+                              <td>{{ $component->component }}</td>
+                              @if($groupName === 'HR')
+                              <td class="text-end">{{ $component->mandays ?? '-' }}</td>
+                              <td class="text-end">{{ $component->rate ? number_format($component->rate, 2) : '-' }}
+                              </td>
+                              @endif
+                              <td class="text-end">₹{{ number_format($component->amount, 2) }}</td>
+                            </tr>
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                @endforeach
+              </div>
+
+              <div class="border-top pt-3 mt-3 text-end">
+                <strong>Grand Total Estimated Expense: ₹{{ number_format($grandTotal, 2) }}</strong>
+              </div>
+            </div>
+          </div>
+          @endif
+
+
+          <p><strong>Expected Revenue:</strong> ₹{{ number_format($proposal->revenue, 2) }}</p>
+          <p><strong>Created By:</strong> {{ $proposal->creator->name }}</p>
         </div>
+
 
         @if($proposal->technical_details)
         <div class="mt-3">

@@ -53,46 +53,43 @@
     const addButton = document.getElementById('add-component');
     const totalExpenseSpan = document.getElementById('total-expense');
     const estimatedExpenseInput = document.getElementById('estimated_expense');
-    {{--  let componentCount = {{ $proposal->expenseComponents->count() }};  --}}
-     let componentCount = 1;
-    // Add new component row
-    // ✅ Add Custom Component Row
-  addButton.addEventListener('click', function () {
-    const template = document.getElementById('custom-component-template');
-    const newRow = template.cloneNode(true);
-    newRow.id = '';
-    newRow.classList.remove('d-none');
+    let componentCount = {{ $proposal->expenseComponents->count() }};
 
-    // Update names with new index
-    newRow.querySelectorAll('input, select').forEach(el => {
-      el.name = el.name.replace('[0]', `[custom_${componentCount}]`);
-      el.value = '';
+    // Add new component row
+    addButton.addEventListener('click', function() {
+        const newRow = document.querySelector('.expense-component').cloneNode(true);
+        newRow.innerHTML = newRow.innerHTML.replace(/\[0\]/g, `[${componentCount}]`);
+
+        // Clear values
+        newRow.querySelector('.expense-category').value = '';
+        newRow.querySelector('input[name*="component"]').value = '';
+        newRow.querySelector('.expense-amount').value = '';
+
+        // Show remove button
+        newRow.querySelector('.remove-component').style.display = 'block';
+
+        // Add remove functionality
+        newRow.querySelector('.remove-component').addEventListener('click', function() {
+            newRow.remove();
+            calculateTotalExpense();
+        });
+
+        // Add input listener for amount
+        newRow.querySelector('.expense-amount').addEventListener('input', calculateTotalExpense);
+
+        container.appendChild(newRow);
+        componentCount++;
     });
 
-    // Add remove button event
-    const removeBtn = newRow.querySelector('.remove-component');
-    if (removeBtn) {
-      removeBtn.style.display = 'block';
-      removeBtn.addEventListener('click', function () {
-        newRow.remove();
-        calculateTotalExpense();
-      });
-    }
-
-    // Add amount change listener
-    newRow.querySelector('.expense-amount').addEventListener('input', calculateTotalExpense);
-
-    // Append new row
-    container.appendChild(newRow);
-    componentCount++;
-  });
-
-    // ✅ Prevent removal of non-Custom components
-  document.querySelectorAll('.expense-component').forEach(row => {
-    const group = row.querySelector('input[name*="[group]"]')?.value;
-    const removeBtn = row.querySelector('.remove-component');
-    if (group !== 'Custom' && removeBtn) removeBtn.style.display = 'none';
-  });
+    // Remove component functionality
+    document.querySelectorAll('.remove-component').forEach(button => {
+        button.addEventListener('click', function() {
+            if (document.querySelectorAll('.expense-component').length > 1) {
+                this.closest('.expense-component').remove();
+                calculateTotalExpense();
+            }
+        });
+    });
 
     // Calculate total expense
     function calculateTotalExpense() {
@@ -112,37 +109,6 @@
     document.querySelectorAll('.expense-amount').forEach(input => {
         input.addEventListener('input', calculateTotalExpense);
     });
-     {{--  document.querySelectorAll('.mandays-input').forEach(input => {
-        input.addEventListener('input', calculateTotalExpense);
-    });  --}}
-
-
-    document.querySelectorAll('.mandays-input').forEach(input => {
-  input.addEventListener('input', function() {
-    const target = this.dataset.target;
-    const rateField = document.querySelector(`.rate-input[data-target="${target}"]`);
-    const amountField = document.getElementById(`amount_${target}`);
-    const rate = parseFloat(rateField.value) || 0;
-    const mandays = parseFloat(this.value) || 0;
-    const amount = mandays * rate;
-    amountField.value = amount.toFixed(2);
-    calculateTotalExpense();
-  });
-
-});
-
-// Disable remove button for non-Custom
-document.querySelectorAll('.expense-component').forEach(row => {
-  const group = row.querySelector('input[name*="[group]"]').value;
-  if (group !== 'Custom') {
-    const removeBtn = row.querySelector('.remove-component');
-    if (removeBtn) removeBtn.style.display = 'none';
-  }
-});
-
-
-
-
 
     // Update revenue calculation to use component total
     function calculateRevenue() {
@@ -254,46 +220,9 @@ function updateTeamJson() {
   <div class="col-md-8">
     <div class="card">
       <div class="card-header">
-        @if ($errors->any())
-        <div class="alert alert-danger">
-          <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-          </ul>
-        </div>
-        @endif
         <h5 class="card-title">From Proposal: {{ $proposal->requirement->temp_no }}</h5>
       </div>
       <div class="card-body">
-        {{-- Hidden Template for New Custom Components --}}
-        <div class="expense-component row g-3 mb-2 d-none" id="custom-component-template">
-          <input type="hidden" name="expense_components[0][group]" value="Custom">
-          <div class="col-md-3">
-            <label class="form-label">Category</label>
-            <select name="expense_components[0][category_id]" class="form-select expense-category">
-              <option value="">Select Category</option>
-              @foreach($expenseCategories as $category)
-              <option value="{{ $category->id }}">{{ $category->name }}</option>
-              @endforeach
-            </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Component</label>
-            <input type="text" name="expense_components[0][component]" class="form-control"
-              placeholder="Component name">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Amount (₹)</label>
-            <input type="number" step="0.01" min="0" name="expense_components[0][amount]"
-              class="form-control expense-amount" placeholder="0.00">
-          </div>
-          <div class="col-md-1 d-flex align-items-end">
-            <button type="button" class="btn btn-danger remove-component">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
         <form action="{{ route('pms.projects.store', $proposal->id) }}" method="POST">
           @csrf
 
@@ -366,71 +295,77 @@ function updateTeamJson() {
               <div class="col-md-12">
                 <label class="form-label">Estimated Expense Components *</label>
                 <div id="expense-components-container">
-
-                  @php
-                  $groupedComponents = $proposal->expenseComponents->groupBy('group_name');
-                  @endphp
-
-                  @foreach($groupedComponents as $groupName => $components)
-                  <h6 class="mt-3 mb-2 text-primary fw-bold border-bottom pb-1">{{ $groupName }}</h6>
-
-                  @foreach($components as $index => $component)
-                  <div class="expense-component row g-3 mb-2">
-                    <input type="hidden" name="expense_components[{{ $groupName }}_{{ $index }}][category_id]"
-                      value="{{ $component->expense_category_id }}">
-                    <input type="hidden" name="expense_components[{{ $groupName }}_{{ $index }}][group]"
-                      value="{{ $groupName }}">
-                    <input type="hidden" name="expense_components[{{ $groupName }}_{{ $index }}][component]"
-                      value="{{ $component->component }}">
-
-                    {{-- Readonly Component Name --}}
-                    <div class="col-md-3">
+                  @foreach($proposal->expenseComponents as $index => $component)
+                  <div class="expense-component row g-3 mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Category</label>
+                      <select name="expense_components[{{ $index }}][category_id]" class="form-select expense-category"
+                        required>
+                        <option value="">Select Category</option>
+                        @foreach($expenseCategories as $category)
+                        <option value="{{ $category->id }}" {{ $component->expense_category_id == $category->id ?
+                          'selected' : '' }}>
+                          {{ $category->name }}
+                        </option>
+                        @endforeach
+                      </select>
+                    </div>
+                    <div class="col-md-4">
                       <label class="form-label">Component</label>
-                      <input type="text" class="form-control" value="{{ $component->component }}" readonly>
+                      <input type="text" name="expense_components[{{ $index }}][component]" class="form-control"
+                        value="{{ old('expense_components.' . $index . '.component', $component->component) }}"
+                        placeholder="Component name" required>
                     </div>
-
-                    {{-- HR Group: show Mandays & Rate --}}
-                    @if($groupName === 'HR')
-                    <div class="col-md-2">
-                      <label class="form-label">Mandays</label>
-                      <input type="number" name="expense_components[{{ $groupName }}_{{ $index }}][mandays]"
-                        class="form-control mandays-input" value="{{ $component->mandays }}" min="0" step="1"
-                        data-target="{{ $groupName }}_{{ $index }}">
-                    </div>
-
-                    <div class="col-md-2">
-                      <label class="form-label">Rate (₹)</label>
-                      <input type="number" name="expense_components[{{ $groupName }}_{{ $index }}][rate]"
-                        class="form-control rate-input" value="{{ $component->rate }}" readonly
-                        data-target="{{ $groupName }}_{{ $index }}">
-                    </div>
-                    @endif
-
-                    {{-- Amount --}}
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                       <label class="form-label">Amount (₹)</label>
-                      <input type="number" step="0.01" min="0"
-                        name="expense_components[{{ $groupName }}_{{ $index }}][amount]"
-                        class="form-control expense-amount" id="amount_{{ $groupName }}_{{ $index }}"
-                        value="{{ $component->amount }}">
+                      <input type="number" step="0.01" min="0" name="expense_components[{{ $index }}][amount]"
+                        class="form-control expense-amount"
+                        value="{{ old('expense_components.' . $index . '.amount', $component->amount) }}"
+                        placeholder="0.00" required>
                     </div>
-
-                    {{-- Remove button only for Custom --}}
-                    <div class="col-md-1 d-flex align-items-end">
-                      @if($groupName === 'Custom')
-                      <button type="button" class="btn btn-danger remove-component"><i
-                          class="fas fa-trash"></i></button>
-                      @endif
+                    <div class="col-md-1">
+                      <label class="form-label">&nbsp;</label>
+                      <button type="button" class="btn btn-danger remove-component"
+                        style="{{ $loop->first && $proposal->expenseComponents->count() == 1 ? 'display: none;' : 'display: block;' }}">
+                        <i class="fas fa-trash"></i>
+                      </button>
                     </div>
                   </div>
                   @endforeach
-                  @endforeach
 
+                  @if($proposal->expenseComponents->count() === 0)
+                  <div class="expense-component row g-3 mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Category</label>
+                      <select name="expense_components[0][category_id]" class="form-select expense-category" required>
+                        <option value="">Select Category</option>
+                        @foreach($expenseCategories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Component</label>
+                      <input type="text" name="expense_components[0][component]" class="form-control"
+                        placeholder="Component name" required>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label">Amount (₹)</label>
+                      <input type="number" step="0.01" min="0" name="expense_components[0][amount]"
+                        class="form-control expense-amount" placeholder="0.00" required>
+                    </div>
+                    <div class="col-md-1">
+                      <label class="form-label">&nbsp;</label>
+                      <button type="button" class="btn btn-danger remove-component" style="display: none;">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                  @endif
                 </div>
 
-                {{-- Add button only for Custom group --}}
                 <button type="button" id="add-component" class="btn btn-secondary btn-sm mt-2">
-                  <i class="fas fa-plus"></i> Add Custom Component
+                  <i class="fas fa-plus"></i> Add Component
                 </button>
 
                 <div class="mt-3">
@@ -439,7 +374,14 @@ function updateTeamJson() {
                 </div>
 
                 <input type="hidden" name="estimated_expense" id="estimated_expense"
-                  value="{{ $proposal->estimated_expense }}">
+                  value="{{ old('estimated_expense', $proposal->estimated_expense) }}">
+
+                @error('estimated_expense')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+                @error('expense_components.*')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
               </div>
             </div>
             {{-- <div class="col-md-4">

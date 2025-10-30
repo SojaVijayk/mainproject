@@ -240,13 +240,23 @@ class ProjectController extends Controller
     // ]);
 
     // Save project expense components (separate from proposal components)
+        // foreach ($data['expense_components'] as $component) {
+        //     $project->expenseComponents()->create([
+        //         'expense_category_id' => $component['category_id'],
+        //         'component' => $component['component'],
+        //         'amount' => $component['amount'],
+        //     ]);
+        // }
         foreach ($data['expense_components'] as $component) {
-            $project->expenseComponents()->create([
-                'expense_category_id' => $component['category_id'],
-                'component' => $component['component'],
-                'amount' => $component['amount'],
-            ]);
-        }
+    $project->expenseComponents()->create([
+        'expense_category_id' => $component['category_id'],
+        'group_name' => $component['group'] ?? 'Custom',
+        'component' => $component['component'],
+        'mandays' => $component['mandays'] ?? null,
+        'rate' => $component['rate'] ?? null,
+        'amount' => $component['amount'],
+    ]);
+}
 
 
     $project->teamMembers()->create([
@@ -255,6 +265,7 @@ class ProjectController extends Controller
             'expected_time_investment_minutes' => $request->pi_expected_time * 60,
         ]);
         if ($request->has('team_members_json')) {
+          if ($request->filled('team_members_json')) {
         $teamMembers = json_decode($request->input('team_members_json'), true);
         foreach ($teamMembers as $member) {
             $project->teamMembers()->create([
@@ -263,6 +274,7 @@ class ProjectController extends Controller
                 'expected_time_investment_minutes' => $member['expected_time'] * 60,
             ]);
         }
+      }
       }
 
     // Copy documents from requirement and proposal to project
@@ -334,11 +346,21 @@ class ProjectController extends Controller
 
          // Update project expense components
         $project->expenseComponents()->delete();
+        // foreach ($data['expense_components'] as $component) {
+        //     $project->expenseComponents()->create([
+        //         'expense_category_id' => $component['category_id'],
+        //         'component' => $component['component'],
+        //         'amount' => $component['amount'],
+        //     ]);
+        // }
         foreach ($data['expense_components'] as $component) {
             $project->expenseComponents()->create([
-                'expense_category_id' => $component['category_id'],
-                'component' => $component['component'],
-                'amount' => $component['amount'],
+                'expense_category_id' => $component['category_id'] ?? null,
+                'group_name' => $component['group'] ?? 'Custom',
+                'component' => $component['component'] ?? 'Unnamed',
+                'mandays' => $component['mandays'] ?? null,
+                'rate' => $component['rate'] ?? null,
+                'amount' => $component['amount'] ?? 0,
             ]);
         }
 

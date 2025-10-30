@@ -42,6 +42,8 @@ class ProposalController extends Controller
 
     public function store(ProposalStoreRequest $request, Requirement $requirement)
     {
+    //    dd($request->all());
+    //  dd($request->validated());exit;
         if(!in_array($requirement->status, [Requirement::STATUS_APPROVED_BY_DIRECTOR,Requirement::STATUS_APPROVED_BY_PAC]) || $requirement->allocated_to != Auth::id()){
             return redirect()->route('pms.requirements.show', $requirement->id)
                 ->with('error', 'You cannot create a proposal for this requirement.');
@@ -50,6 +52,7 @@ class ProposalController extends Controller
 
 
         $data = $request->validated();
+
         $data['requirement_id'] = $requirement->id;
         $data['created_by'] = Auth::id();
         $data['status'] = Proposal::STATUS_CREATED;
@@ -58,13 +61,24 @@ class ProposalController extends Controller
 
 
         // Save expense components
+        // foreach ($data['expense_components'] as $component) {
+        //     $proposal->expenseComponents()->create([
+        //         'expense_category_id' => $component['category_id'],
+        //         'component' => $component['component'],
+        //         'amount' => $component['amount'],
+        //     ]);
+        // }
+
         foreach ($data['expense_components'] as $component) {
-            $proposal->expenseComponents()->create([
-                'expense_category_id' => $component['category_id'],
-                'component' => $component['component'],
-                'amount' => $component['amount'],
-            ]);
-        }
+    $proposal->expenseComponents()->create([
+        'expense_category_id' => $component['category_id'],
+        'group_name' => $component['group'] ?? 'Custom',
+        'component' => $component['component'],
+        'mandays' => $component['mandays'] ?? null,
+        'rate' => $component['rate'] ?? null,
+        'amount' => $component['amount'],
+    ]);
+}
 
 
         // Handle document uploads if any
@@ -141,11 +155,21 @@ class ProposalController extends Controller
           // Delete existing expense components and create new ones
         $proposal->expenseComponents()->delete();
 
-        foreach ($data['expense_components'] as $component) {
+        // foreach ($data['expense_components'] as $component) {
+        //     $proposal->expenseComponents()->create([
+        //         'expense_category_id' => $component['category_id'],
+        //         'component' => $component['component'],
+        //         'amount' => $component['amount'],
+        //     ]);
+        // }
+         foreach ($data['expense_components'] as $component) {
             $proposal->expenseComponents()->create([
-                'expense_category_id' => $component['category_id'],
-                'component' => $component['component'],
-                'amount' => $component['amount'],
+                'expense_category_id' => $component['category_id'] ?? null,
+                'group_name' => $component['group'] ?? 'Custom',
+                'component' => $component['component'] ?? 'Unnamed',
+                'mandays' => $component['mandays'] ?? null,
+                'rate' => $component['rate'] ?? null,
+                'amount' => $component['amount'] ?? 0,
             ]);
         }
 

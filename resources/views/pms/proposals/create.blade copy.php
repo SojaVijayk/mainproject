@@ -119,38 +119,22 @@
 
     // Add new component row
     addButton.addEventListener('click', function() {
-        {{--  const newRow = document.querySelector('.expense-component').cloneNode(true);
+        const newRow = document.querySelector('.expense-component').cloneNode(true);
         newRow.innerHTML = newRow.innerHTML.replace(/\[0\]/g, `[${componentCount}]`);
 
         // Clear values
         newRow.querySelector('.expense-category').value = '';
         newRow.querySelector('input[name*="component"]').value = '';
-        newRow.querySelector('.expense-amount').value = '';  --}}
-         const template = document.getElementById('custom-component-template');
-  const newRow = template.cloneNode(true);
-  newRow.id = ''; // remove id
-  newRow.classList.remove('d-none');
-
-  // Update input names with index
-  newRow.querySelectorAll('input, select').forEach(el => {
-    el.name = el.name.replace('[0]', `[custom_${componentCount}]`);
-    el.value = '';
-  });
+        newRow.querySelector('.expense-amount').value = '';
 
         // Show remove button
-        {{--  newRow.querySelector('.remove-component').style.display = 'block';  --}}
-         const removeBtn = newRow.querySelector('.remove-component');
-  if (removeBtn) removeBtn.style.display = 'block';
+        newRow.querySelector('.remove-component').style.display = 'block';
 
         // Add remove functionality
-        {{--  newRow.querySelector('.remove-component').addEventListener('click', function() {
+        newRow.querySelector('.remove-component').addEventListener('click', function() {
             newRow.remove();
             calculateTotalExpense();
-        });  --}}
-          removeBtn?.addEventListener('click', function() {
-    newRow.remove();
-    calculateTotalExpense();
-  });
+        });
 
         // Add input listener for amount
         newRow.querySelector('.expense-amount').addEventListener('input', calculateTotalExpense);
@@ -198,20 +182,6 @@
         budgetInput.addEventListener('input', calculateRevenue);
     }
 
-document.querySelectorAll('.mandays-input').forEach(input => {
-  input.addEventListener('input', function() {
-    const target = this.dataset.target;
-    const rateField = document.querySelector(`.rate-input[data-target="${target}"]`);
-    const amountField = document.getElementById(`amount_${target}`);
-
-    const rate = parseFloat(rateField.value) || 0;
-    const mandays = parseFloat(this.value) || 0;
-    const amount = mandays * rate;
-
-    amountField.value = amount.toFixed(2);
-    calculateTotalExpense();
-  });
-});
 
   });
 </script>
@@ -223,47 +193,9 @@ document.querySelectorAll('.mandays-input').forEach(input => {
   <div class="col-md-8">
     <div class="card">
       <div class="card-header">
-        @if ($errors->any())
-        <div class="alert alert-danger">
-          <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-          </ul>
-        </div>
-        @endif
         <h5 class="card-title">Project:{{ $requirement->project_title }}- ( {{ $requirement->temp_no }} )</h5>
       </div>
       <div class="card-body">
-        {{-- Hidden Template for New Components --}}
-        <div class="expense-component row g-3 mb-2 d-none" id="custom-component-template">
-          <input type="hidden" name="expense_components[0][group]" value="Custom">
-          <div class="col-md-4">
-            <label class="form-label">Category</label>
-            <select name="expense_components[0][category_id]" class="form-select expense-category">
-              <option value="">Select Category</option>
-              @foreach($expenseCategories as $category)
-              <option value="{{ $category->id }}">{{ $category->name }}</option>
-              @endforeach
-            </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Component</label>
-            <input type="text" name="expense_components[0][component]" class="form-control"
-              placeholder="Component name">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Amount (₹)</label>
-            <input type="number" step="0.01" min="0" name="expense_components[0][amount]"
-              class="form-control expense-amount" placeholder="0.00">
-          </div>
-          <div class="col-md-1">
-            <label class="form-label">&nbsp;</label>
-            <button type="button" class="btn btn-danger remove-component">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
         <form action="{{ route('pms.proposals.store', $requirement->id) }}" method="POST" enctype="multipart/form-data">
           @csrf
 
@@ -330,125 +262,41 @@ document.querySelectorAll('.mandays-input').forEach(input => {
               @enderror
             </div>
           </div>
-
-
           <div class="row mb-3">
             <div class="col-md-12">
               <label class="form-label">Estimated Expense Components</label>
               <div id="expense-components-container">
-
-                {{-- HR GROUP --}}
-                <h6 class="mt-3 mb-2 text-primary fw-bold">HR</h6>
-                @php
-                $hrComponents = [
-                ['component' => 'Manpower-Faculty Cost', 'rate' => 14000],
-                ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000],
-                ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000],
-                ['component' => 'Manpower-Project Staff', 'rate' => 3200],
-                ['component' => 'Manpower-Consultants', 'rate' => 4000],
-                ];
-                @endphp
-
-                @foreach($hrComponents as $i => $item)
-                <div class="expense-component row g-3 mb-2">
-                  <input type="hidden" name="expense_components[hr_{{ $i }}][category_id]" value="1">
-                  <input type="hidden" name="expense_components[hr_{{ $i }}][group]" value="HR">
-                  <input type="hidden" name="expense_components[hr_{{ $i }}][component]"
-                    value="{{ $item['component'] }}">
-
-                  <div class="col-md-3">
+                <div class="expense-component row g-3 mb-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Category</label>
+                    <select name="expense_components[0][category_id]" class="form-select expense-category" required>
+                      <option value="">Select Category</option>
+                      @foreach($expenseCategories as $category)
+                      <option value="{{ $category->id }}">{{ $category->name }}</option>
+                      @endforeach
+                    </select>
+                  </div>
+                  <div class="col-md-4">
                     <label class="form-label">Component</label>
-                    <input type="text" class="form-control" value="{{ $item['component'] }}" readonly>
+                    <input type="text" name="expense_components[0][component]" class="form-control"
+                      placeholder="Component name" required>
                   </div>
-
-                  <div class="col-md-2">
-                    <label class="form-label">Mandays</label>
-                    <input type="number" name="expense_components[hr_{{ $i }}][mandays]"
-                      class="form-control mandays-input" min="0" step="1" value="0" data-target="hr_{{ $i }}" required>
-                  </div>
-
-                  <div class="col-md-2">
-                    <label class="form-label">Rate (₹)</label>
-                    <input type="number" name="expense_components[hr_{{ $i }}][rate]" class="form-control rate-input"
-                      value="{{ $item['rate'] }}" readonly data-target="hr_{{ $i }}">
-                  </div>
-
-                  <div class="col-md-2">
-                    <label class="form-label">Amount (₹)</label>
-                    <input type="number" step="0.01" min="0" name="expense_components[hr_{{ $i }}][amount]"
-                      class="form-control expense-amount" id="amount_hr_{{ $i }}" value="0" readonly>
-                  </div>
-                </div>
-                @endforeach
-
-                {{-- TRAVEL GROUP --}}
-                <h6 class="mt-3 mb-2 text-primary fw-bold">Travel</h6>
-                @php
-                $travelComponents = [['component' => 'Travel-Faculty Cost', 'rate' => 5000],
-                ['component' => 'Travel-Sr Faculty Associate Cost', 'rate' => 3000],
-                ['component' => 'Travel-Faculty Associate Cost', 'rate' => 2000],
-                ['component' => 'Travel-Project Staff', 'rate' => 1000],
-                ['component' => 'Travel-Consultants', 'rate' => 3000],
-                ];
-
-                @endphp
-
-                @foreach($travelComponents as $i => $item)
-                <div class="expense-component row g-3 mb-2">
-                  <input type="hidden" name="expense_components[travel_{{ $i }}][category_id]" value="1">
-                  <input type="hidden" name="expense_components[travel_{{ $i }}][group]" value="Travel">
-                  <input type="hidden" name="expense_components[travel_{{ $i }}][component]"
-                    value="{{ $item['component'] }}">
-
-                  <div class="col-md-3">
-                    <label class="form-label">Component</label>
-                    <input type="text" class="form-control" value="{{ $item['component'] }}" readonly>
-                  </div>
-
                   <div class="col-md-3">
                     <label class="form-label">Amount (₹)</label>
-                    <input type="number" step="0.01" min="0" name="expense_components[travel_{{ $i }}][amount]"
-                      class="form-control expense-amount" value="0" required>
+                    <input type="number" step="0.01" min="0" name="expense_components[0][amount]"
+                      class="form-control expense-amount" placeholder="0.00" required>
+                  </div>
+                  <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-danger remove-component" style="display: none;">
+                      <i class="fas fa-trash"></i>
+                    </button>
                   </div>
                 </div>
-                @endforeach
-
-                {{-- OTHERS GROUP --}}
-                <h6 class="mt-3 mb-2 text-primary fw-bold">Others</h6>
-                @php
-                $otherComponents = [
-                ['component' => 'Laptop', 'rate' => 250],
-                ['component' => 'Reports', 'rate' => 0],
-                ['component' => 'Printing', 'rate' => 0],
-                ['component' => 'Stationary', 'rate' => 0],
-                ];
-                @endphp
-
-                @foreach($otherComponents as $i => $item)
-                <div class="expense-component row g-3 mb-2">
-                  <input type="hidden" name="expense_components[other_{{ $i }}][category_id]" value="1">
-                  <input type="hidden" name="expense_components[other_{{ $i }}][group]" value="Others">
-                  <input type="hidden" name="expense_components[other_{{ $i }}][component]"
-                    value="{{ $item['component'] }}">
-
-                  <div class="col-md-3">
-                    <label class="form-label">Component</label>
-                    <input type="text" class="form-control" value="{{ $item['component'] }}" readonly>
-                  </div>
-
-                  <div class="col-md-3">
-                    <label class="form-label">Amount (₹)</label>
-                    <input type="number" step="0.01" min="0" name="expense_components[other_{{ $i }}][amount]"
-                      class="form-control expense-amount" value="0" required>
-                  </div>
-                </div>
-                @endforeach
-
               </div>
 
-              {{-- Add custom component button --}}
               <button type="button" id="add-component" class="btn btn-secondary btn-sm mt-2">
-                <i class="fas fa-plus"></i> Add Custom Component
+                <i class="fas fa-plus"></i> Add Component
               </button>
 
               <div class="mt-3">
@@ -456,6 +304,13 @@ document.querySelectorAll('.mandays-input').forEach(input => {
               </div>
 
               <input type="hidden" name="estimated_expense" id="estimated_expense" value="0">
+
+              @error('estimated_expense')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+              @enderror
+              @error('expense_components.*')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+              @enderror
             </div>
           </div>
           <div class="row mb-3">

@@ -11,14 +11,18 @@ class ProposalExpenseComponent extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'proposal_id',
-        'expense_category_id',
-        'component',
-        'amount'
+         'proposal_id',
+    'expense_category_id',
+    'group_name',
+    'component',
+    'mandays',
+    'rate',
+    'amount',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
+        'rate' => 'decimal:2'
     ];
 
     public function proposal()
