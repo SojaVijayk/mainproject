@@ -394,8 +394,8 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                   <div class="col-md-2">
                     <label class="form-label">Amount (₹)</label>
                     <input type="number" step="0.01" min="0" name="expense_components[hr_{{ $i }}][amount]"
-                      class="form-control expense-amount" id="amount_hr_{{ $i }}" value="0"
-                      value="{{ $item['amount'] }}" readonly>
+                      class="form-control expense-amount" id="amount_hr_{{ $i }}" value="{{ $item['amount'] }}"
+                      readonly>
                   </div>
                 </div>
                 @endforeach
