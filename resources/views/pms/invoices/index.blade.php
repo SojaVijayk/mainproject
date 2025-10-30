@@ -63,7 +63,7 @@ use \App\Models\Client;
             <th>Paid</th>
             <th>Balance</th>
             <th>Status</th>
-            <th>Invoice Actions</th>
+            {{-- <th>Invoice Actions</th> --}}
             <th>Actions</th>
           </tr>
         </thead>
@@ -123,9 +123,8 @@ use \App\Models\Client;
                 @endif
               </div>
 
-              @endif
-            </td>
-            <td>
+              @else
+
               <a href="{{ route('pms.invoices.show', [$project->id, $invoice->id]) }}" class="btn btn-sm btn-info">
                 <i class="fas fa-eye"></i>
               </a>
@@ -133,6 +132,7 @@ use \App\Models\Client;
               <a href="{{ route('pms.invoices.edit', [$project->id, $invoice->id]) }}" class="btn btn-sm btn-primary">
                 <i class="fas fa-edit"></i>
               </a>
+              @endif
               @endif
             </td>
           </tr>
