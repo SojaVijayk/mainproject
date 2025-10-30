@@ -355,11 +355,11 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                 <h6 class="mt-3 mb-2 text-primary fw-bold">HR</h6>
                 @php
                 $hrComponents = [
-                ['component' => 'Manpower-Faculty Cost', 'rate' => 14000, 'min'=>0.5],
-                ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000,'min'=>0],
-                ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000,'min'=>0],
-                ['component' => 'Manpower-Project Staff', 'rate' => 3200,'min'=>0],
-                ['component' => 'Manpower-Consultants', 'rate' => 8000,'min'=>0],
+                ['component' => 'Manpower-Faculty Cost', 'rate' => 14000, 'min'=>0.5, 'amount' => 7000],
+                ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000,'min'=>0,'amount' => 0],
+                ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000,'min'=>0,'amount' => 0],
+                ['component' => 'Manpower-Project Staff', 'rate' => 3200,'min'=>0,'amount' => 0],
+                ['component' => 'Manpower-Consultants', 'rate' => 8000,'min'=>0,'amount' => 0],
                 ];
                 @endphp
 
@@ -394,7 +394,8 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                   <div class="col-md-2">
                     <label class="form-label">Amount (₹)</label>
                     <input type="number" step="0.01" min="0" name="expense_components[hr_{{ $i }}][amount]"
-                      class="form-control expense-amount" id="amount_hr_{{ $i }}" value="0" readonly>
+                      class="form-control expense-amount" id="amount_hr_{{ $i }}" value="0"
+                      value="{{ $item['amount'] }}" readonly>
                   </div>
                 </div>
                 @endforeach

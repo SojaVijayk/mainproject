@@ -304,11 +304,11 @@
                 <h6 class="mt-3 mb-2 text-primary fw-bold">HR</h6>
                 @php
                 $hrComponents = [
-                ['component' => 'Manpower-Faculty Cost', 'rate' => 14000, 'min'=>0.5],
-                ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000,'min'=>0],
-                ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000,'min'=>0],
-                ['component' => 'Manpower-Project Staff', 'rate' => 3200,'min'=>0],
-                ['component' => 'Manpower-Consultants', 'rate' => 8000,'min'=>0],
+                ['component' => 'Manpower-Faculty Cost', 'rate' => 14000, 'min'=>0.5, 'amount' => 7000],
+                ['component' => 'Manpower-Sr Faculty Associate Cost', 'rate' => 8000,'min'=>0,'amount' => 0],
+                ['component' => 'Manpower-Faculty Associate Cost', 'rate' => 6000,'min'=>0,'amount' => 0],
+                ['component' => 'Manpower-Project Staff', 'rate' => 3200,'min'=>0,'amount' => 0],
+                ['component' => 'Manpower-Consultants', 'rate' => 8000,'min'=>0,'amount' => 0],
                 ];
 
                 $existingHr = $proposal->expenseComponents->where('group_name', 'HR')->keyBy('component');
@@ -344,7 +344,7 @@
                   <div class="col-md-2">
                     <input type="number" class="form-control expense-amount"
                       name="expense_components[hr_{{ $i }}][amount]" id="amount_hr_{{ $i }}"
-                      value="{{ $existing->amount ?? 0 }}" readonly>
+                      value="{{ $existing->amount ??  value=" {{ $item['amount'] }}" }}" readonly>
                   </div>
                 </div>
                 @endforeach
