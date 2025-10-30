@@ -347,7 +347,7 @@ function updateTeamJson() {
                     <div class="col-md-2">
                       <input type="number" class="form-control mandays-input"
                         name="expense_components[hr_{{ $i }}][mandays]" value="{{ $existing->mandays ?? 0 }}"
-                        placeholder="Mandays" data-target="hr_{{ $i }}">
+                        placeholder="Persondays" data-target="hr_{{ $i }}">
                     </div>
 
                     <div class="col-md-2">

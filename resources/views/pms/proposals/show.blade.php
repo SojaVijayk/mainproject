@@ -190,7 +190,7 @@
                               <th style="width:25%">Category</th>
                               <th style="width:35%">Component</th>
                               @if($groupName === 'HR')
-                              <th style="width:10%" class="text-end">Mandays</th>
+                              <th style="width:10%" class="text-end">Persondays</th>
                               <th style="width:15%" class="text-end">Rate (₹)</th>
                               @endif
                               <th style="width:20%" class="text-end">Amount (₹)</th>

@@ -392,7 +392,7 @@ function updateTeamJson() {
                     {{-- HR Group: show Mandays & Rate --}}
                     @if($groupName === 'HR')
                     <div class="col-md-2">
-                      <label class="form-label">Mandays</label>
+                      <label class="form-label">Persondays</label>
                       <input type="number" name="expense_components[{{ $groupName }}_{{ $index }}][mandays]"
                         class="form-control mandays-input" value="{{ $component->mandays }}" min="0" step="1"
                         data-target="{{ $groupName }}_{{ $index }}">

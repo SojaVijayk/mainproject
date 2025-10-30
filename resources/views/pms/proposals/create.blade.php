@@ -362,7 +362,7 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                   </div>
 
                   <div class="col-md-2">
-                    <label class="form-label">Mandays</label>
+                    <label class="form-label">Persondays</label>
                     <input type="number" name="expense_components[hr_{{ $i }}][mandays]"
                       class="form-control mandays-input" min="0" step="1" value="0" data-target="hr_{{ $i }}" required>
                   </div>
