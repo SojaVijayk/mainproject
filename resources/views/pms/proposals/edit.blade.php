@@ -344,7 +344,7 @@
                   <div class="col-md-2">
                     <input type="number" class="form-control expense-amount"
                       name="expense_components[hr_{{ $i }}][amount]" id="amount_hr_{{ $i }}"
-                      value="{{ $existing->amount ??  value=" {{ $item['amount'] }}" }}" readonly>
+                      value="{{ $existing->amount ??  $item['amount'] }}" readonly>
                   </div>
                 </div>
                 @endforeach
