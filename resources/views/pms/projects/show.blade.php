@@ -86,62 +86,98 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <p><strong>Title:</strong> {{ $project->title }}</p>
             <p><strong>Start Date:</strong> {{ $project->start_date->format('d M Y') }}</p>
             <p><strong>End Date:</strong> {{ $project->end_date->format('d M Y') }}</p>
             <p><strong>Budget:</strong> {{ number_format($project->budget, 2) }}</p>
           </div>
-          <div class="col-md-6">
-            <p><strong>Principal Investigator:</strong> {{ $project->investigator->name }}</p>
-            <p><strong>Estimated Expense:</strong> {{ number_format($project->estimated_expense, 2) }}</p>
-            @if($project->expenseComponents->count() > 0)
-            <div class="card mt-4">
-              <div class="card-header">
-                <h5 class="card-title">Estimated Expense Breakdown</h5>
-              </div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th>Category</th>
-                        <th>Component</th>
-                        <th>Amount (₹)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @foreach($project->expenseComponents as $component)
-                      <tr>
-                        <td>{{ $component->category->name }}</td>
-                        <td>{{ $component->component }}</td>
-                        <td>₹{{ number_format($component->amount, 2) }}</td>
-                      </tr>
-                      @endforeach
-                    </tbody>
-                    <tfoot>
-                      <tr>
-                        <th colspan="2" class="text-end">Total Estimated Expense:</th>
-                        <th>₹{{ number_format($project->estimated_expense, 2) }}</th>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              </div>
-            </div>
-            @endif
-            <p><strong>Expected Revenue:</strong> {{ number_format($project->revenue, 2) }}</p>
-            <p><strong>Completion:</strong>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: {{ $project->completion_percentage }}%"
-                aria-valuenow="{{ $project->completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
-                {{ $project->completion_percentage }}%
-              </div>
-            </div>
-            </p>
-          </div>
-
         </div>
+        <div class="col-md-12">
+          <p><strong>Principal Investigator:</strong> {{ $project->investigator->name }}</p>
+          <p><strong>Estimated Expense:</strong> {{ number_format($project->estimated_expense, 2) }}</p>
+          @if($project->expenseComponents->count() > 0)
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Estimated Expense Breakdown</h5>
+            </div>
+            <div class="card-body">
+              @php
+              $groupedComponents = $project->expenseComponents->groupBy('group_name');
+              @endphp
+
+              <div class="accordion" id="expenseAccordion">
+                @foreach($groupedComponents as $group => $components)
+                @php
+                $groupId = Str::slug($group ?? 'ungrouped', '_');
+                $subtotal = $components->sum('amount');
+                @endphp
+                <div class="accordion-item border rounded mb-2 shadow-sm">
+                  <h2 class="accordion-header" id="heading_{{ $groupId }}">
+                    <button class="accordion-button collapsed d-flex justify-content-between" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#collapse_{{ $groupId }}" aria-expanded="false"
+                      aria-controls="collapse_{{ $groupId }}">
+                      <div class="d-flex flex-column">
+                        <span class="fw-bold text-primary">{{ $group ?? 'Ungrouped' }}</span>
+                        <small class="text-muted">Subtotal: ₹{{ number_format($subtotal, 2) }}</small>
+                      </div>
+                    </button>
+                  </h2>
+                  <div id="collapse_{{ $groupId }}" class="accordion-collapse collapse"
+                    aria-labelledby="heading_{{ $groupId }}" data-bs-parent="#expenseAccordion">
+                    <div class="accordion-body p-2">
+                      <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th style="width:20%">Category</th>
+                              <th style="width:35%">Component</th>
+                              @if($group === 'HR')
+                              <th style="width:10%" class="text-end">Mandays</th>
+                              <th style="width:15%" class="text-end">Rate (₹)</th>
+                              @endif
+                              <th style="width:20%" class="text-end">Amount (₹)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($components as $component)
+                            <tr>
+                              <td>{{ $component->category->name ?? '-' }}</td>
+                              <td>{{ $component->component }}</td>
+                              @if($group === 'HR')
+                              <td class="text-end">{{ $component->mandays ?? '-' }}</td>
+                              <td class="text-end">{{ number_format($component->rate ?? 0, 2) }}</td>
+                              @endif
+                              <td class="text-end">₹{{ number_format($component->amount, 2) }}</td>
+                            </tr>
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                @endforeach
+              </div>
+
+              <div class="border-top pt-3 mt-3 text-end">
+                <strong>Total Estimated Expense: ₹{{ number_format($project->estimated_expense, 2) }}</strong>
+              </div>
+            </div>
+          </div>
+          @endif
+          <p><strong>Expected Revenue:</strong> {{ number_format($project->revenue, 2) }}</p>
+          <p><strong>Completion:</strong>
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: {{ $project->completion_percentage }}%"
+              aria-valuenow="{{ $project->completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
+              {{ $project->completion_percentage }}%
+            </div>
+          </div>
+          </p>
+        </div>
+
+
 
         @if($project->description)
         <div class="mt-3">
@@ -356,7 +392,8 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
       <div class="card-body">
         <p><strong>Budget:</strong> {{ number_format($project->proposal->budget, 2) }}</p>
         <p><strong>Tenure:</strong> {{ $project->proposal->tenure }}</p>
-        <p><strong>Expected Start:</strong> {{ $project->proposal->expected_start_date->format('d M Y') }}</p>
+        <p><strong>Expected Start:</strong> @if(!is_null($project->proposal->expected_start_date)) {{
+          $project->proposal->expected_start_date->format('d M Y') }} @endif</p>
         <a href="{{ route('pms.proposals.show', $project->proposal->id) }}" class="btn  btn-label-primary w-100 mt-2">
           <i class="fas fa-eye"></i> View Proposal
         </a>
