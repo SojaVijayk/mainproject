@@ -38,6 +38,8 @@ class InvoiceImport implements ToCollection, WithHeadingRow
                 $taxAmount = $row['tax_amount'] ?? $row['tax_amount'] ?? 0;
                 $totalAmount = $row['total_amount'] ?? $row['total_amount'] ?? 0;
                 $description = $row['description'] ?? $row['description'] ?? 'Imported invoice';
+                $invoice_type = $row['invoice_type'] ?? $row['invoice_type'] ?? 2;
+                 $status = $row['status'] ?? $row['status'] ?? 1;
 
                 // Debug the values
                 logger("Row {$index} values:", [
@@ -48,6 +50,8 @@ class InvoiceImport implements ToCollection, WithHeadingRow
                     'amount' => $amount,
                     'type_project_id' => gettype($projectId),
                     'type_invoice_date' => gettype($invoiceDate),
+                    'invoice_type'=> $invoice_type,
+                     'status'=> $status
                 ]);
 
                 // Skip if essential fields are empty
@@ -62,12 +66,12 @@ class InvoiceImport implements ToCollection, WithHeadingRow
                 $parsedDueDate = $this->parseExcelDate($dueDate);
 
                 // If date parsing fails, use fallbacks
-                if (!$parsedInvoiceDate) {
-                    $parsedInvoiceDate = now()->format('Y-m-d');
-                }
-                if (!$parsedDueDate) {
-                    $parsedDueDate = Carbon::parse($parsedInvoiceDate)->addDays(30)->format('Y-m-d');
-                }
+                // if (!$parsedInvoiceDate) {
+                //     $parsedInvoiceDate = now()->format('Y-m-d');
+                // }
+                // if (!$parsedDueDate) {
+                //     $parsedDueDate = Carbon::parse($parsedInvoiceDate)->addDays(30)->format('Y-m-d');
+                // }
 
                 // Convert to integers and floats
                 $projectId = (int) $projectId;
@@ -88,15 +92,15 @@ class InvoiceImport implements ToCollection, WithHeadingRow
                 $invoice = Invoice::create([
                     'project_id'     => $projectId,
                     'milestone_id'   => null,
-                    'invoice_type'   => 2, // TAXINVOICE
+                    'invoice_type'   =>  $invoice_type, // TAXINVOICE
                     'invoice_number' => $invoiceNumber,
-                    'invoice_date'   => $parsedInvoiceDate,
-                    'due_date'       => $parsedDueDate,
+                    'invoice_date'   => $invoiceDate,
+                    'due_date'       => $dueDate,
                     'amount'         => $amount,
                     'tax_amount'     => $taxAmount,
                     'total_amount'   => $totalAmount,
                     'description'    => $description,
-                    'status'         => 1,
+                    'status'         => $status,
                     'requested_by'   => 44,
                     'generated_by'   => 44,
                 ]);
