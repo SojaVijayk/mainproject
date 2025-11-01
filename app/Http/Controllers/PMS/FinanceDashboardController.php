@@ -289,10 +289,10 @@ class FinanceDashboardController extends Controller
     public function recordPayment(Invoice $invoice)
     {
         $pageConfigs = ['myLayout' => 'horizontal'];
-        // if (!in_array($invoice->status, [Invoice::STATUS_SENT, Invoice::STATUS_OVERDUE])) {
-        //     return redirect()->back()
-        //         ->with('error', 'Payments can only be recorded for sent or overdue invoices.');
-        // }
+        if (!in_array($invoice->status, [Invoice::STATUS_SENT, Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])) {
+            return redirect()->back()
+                ->with('error', 'Payments can only be recorded for sent or overdue invoices.');
+        }
 
         // Load project information
         $invoice->load('project');
@@ -302,7 +302,7 @@ class FinanceDashboardController extends Controller
 
     public function storePayment(Request $request, Invoice $invoice)
     {
-        if (!in_array($invoice->status, [Invoice::STATUS_SENT, Invoice::STATUS_OVERDUE])) {
+        if (!in_array($invoice->status, [Invoice::STATUS_SENT,Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])) {
             return redirect()->back()
                 ->with('error', 'Payments can only be recorded for sent or overdue invoices.');
         }
