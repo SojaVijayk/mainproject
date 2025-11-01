@@ -169,7 +169,7 @@ use \App\Models\PMS\Invoice;
 
   <div class="col-md-4">
     <!-- Payment Actions -->
-    @if(in_array($invoice->status, [Invoice::STATUS_SENT, Invoice::STATUS_OVERDUE]))
+    {{-- @if(in_array($invoice->status, [Invoice::STATUS_SENT, Invoice::STATUS_OVERDUE])) --}}
     <div class="card mb-4">
       <div class="card-header">
         <h5 class="mb-0">Record Payment</h5>
@@ -193,7 +193,7 @@ use \App\Models\PMS\Invoice;
         </div>
       </div>
     </div>
-    @endif
+    {{-- @endif --}}
 
     <!-- Payment History -->
     <div class="card">
