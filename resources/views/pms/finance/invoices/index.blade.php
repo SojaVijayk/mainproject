@@ -128,6 +128,11 @@ use \App\Models\Client;
               <option value="4" {{ request('status')=='4' ? 'selected' : '' }}>Cancelled</option>
             </select>
           </div>
+          <div class="col-md-3">
+            <label for="invoice_number" class="form-label">Invoice Number</label>
+            <input type="text" name="invoice_number" id="invoice_number" class="form-control"
+              value="{{ request('invoice_number') }}" placeholder="Enter Invoice Number">
+          </div>
 
           <!-- Action Buttons -->
           <div class="col-md-3 mb-3 d-flex align-items-end">

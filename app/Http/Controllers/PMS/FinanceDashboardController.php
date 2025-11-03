@@ -108,10 +108,11 @@ class FinanceDashboardController extends Controller
         $invoiceDateFrom = $request->get('invoice_date_from');
         $invoiceDateTo = $request->get('invoice_date_to');
         $status = $request->get('status');
+        $invoiceNumber = $request->get('invoice_number'); // ✅ NEW filter
 
         // Base query for projects with invoices
         $projectsQuery = Project::with([
-            'invoices' => function($query) use ($requestedBy, $invoiceDateFrom, $invoiceDateTo, $status) {
+            'invoices' => function($query) use ($requestedBy, $invoiceDateFrom, $invoiceDateTo, $status,$invoiceNumber) {
                 if ($requestedBy) {
                     $query->where('requested_by', $requestedBy);
                 }
@@ -124,6 +125,9 @@ class FinanceDashboardController extends Controller
                 if ($status) {
                     $query->where('status', $status);
                 }
+                  if ($invoiceNumber) { // ✅ Filter invoices by invoice_number (partial match)
+                $query->where('invoice_number', 'like', "%{$invoiceNumber}%");
+            }
             },
             'requirement.client',
             'investigator',
