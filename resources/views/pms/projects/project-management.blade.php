@@ -448,6 +448,14 @@ $user = Auth::user();
                       <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="{{ route('pms.projects.show', $project->id) }}">View
                             details</a></li>
+                        @if($project->status == \App\Models\PMS\Project::STATUS_INITIATED || $project->status ==
+                        \App\Models\PMS\Project::STATUS_COMPLETED || $project->status ==
+                        \App\Models\PMS\Project::STATUS_ONGOING && ($user->hasRole('Project
+                        Investigator')||$userIsTeamLead ))
+                        <li> <a href="{{ route('pms.projects.edit', $project->id) }}" class="dropdown-item">
+                            {{-- <i class="fas fa-edit"></i> --}} Edit
+                          </a> </li>
+                        @endif
                         <li class="dropdown-item">
 
                           @if( $user->hasRole('Project Investigator'))
@@ -460,13 +468,7 @@ $user = Auth::user();
                           @endif
                         </li>
 
-                        @if($project->status == \App\Models\PMS\Project::STATUS_INITIATED || $project->status ==
-                        \App\Models\PMS\Project::STATUS_ONGOING && ($user->hasRole('Project
-                        Investigator')||$userIsTeamLead ))
-                        <li> <a href="{{ route('pms.projects.edit', $project->id) }}" class="dropdown-item">
-                            {{-- <i class="fas fa-edit"></i> --}} Edit
-                          </a> </li>
-                        @endif
+
 
                       </ul>
                     </div>
