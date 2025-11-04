@@ -303,7 +303,7 @@ class ProjectController extends Controller
     public function edit(Project $project)
     {
         $pageConfigs = ['myLayout' => 'horizontal'];
-        if ($project->status != Project::STATUS_INITIATED && $project->status != Project::STATUS_ONGOING) {
+        if ($project->status != Project::STATUS_INITIATED && $project->status != Project::STATUS_ONGOING && $project->status != Project::STATUS_COMPLETED) {
             return redirect()->back()
                 ->with('error', 'Project cannot be edited in its current status.');
         }
@@ -336,7 +336,7 @@ class ProjectController extends Controller
 
     public function update(ProjectUpdateRequest $request, Project $project)
     {
-        if ($project->status != Project::STATUS_INITIATED && $project->status != Project::STATUS_ONGOING) {
+        if ($project->status != Project::STATUS_INITIATED && $project->status != Project::STATUS_ONGOING  && $project->status != Project::STATUS_COMPLETED) {
             return redirect()->back()
                 ->with('error', 'Project cannot be edited in its current status.');
         }
