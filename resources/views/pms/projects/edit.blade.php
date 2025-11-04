@@ -112,7 +112,7 @@ const container = document.getElementById('expense-components-container');
     const value = parseFloat(this.value) || 0;
     const error = this.parentElement.querySelector('.error-message');
 
-    if (value < min) {
+    if (isNaN(value) < min) {
       this.classList.add('is-invalid');     // Red border (Bootstrap)
       error.style.display = 'block';        // Show warning text
     } else {
@@ -361,8 +361,8 @@ function updateTeamJson() {
                     <div class="col-md-2">
                       <input type="number" class="form-control mandays-input"
                         name="expense_components[hr_{{ $i }}][mandays]" min="{{ $item['min'] }}"
-                        value="{{ (empty($existing->mandays) || $existing->mandays < ($item['min'] ?? 0)) ? ($item['min'] ?? 0) : $existing->mandays }}"
-                        placeholder="Persondays" data-target="hr_{{ $i }}">
+                        value="{{ (is_null($existing->mandays) || $existing->mandays == 0) ? ($item['min'] ?? 0) : $existing->mandays }}"
+                        placeholder="Persondays" data-target="hr_{{ $i }}" step="0.01">
                       <small class="text-danger error-message" style="display:none;">
                         Must be at least {{ $item['min'] }} days.
                       </small>
