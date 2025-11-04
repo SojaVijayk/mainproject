@@ -378,7 +378,7 @@ document.querySelectorAll('.mandays-input').forEach(input => {
                   <div class="col-md-2">
                     <label class="form-label">Persondays</label>
                     <input type="number" name="expense_components[hr_{{ $i }}][mandays]"
-                      class="form-control mandays-input" min="{{ $item['min'] }}" step="1" value="{{ $item['min'] }}"
+                      class="form-control mandays-input" min="{{ $item['min'] }}" value="{{ $item['min'] }}"
                       data-target="hr_{{ $i }}" required>
                     <small class="text-danger error-message" style="display:none;">
                       Must be at least {{ $item['min'] }} days.

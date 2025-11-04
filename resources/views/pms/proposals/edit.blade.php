@@ -330,7 +330,7 @@
                   <div class="col-md-2">
                     <input type="number" class="form-control mandays-input"
                       name="expense_components[hr_{{ $i }}][mandays]"
-                      value="{{ ($existing->mandays ?? 0) < 0.5 ? ($item['min'] ?? 0) : $existing->mandays }}"
+                      value="{{ (empty($existing->mandays) || $existing->mandays < ($item['min'] ?? 0)) ? ($item['min'] ?? 0) : $existing->mandays }}"
                       placeholder="Persondays" data-target="hr_{{ $i }}" min="{{ $item['min'] }}">
                     <small class="text-danger error-message" style="display:none;">
                       Must be at least {{ $item['min'] }} days.
