@@ -358,7 +358,7 @@ function updateTeamJson() {
                       <input type="text" class="form-control" value="{{ $item['component'] }}" readonly>
                     </div>
 
-                    <div class="col-md-2">
+                    {{-- <div class="col-md-2">
                       <input type="number" class="form-control mandays-input"
                         name="expense_components[hr_{{ $i }}][mandays]" min="{{ $item['min'] }}"
                         value="{{ (is_null($existing->mandays) || $existing->mandays == 0) ? ($item['min'] ?? 0) : $existing->mandays }}"
@@ -366,7 +366,19 @@ function updateTeamJson() {
                       <small class="text-danger error-message" style="display:none;">
                         Must be at least {{ $item['min'] }} days.
                       </small>
+                    </div> --}}
+
+                    <div class="col-md-2">
+                      <input type="number" class="form-control mandays-input"
+                        name="expense_components[hr_{{ $i }}][mandays]" min="{{ $item['min'] }}"
+                        value="{{ (is_null($existing?->mandays) || ($existing?->mandays == 0)) ? ($item['min'] ?? 0) : $existing?->mandays }}"
+                        placeholder="Persondays" data-target="hr_{{ $i }}" step="0.01">
+                      <small class="text-danger error-message" style="display:none;">
+                        Must be at least {{ $item['min'] }} days.
+                      </small>
                     </div>
+
+
 
                     <div class="col-md-2">
                       <input type="number" class="form-control rate-input" name="expense_components[hr_{{ $i }}][rate]"
