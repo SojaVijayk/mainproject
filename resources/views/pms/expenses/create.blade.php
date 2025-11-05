@@ -1,4 +1,19 @@
 @extends('layouts/layoutMaster')
+@section('vendor-style')
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}">
+
+@endsection
+@section('vendor-script')
+<script src="{{asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
+
+@endsection
+@section('page-script')
+<script>
+  $('.select2').select2({ width: 'resolve' });
+</script>
+@endsection
 
 @section('content')
 <div class="container-fluid">
@@ -15,7 +30,7 @@
               <div class="col-md-6">
                 <div class="form-group">
                   <label for="project_id">Project *</label>
-                  <select name="project_id" id="project_id" class="form-control" required>
+                  <select name="project_id" id="project_id" class="form-control select2" required>
                     <option value="">Select Project</option>
                     @foreach($projects as $project)
                     <option value="{{ $project->id }}" {{ old('project_id')==$project->id ? 'selected' : '' }}>
@@ -48,7 +63,7 @@
               <div class="col-md-6">
                 <div class="form-group">
                   <label for="vendor_id">Vendor *</label>
-                  <select name="vendor_id" id="vendor_id" class="form-control" required>
+                  <select name="vendor_id" id="vendor_id" class="form-control select2" required>
                     <option value="">Select Vendor</option>
                     @foreach($vendors as $vendor)
                     <option value="{{ $vendor->id }}" {{ old('vendor_id')==$vendor->id ? 'selected' : '' }}>{{

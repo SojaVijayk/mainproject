@@ -402,6 +402,15 @@ function loadStatistics() {
                     auth()->user()->id === $document->code->user_id))
                     <a href="{{ route('documents.edit', $document) }}" class="btn btn-sm btn-warning">Edit</a>
                     @endif
+
+                  </td>
+                  <td>
+                    @if ($document->status == 'active')
+                    <a href="{{ route('despatch.create', ['document_id' => $document->id]) }}"
+                      class="btn btn-sm btn-success">
+                      Add Despatch
+                    </a>
+                    @endif
                   </td>
                 </tr>
                 @endforeach

@@ -289,6 +289,211 @@
           </form> --}}
           @endif
 
+          {{-- @if($document->despatches->count())
+          <hr>
+          <div class="accordion" id="accordionWithIcon1">
+            <div class="accordion-item">
+              <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button collapsed text-primary" data-bs-toggle="collapse"
+                  data-bs-target="#accordionWithIcon-4" aria-expanded="false">
+                  Despatch Records
+                </button>
+              </h2>
+              <div id="accordionWithIcon-4" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                      <thead class="table-light">
+                        <tr>
+                          <th>#</th>
+                          <th>Type</th>
+                          <th>Date</th>
+                          <th>Tracking No.</th>
+                          <th>Courier</th>
+                          <th>Send By</th>
+                          <th>Mail ID</th>
+                          <th>Ack File</th>
+                          <th>Receipt</th>
+                          <th>Created By</th>
+                          <th>Created At</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @foreach($document->despatches as $index => $d)
+                        <tr>
+                          <td>{{ $index + 1 }}</td>
+                          <td>{{ $d->type->name }}</td>
+                          <td>{{ $d->despatch_date }}</td>
+                          <td>{{ $d->tracking_number ?? '-' }}</td>
+                          <td>{{ $d->courier_name ?? '-' }}</td>
+                          <td>{{ $d->send_by ?? '-' }}</td>
+                          <td>{{ $d->mail_id ?? '-' }}</td>
+                          <td>
+                            @if($d->acknowledgement_file)
+                            <a href="{{ Storage::url($d->acknowledgement_file) }}" target="_blank"
+                              class="btn btn-sm btn-success">
+                              <i class="fas fa-eye"></i> View
+                            </a>
+                            @else
+                            <span class="text-muted">-</span>
+                            @endif
+                          </td>
+                          <td>
+                            @if($d->despatch_receipt)
+                            <a href="{{ Storage::url($d->despatch_receipt) }}" target="_blank"
+                              class="btn btn-sm btn-info">
+                              <i class="fas fa-eye"></i> View
+                            </a>
+                            @else
+                            <span class="text-muted">-</span>
+                            @endif
+                          </td>
+                          <td>{{ $d->creator->name ?? '-' }}</td>
+                          <td>{{ $d->created_at->format('d-M-Y') }}</td>
+                          <td>
+                            <div class="btn-group">
+                              <a href="{{ route('despatch.edit', $d->id) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                              </a>
+
+                              <form action="{{ route('despatch.destroy', $d->id) }}" method="POST"
+                                onsubmit="return confirm('Are you sure you want to delete this despatch?')"
+                                style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                  <i class="fas fa-trash-alt"></i>
+                                </button>
+                              </form>
+
+                              <form action="{{ route('despatch.uploadAck', $d->id) }}" method="POST"
+                                enctype="multipart/form-data" class="d-inline-flex align-items-center">
+                                @csrf
+                                <input type="file" name="acknowledgement_file" accept=".pdf,.jpg,.jpeg,.png"
+                                  class="form-control form-control-sm me-1" style="width: 120px;">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                  <i class="fas fa-upload"></i>
+                                </button>
+                              </form>
+                            </div>
+                          </td>
+                        </tr>
+                        @endforeach
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          @endif --}}
+          @if($document->despatches->count())
+          <hr>
+          <div class="accordion" id="accordionWithIcon1">
+            <div class="accordion-item">
+              <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button collapsed text-success" data-bs-toggle="collapse"
+                  data-bs-target="#accordionWithIcon-4" aria-expanded="false">
+                  Despatch Records
+                </button>
+              </h2>
+              <div id="accordionWithIcon-4" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <div class="row g-3">
+                    @foreach($document->despatches as $index => $d)
+                    <div class="col-12 col-md-6 col-lg-4">
+                      <div class="card shadow-sm border-primary h-100">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                          <strong class="text-primary">#{{ $index + 1 }} - {{ $d->type->name }}</strong>
+                          <span class="badge bg-primary">{{ \Carbon\Carbon::parse($d->despatch_date)->format('d-M-Y')
+                            }}</span>
+                        </div>
+
+                        <div class="card-body p-3">
+                          <div class="mb-2">
+                            <small class="text-muted d-block">Tracking No:</small>
+                            <span class="fw-semibold">{{ $d->tracking_number ?? '-' }}</span>
+                          </div>
+
+                          <div class="mb-2">
+                            <small class="text-muted d-block">Courier:</small>
+                            <span class="fw-semibold">{{ $d->courier_name ?? '-' }}</span>
+                          </div>
+
+                          <div class="mb-2">
+                            <small class="text-muted d-block">Send By:</small>
+                            <span class="fw-semibold">{{ $d->send_by ?? '-' }}</span>
+                          </div>
+
+                          <div class="mb-2">
+                            <small class="text-muted d-block">Mail ID:</small>
+                            <span class="fw-semibold">{{ $d->mail_id ?? '-' }}</span>
+                          </div>
+
+                          <div class="d-flex flex-wrap gap-2 mt-3">
+                            @if($d->acknowledgement_file)
+                            <a href="{{ Storage::url($d->acknowledgement_file) }}" target="_blank"
+                              class="btn btn-sm btn-success">
+                              <i class="fas fa-eye"></i> Ack
+                            </a>
+                            @else
+                            <span class="badge bg-secondary">No Ack</span>
+                            @endif
+
+                            @if($d->despatch_receipt)
+                            <a href="{{ Storage::url($d->despatch_receipt) }}" target="_blank"
+                              class="btn btn-sm btn-info">
+                              <i class="fas fa-eye"></i> Receipt
+                            </a>
+                            @else
+                            <span class="badge bg-secondary">No Receipt</span>
+                            @endif
+                          </div>
+
+                          <hr>
+
+                          <div class="small text-muted">
+                            <div><strong>Created By:</strong> {{ $d->creator->name ?? '-' }}</div>
+                            <div><strong>Created:</strong> {{ $d->created_at->format('d-M-Y H:i') }}</div>
+                          </div>
+                        </div>
+
+                        <div
+                          class="card-footer bg-light d-flex flex-wrap justify-content-between align-items-center gap-2">
+                          {{-- <a href="{{ route('despatch.edit', $d->id) }}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                          </a> --}}
+
+                          <form action="{{ route('despatch.destroy', $d->id) }}" method="POST"
+                            onsubmit="return confirm('Are you sure you want to delete this despatch?')"
+                            style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger">
+                              <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                          </form>
+                          <small>Upload Acknowledgment</small>
+                          <form action="{{ route('despatch.uploadAck', $d->id) }}" method="POST"
+                            enctype="multipart/form-data" class="d-flex align-items-center gap-1">
+                            @csrf
+                            <input type="file" name="acknowledgement_file" accept=".pdf,.jpg,.jpeg,.png"
+                              class="form-control form-control-sm" style="width: 130px;">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                              <i class="fas fa-upload"></i> Ack
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                    @endforeach
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          @endif
 
 
 

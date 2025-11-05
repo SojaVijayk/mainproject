@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}">
 
 @endsection
 
@@ -22,6 +23,7 @@
 <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
 
 @endsection
 
@@ -227,6 +229,8 @@
             }]
         }
     });
+     $('.select2').select2({ width: 'resolve' });
+
 </script>
 
 @endsection
@@ -270,7 +274,7 @@ $user = Auth::user();
       </div>
 
       <div class="col">
-        <select name="category_id" class="form-control">
+        <select name="category_id" class="form-control select2">
           <option value="">All Categories</option>
           @foreach(\App\Models\ProjectCategory::all() as $cat)
           <option value="{{ $cat->id }}" {{ request('category_id')==$cat->id ? 'selected':'' }}>
@@ -283,7 +287,7 @@ $user = Auth::user();
       @if(Auth::user()->hasRole('director') || Auth::user()->hasRole('Project Report') ||
       Auth::user()->hasRole('finance'))
       <div class="col">
-        <select name="investigator_id" class="form-control">
+        <select name="investigator_id" class="form-control select2">
           <option value="">All Investigators</option>
           @foreach($users as $user)
           <option value="{{ $user->id }}" {{ request('investigator_id')==$user->id ? 'selected':'' }}>

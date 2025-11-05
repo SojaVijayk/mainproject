@@ -446,6 +446,16 @@ function loadStatistics() {
                       <i class="fas fa-eye"></i>
                     </a>
 
+                    @php
+                    $user = Auth::user();
+                    @endphp
+                    @if( $user->hasRole('despatcher') && $document->status == 'active')
+                    <a href="{{ route('despatch.create', ['document_id' => $document->id]) }}"
+                      class="btn btn-sm btn-success">
+                      Add Despatch
+                    </a>
+                    @endif
+
                   </td>
                 </tr>
                 @endforeach

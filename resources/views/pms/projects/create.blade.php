@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}">
 
 @endsection
 
@@ -22,6 +23,7 @@
 <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
 
 @endsection
 
@@ -246,6 +248,7 @@ $(document).on('click', '.remove-member', function () {
 function updateTeamJson() {
     $('#team_members_json').val(JSON.stringify(teamMembers));
 }
+ $('.select2').select2({ width: 'resolve' });
 </script>
 @endsection
 
@@ -493,7 +496,7 @@ function updateTeamJson() {
           @endphp
           <div class="mb-3">
             <label class="form-label">Add Team Member *</label>
-            <select id="user_selector" class="form-select">
+            <select id="user_selector" class="form-select select2">
               <option value="">Select a user</option>
               @foreach(User::where('id', '!=', auth()->id())->get() as $user)
               <option value="{{ $user->id }}">{{ $user->name }}</option>

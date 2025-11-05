@@ -6,6 +6,7 @@ use App\Http\Controllers\Leave\LeaveRequestController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentDespatchController;
 
 
 use App\Http\Controllers\PMS\RequirementController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\PMS\FinanceDashboardController;
 use App\Http\Controllers\PMS\ExpenseController;
 use App\Http\Controllers\PMS\ExpenseCategoryController;
 use App\Http\Controllers\PMS\VendorController;
+
 
 use App\Exports\ProjectsExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -352,6 +354,16 @@ Route::resource('documents', DocumentController::class);
     Route::get('document/user/statistics', [DocumentController::class, 'userStatistics'])
     ->name('documents.user.statistics');
 
+
+    //Document Despatch
+Route::get('/despatch/create', [DocumentDespatchController::class, 'create'])->name('despatch.create');
+     Route::post('/documents/{document}/despatch', [DocumentDespatchController::class, 'store'])
+        ->name('despatch.store');
+Route::get('/despatch/{despatch}/edit', [DocumentDespatchController::class, 'edit'])->name('despatch.edit');
+Route::put('/despatch/{despatch}', [DocumentDespatchController::class, 'update'])->name('despatch.update');
+Route::delete('/despatch/{despatch}', [DocumentDespatchController::class, 'destroy'])->name('despatch.destroy');
+    Route::post('/despatch/{despatch}/upload-ack', [DocumentDespatchController::class, 'uploadAcknowledgement'])
+        ->name('despatch.uploadAck');
 
 
 
