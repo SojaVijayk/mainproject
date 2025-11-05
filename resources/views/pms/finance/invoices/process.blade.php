@@ -137,12 +137,26 @@
       </div>
 
       <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-md-4">
+          <label for="invoice_type" class="form-label">Invoice Type</label>
+          <select name="invoice_type" id="invoice_type" class="form-select">
+            <option value="">Select Invoice Type</option>
+
+            <option value="1" {{ $invoice->invoice_type == 1 ? 'selected' : ''
+              }}>Proforma Invoice</option>
+            <option value="2" {{ $invoice->invoice_type == 2 ? 'selected' : '' }}>Tax Invoice</option>
+
+          </select>
+          @error('milestone_id')
+          <div class="invalid-feedback d-block">{{ $message }}</div>
+          @enderror
+        </div>
+        <div class="col-md-4">
           <label for="invoice_number" class="form-label">Invoice Number*</label>
           <input type="text" class="form-control" id="invoice_number" name="invoice_number"
             value="{{ old('invoice_number', $invoice->invoice_number) }}" required>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <label for="due_date" class="form-label">Due Date*</label>
           <input type="date" class="form-control" id="due_date" name="due_date"
             value="{{ old('due_date', $invoice->due_date?->format('Y-m-d')) }}" required>

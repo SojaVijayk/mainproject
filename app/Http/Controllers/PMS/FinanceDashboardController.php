@@ -215,6 +215,7 @@ class FinanceDashboardController extends Controller
         $validated = $request->validate([
             'invoice_number' => 'required|string|max:255|unique:invoices,invoice_number,'.$invoice->id,
             'invoice_date' => 'required|date',
+               'invoice_type' => 'required',
             'due_date' => 'required|date|after_or_equal:invoice_date',
             'amount' => 'required|numeric|min:0.01',
             'total_amount' => 'required|numeric|min:0.01',
@@ -246,7 +247,7 @@ class FinanceDashboardController extends Controller
         $total_amount += $item['amount'];
     }
 
-      $invoice->update(['amount' => $total_amount,'tax_amount' => $total_tax,'total_amount'=> $total_with_tax,'invoice_number'=>$validated['invoice_number'],'invoice_date'=>$validated['invoice_date'],'due_date'=>$validated['due_date'],'description'=>$validated['description']]);
+      $invoice->update(['amount' => $total_amount,'tax_amount' => $total_tax,'total_amount'=> $total_with_tax,'invoice_number'=>$validated['invoice_number'],'invoice_date'=>$validated['invoice_date'],'due_date'=>$validated['due_date'],'description'=>$validated['description'],'invoice_type'=>$validated['invoice_type']]);
 
 
         // $invoice->update($validated);
