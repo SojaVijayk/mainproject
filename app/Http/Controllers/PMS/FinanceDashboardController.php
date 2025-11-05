@@ -494,13 +494,24 @@ public function convertProformaToTaxInvoice(Request $request, Invoice $invoice)
         return back()->with('error', 'Only Proforma invoices can be converted.');
     }
 
-    $request->validate([
-        'conversion_type' => 'required|in:cancel,full,partial',
-        'remark'          => 'required_if:conversion_type,cancel|string|nullable',
-        'invoice_number'  => 'required_if:conversion_type,full,partial|string|max:255',
-        'invoice_date'    => 'required_if:conversion_type,full,partial|date',
-        'due_date'        => 'required_if:conversion_type,full,partial|date|after_or_equal:invoice_date',
-    ]);
+    // $request->validate([
+    //     'conversion_type' => 'required|in:cancel,full,partial',
+    //     'remark'          => 'required_if:conversion_type,cancel|string|nullable',
+    //     'invoice_number'  => 'required_if:conversion_type,full,partial|string|max:255',
+    //     'invoice_date'    => 'required_if:conversion_type,full,partial|date',
+    //     'due_date'        => 'required_if:conversion_type,full,partial|date|after_or_equal:invoice_date',
+    // ]);
+  $request->validate([
+    'conversion_type' => 'required|in:cancel,full,partial',
+
+    // Remark is required only when cancel
+    'remark' => 'required_if:conversion_type,cancel|nullable|string',
+
+    // The rest are required when NOT cancel
+    'invoice_number' => 'required_unless:conversion_type,cancel|nullable|string|max:255',
+    'invoice_date'   => 'required_unless:conversion_type,cancel|nullable|date',
+    'due_date'       => 'required_unless:conversion_type,cancel|nullable|date|after_or_equal:invoice_date',
+]);
 // print_r($request->all());exit;
     try {
         \DB::beginTransaction();
@@ -512,7 +523,9 @@ public function convertProformaToTaxInvoice(Request $request, Invoice $invoice)
         if ($conversionType === 'cancel') {
             $invoice->update([
                 'status' => Invoice::STATUS_CANCELLED,
-                'description' => $invoice->description . "\nCancelled Remark: " . $request->remark,
+                'cancel_remark' => $request->remark,
+                'cancelled_at'=>now(),
+                'cancelled_by'=>auth()->id()
             ]);
         } elseif ($conversionType === 'full') {
             $newTaxInvoice = $invoice->replicate();

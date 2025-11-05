@@ -414,7 +414,7 @@ $investigatorCategoryWise = $projects
             'last_month' => 'Last Month',
             'last_quarter' => 'Last Quarter',
             'last_year' => 'Last Year',
-            'custom' => 'Custom Range'
+            // 'custom' => 'Custom Range'
         ];
 
         return view('pms.reports.resource-utilization', compact('utilizationData', 'dateRanges', 'dateRange', 'workingDays'),['pageConfigs'=> $pageConfigs]);

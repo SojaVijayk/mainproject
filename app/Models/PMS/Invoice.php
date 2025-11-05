@@ -31,7 +31,10 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
         'description',
         'status',
         'requested_by',
-        'generated_by'
+        'generated_by',
+        'cancel_remark',
+        'cancelled_at',
+        'cancelled_by',
     ];
 
     protected $casts = [

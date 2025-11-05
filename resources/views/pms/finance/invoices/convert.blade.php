@@ -44,6 +44,15 @@
 @section('content')
 <div class="container">
   <h4>Convert Proforma Invoice #{{ $invoice->invoice_number }}</h4>
+  @if ($errors->any())
+  <div class="alert alert-danger">
+    <ul>
+      @foreach ($errors->all() as $error)
+      <li>{{ $error }}</li>
+      @endforeach
+    </ul>
+  </div>
+  @endif
   <form action="{{ route('pms.finance.invoices.convert', $invoice->id) }}" method="POST">
     @csrf
 
