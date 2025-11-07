@@ -355,7 +355,7 @@ $investigatorCategoryWise = $projects
         return view('pms.reports.timesheet', compact('groupedTimesheets', 'users', 'userId', 'dateRanges', 'dateRange'),['pageConfigs'=> $pageConfigs]);
     }
 
-    public function resourceUtilization(Request $request)
+    public function resourceUtilizationOldWorking(Request $request)
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
         $dateRange = $request->input('date_range', 'this_month');
@@ -419,6 +419,92 @@ $investigatorCategoryWise = $projects
 
         return view('pms.reports.resource-utilization', compact('utilizationData', 'dateRanges', 'dateRange', 'workingDays'),['pageConfigs'=> $pageConfigs]);
     }
+public function resourceUtilization(Request $request)
+{
+    $pageConfigs = ['myLayout' => 'horizontal'];
+    $dateRange = $request->input('date_range', 'this_month');
+
+    $query = Timesheet::with(['user', 'project', 'category', 'items']);
+
+    if (!auth()->user()->hasRole('director')) {
+        $query->where('user_id', auth()->id());
+    }
+
+    $query = $this->applyDateRangeFilter($query, $dateRange);
+    $timesheets = $query->get();
+
+    // Calculate utilization
+    $workingDays = $this->getWorkingDaysCount($dateRange);
+    $totalAvailableHours = $workingDays * 8;
+
+    $utilizationData = [];
+
+    foreach ($timesheets->groupBy('user_id') as $userId => $userTimesheets) {
+        $user = $userTimesheets->first()->user;
+        $totalHours = $userTimesheets->sum('hours');
+        $utilizationPercentage = ($totalHours / $totalAvailableHours) * 100;
+
+        // Group timesheets by project-category combination
+        $projects = $userTimesheets
+            ->groupBy(fn($t) => ($t->project_id ?? 'none') . '-' . ($t->category_id ?? 'none'))
+            ->map(function ($grouped) {
+                $first = $grouped->first();
+                $categoryName = strtolower($first->category->name ?? '');
+
+                // Handle "Others" category with sub-items
+                if ($categoryName === 'others') {
+                    $items = $grouped->flatMap->items;
+
+                    return [
+                        'project' => $first->project,
+                        'category' => $first->category,
+                        'hours' => $items->sum('hours') ?: $grouped->sum('hours'),
+                        'items' => $items->map(function ($item) {
+                            return (object)[
+                                'description' => $item->description,
+                                  'item_name' => $item->item_name,
+                                'hours' => $item->hours,
+                            ];
+                        })
+                    ];
+                }
+
+                // Regular project/category entry
+                return [
+                    'project' => $first->project,
+                    'category' => $first->category,
+                    'hours' => $grouped->sum('hours'),
+                    'items' => collect(), // empty
+                ];
+            })
+            ->values();
+
+        $utilizationData[] = [
+            'user' => $user,
+            'total_hours' => $totalHours,
+            'utilization_percentage' => $utilizationPercentage,
+            'projects' => $projects,
+        ];
+    }
+
+    $dateRanges = [
+        'this_week' => 'This Week',
+        'this_month' => 'This Month',
+        'this_quarter' => 'This Quarter',
+        'this_year' => 'This Year',
+        'last_week' => 'Last Week',
+        'last_month' => 'Last Month',
+        'last_quarter' => 'Last Quarter',
+        'last_year' => 'Last Year',
+    ];
+
+    return view('pms.reports.resource-utilization', compact(
+        'utilizationData',
+        'dateRanges',
+        'dateRange',
+        'workingDays'
+    ), ['pageConfigs' => $pageConfigs]);
+}
 
     public function export($type, Request $request)
     {

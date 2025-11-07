@@ -43,6 +43,11 @@ class Timesheet extends Model
     {
         return $this->belongsTo(Project::class);
     }
+    public function items()
+{
+    return $this->hasMany(TimesheetItem::class);
+}
+
 
     public function getHoursAttribute()
     {

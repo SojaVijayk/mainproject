@@ -110,43 +110,6 @@
 
     });
 
-
-    // 🧮 Function to calculate and update total hours inside each project-card
-    function updateCategoryTotal(card) {
-        let total = 0;
-        card.find('.item-hours').each(function () {
-            const val = parseFloat($(this).val());
-            if (!isNaN(val) && val > 0) total += val;
-        });
-        card.find('.category-time-input').val(total.toFixed(2));
-    }
-
-    // ➕ Add new item for "Others"
-    $(document).on('click', '.add-item-btn', function () {
-        const list = $(this).closest('.project-card').find('.custom-items-list');
-        const newItem = `
-            <div class="input-group mb-2">
-                <input type="text" class="form-control item-name" placeholder="Item name" />
-                <input type="number" step="0.1" min="0" max="24" class="form-control item-hours" placeholder="Hours" />
-                <input type="text" class="form-control item-desc" placeholder="Description (optional)" />
-                <button class="btn btn-danger remove-item" type="button">&times;</button>
-            </div>`;
-        list.append(newItem);
-    });
-
-    // 🧮 Recalculate total whenever an item-hours input changes
-    $(document).on('input', '.item-hours', function () {
-        const card = $(this).closest('.project-card');
-        updateCategoryTotal(card);
-    });
-
-    // 🗑️ Remove item + recalc total
-    $(document).on('click', '.remove-item', function () {
-        const card = $(this).closest('.project-card');
-        $(this).closest('.input-group').remove();
-        updateCategoryTotal(card);
-    });
-
     // Save all timesheet entries
     $('#saveAll').click(function () {
         const entries = [];
@@ -165,88 +128,46 @@
             }
         });
 
-
-    // Category inputs (including "Others" with dynamic items)
-    $('.category-time-input').each(function () {
-        const $input = $(this);
-        const card = $input.closest('.project-card');
-        const catId = $input.data('category-id');
-        const date = $input.data('date');
-
-        // Gather any dynamic items inside this card
-        const items = [];
-        card.find('.custom-items-list .input-group').each(function () {
-            const name = $(this).find('.item-name').val()?.trim();
-            const hrs = parseFloat($(this).find('.item-hours').val());
-            const desc = $(this).find('.item-desc').val() ?? null; // optional desc field if you added it
-            if (name && !isNaN(hrs) && hrs > 0) {
-                items.push({
-                    item_name: name,
-                    hours: hrs,
-                    description: desc
-                });
-            }
-        });
-
-        // If items exist — build entry from items (sum hours)
-        if (items.length > 0) {
-            hasEntries = true;
-            const totalHours = items.reduce((s, it) => s + parseFloat(it.hours), 0);
-            entries.push({
-                date: date,
-                category_id: catId,
-                project_id: null,
-                hours: parseFloat(totalHours.toFixed(2)),
-                items: items
-            });
-        } else {
-            // No items → fallback to single category input value
-            const hours = parseFloat($input.val());
-            if (!isNaN(hours) && hours > 0) {
+        $('.category-time-input').each(function () {
+            const hours = parseFloat($(this).val());
+            if (hours > 0) {
                 hasEntries = true;
                 entries.push({
-                    date: date,
-                    category_id: catId,
+                    date: $(this).data('date'),
+                    category_id: $(this).data('category-id'),
                     project_id: null,
                     hours: hours
                 });
             }
+        });
+
+        if (!hasEntries) {
+            alert('Please enter at least one time entry');
+            return;
         }
-    });
 
-       if (!hasEntries) {
-        alert('Please enter at least one time entry');
-        return;
-    }
-
-    blockUI();
-    $.ajax({
-        url: "{{ route('pms.timesheets.bulk') }}",
-        method: 'POST',
-        data: {
-            _token: "{{ csrf_token() }}",
-            entries: entries
-        },
-        success: function (response) {
-            unblockUI();
-            if (response.success) {
-                window.location.reload();
-            } else {
-                alert(response.message || 'Error saving timesheets');
-            }
-        },
-        error: function (xhr) {
-            unblockUI();
-            // Optionally show validation errors returned from server
-            if (xhr.responseJSON && xhr.responseJSON.errors) {
-                const errs = Object.values(xhr.responseJSON.errors).flat().join('\n');
-                alert('Validation errors:\n' + errs);
-            } else {
+        blockUI();
+        $.ajax({
+            url: "{{ route('pms.timesheets.bulk') }}",
+            method: 'POST',
+            data: {
+                _token: "{{ csrf_token() }}",
+                entries: entries
+            },
+            success: function (response) {
+                unblockUI();
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    alert(response.message || 'Error saving timesheets');
+                }
+            },
+            error: function () {
+                unblockUI();
                 alert('Error saving timesheets');
             }
-        }
+        });
     });
-});
 
     // Render chart if data exists
     @if($timesheets->count() > 0)
@@ -410,48 +331,12 @@ function unblockUI() {
     @foreach($categories as $category)
     <div class="project-card">
       <div class="project-header">{{ $category->name }}</div>
-
-      @if(strtolower($category->name) === 'others')
-      @php
-      // find existing "Others" entry (no project_id)
-      $entry = $timesheets->firstWhere(fn($item) =>
-      $item->project_id === null &&
-      $item->category_id == $category->id
-      );
-      $items = $entry && $entry->items ? $entry->items : collect();
-      @endphp
-
-      <div class="category-items">
-        <div class="mb-2">
-          <button type="button" class="btn btn-sm btn-secondary add-item-btn">+ Add Item</button>
-        </div>
-
-        {{-- List existing items dynamically --}}
-        <div class="custom-items-list">
-          @forelse($items as $item)
-          <div class="input-group mb-2">
-            <input type="text" class="form-control item-name" placeholder="Item name" value="{{ $item->item_name }}" />
-            <input type="number" step="0.1" min="0" max="24" class="form-control item-hours" placeholder="Hours"
-              value="{{ $item->hours }}" />
-            <input type="text" class="form-control item-desc" placeholder="Description (optional)"
-              value="{{ $item->description }}" />
-            <button class="btn btn-danger remove-item" type="button">&times;</button>
-          </div>
-          @empty
-          {{-- No existing items --}}
-          @endforelse
-        </div>
-      </div>
-      @endif
-
-      <div class="time-input-container mt-2">
+      <div class="time-input-container">
         @php
-        if (!isset($entry)) {
         $entry = $timesheets->firstWhere(fn($item) =>
         $item->project_id === null &&
         $item->category_id == $category->id
         );
-        }
         @endphp
         <input type="number" step="0.1" min="0" max="24" class="form-control category-time-input"
           value="{{ $entry ? $entry->hours : '' }}" data-date="{{ $selectedDate->format('Y-m-d') }}"
@@ -523,54 +408,18 @@ function unblockUI() {
           </thead>
           <tbody>
             @forelse ($timesheets as $timesheet)
-            {{-- Check if this timesheet belongs to "Others" and has items --}}
-            @if (strtolower($timesheet->category->name) === 'others' && $timesheet->items->count() > 0)
-            @foreach ($timesheet->items as $item)
-            <tr>
-              <td>{{ $timesheet->category->name }}</td>
-              <td>N/A</td>
-              <td>{{ number_format($item->hours, 2) }} hrs</td>
-              <td>
-                <strong>{{ $item->item_name }}</strong>
-                @if (!empty($item->description))
-                <div class="text-muted small">{{ Str::limit($item->description, 80) }}</div>
-                @endif
-              </td>
-              <td>
-                {{-- If you want to allow deleting individual items later, you can add a button here --}}
-                {{-- <button class="btn btn-sm btn-primary edit-item" data-timesheet-id="{{ $timesheet->id }}"
-                  data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}"
-                  data-item-hours="{{ $item->hours }}" data-item-desc="{{ $item->description }}">
-                  <i class="fas fa-edit"></i>
-                </button> --}}
-                {{-- 🗑️ Delete individual item --}}
-                <form
-                  action="{{ route('pms.timesheets.destroyItem', ['timesheet' => $timesheet->id, 'item' => $item->id]) }}"
-                  method="POST" class="d-inline" onsubmit="return confirm('Delete only this item from Others?')">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Item">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </form>
-              </td>
-            </tr>
-            @endforeach
-            @else
-            {{-- Normal timesheet row --}}
             <tr>
               <td>{{ $timesheet->category->name }}</td>
               <td>{{ $timesheet->project ? $timesheet->project->title : 'N/A' }}</td>
               <td>{{ $timesheet->formatted_time }}</td>
               <td>{{ Str::limit($timesheet->description, 50) }}</td>
               <td>
-                {{-- <button class="btn btn-sm btn-primary edit-timesheet" data-id="{{ $timesheet->id }}"
+                <button class="btn btn-sm btn-primary edit-timesheet" data-id="{{ $timesheet->id }}"
                   data-date="{{ $timesheet->date->format('Y-m-d') }}" data-category-id="{{ $timesheet->category_id }}"
                   data-project-id="{{ $timesheet->project_id }}" data-hours="{{ $timesheet->hours }}"
                   data-description="{{ $timesheet->description }}">
                   <i class="fas fa-edit"></i>
-                </button> --}}
-
+                </button>
                 <form action="{{ route('pms.timesheets.destroy', $timesheet->id) }}" method="POST" class="d-inline"
                   onsubmit="return confirm('Are you sure you want to delete this entry?')">
                   @csrf
@@ -581,7 +430,6 @@ function unblockUI() {
                 </form>
               </td>
             </tr>
-            @endif
             @empty
             <tr>
               <td colspan="5" class="text-center">No timesheet entries for this date</td>

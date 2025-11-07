@@ -654,6 +654,9 @@ Route::post('/invoices/{invoice}/convert', [FinanceDashboardController::class, '
         Route::post('/bulk', [TimesheetController::class, 'bulkStore'])->name('bulk');
 
 
+        Route::delete('/timesheets/{timesheet}/item/{item}', [TimesheetController::class, 'destroyItem'])->name('destroyItem');
+
+
         Route::get('/projects', [TimesheetController::class, 'getProjects'])->name('projects');
     });
 

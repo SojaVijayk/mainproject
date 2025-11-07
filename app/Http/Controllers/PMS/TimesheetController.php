@@ -35,7 +35,7 @@ for ($i = 0; $i < 7; $i++) {
 
         $timesheets = Timesheet::where('user_id', auth()->id())
             ->whereDate('date', $date)
-            ->with(['category', 'project'])
+            ->with(['category', 'project','items'])
             ->get();
 
         $categories = TimesheetCategory::whereHas('users', function($query) {
@@ -128,6 +128,30 @@ for ($i = 0; $i < 7; $i++) {
             ->with('success', 'Timesheet entry added successfully.');
     }
 
+//     public function bulkStore(Request $request)
+// {
+//     $validated = $request->validate([
+//        'entries.*.date' => 'required|date',
+//     'entries.*.category_id' => 'required_without:entries.*.project_id|nullable|exists:timesheet_categories,id',
+//     'entries.*.project_id' => 'required_without:entries.*.category_id|nullable|exists:projects,id',
+//     'entries.*.hours' => 'required|numeric|min:0.1|max:24',
+//     ]);
+
+
+//     foreach ($request->entries as $entry) {
+//         Timesheet::updateOrCreate(
+//             [
+//                 'user_id' => auth()->id(),
+//                 'date' => $entry['date'],
+//                 'category_id' => $entry['category_id'],
+//                 'project_id' => $entry['project_id'] ?? null,
+//             ],
+//             ['minutes' => $entry['hours']*60]
+//         );
+//     }
+
+//     return response()->json(['success' => true]);
+// }
     public function bulkStore(Request $request)
 {
     $validated = $request->validate([
@@ -135,11 +159,14 @@ for ($i = 0; $i < 7; $i++) {
     'entries.*.category_id' => 'required_without:entries.*.project_id|nullable|exists:timesheet_categories,id',
     'entries.*.project_id' => 'required_without:entries.*.category_id|nullable|exists:projects,id',
     'entries.*.hours' => 'required|numeric|min:0.1|max:24',
+     'entries.*.items' => 'array|nullable',
+        'entries.*.items.*.item_name' => 'required_with:entries.*.items|string|max:255',
+        'entries.*.items.*.hours' => 'required_with:entries.*.items|numeric|min:0.1|max:24',
     ]);
 
 
     foreach ($request->entries as $entry) {
-        Timesheet::updateOrCreate(
+        $timesheet= Timesheet::updateOrCreate(
             [
                 'user_id' => auth()->id(),
                 'date' => $entry['date'],
@@ -148,11 +175,25 @@ for ($i = 0; $i < 7; $i++) {
             ],
             ['minutes' => $entry['hours']*60]
         );
+
+          // If “Others” category has items, store split-up
+        $timesheet->items()->delete();
+        if (!empty($entry['items'])) {
+            $timesheet->items()->delete(); // reset previous
+            foreach ($entry['items'] as $item) {
+                $timesheet->items()->create([
+                    'item_name' => $item['item_name'],
+                    'hours' => $item['hours'],
+                    'description' => $item['description'] ?? null,
+                ]);
+            }
+        }
+
+
     }
 
     return response()->json(['success' => true]);
 }
-
     public function update(Request $request, Timesheet $timesheet)
     {
         if ($timesheet->user_id != auth()->id()) {
@@ -184,12 +225,34 @@ for ($i = 0; $i < 7; $i++) {
         if ($timesheet->user_id != auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-
+         $timesheet->items()->delete();
         $timesheet->delete();
 
         return redirect()->back()
             ->with('success', 'Timesheet entry deleted successfully.');
     }
+
+    public function destroyItem(Timesheet $timesheet, $itemId)
+{
+    if ($timesheet->user_id != auth()->id()) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    $item = $timesheet->items()->find($itemId);
+    if (!$item) {
+        return redirect()->back()->with('error', 'Item not found.');
+    }
+
+    $item->delete();
+
+    // After deleting item, if no more items remain — auto delete timesheet
+    if ($timesheet->items()->count() === 0) {
+        $timesheet->delete();
+        return redirect()->back()->with('success', 'Item deleted. No items left, so timesheet removed automatically.');
+    }
+
+    return redirect()->back()->with('success', 'Item deleted successfully.');
+}
 
     public function report(Request $request)
     {

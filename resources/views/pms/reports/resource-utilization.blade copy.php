@@ -38,11 +38,6 @@
   .collapse-row .card-body {
     padding: 1rem;
   }
-
-  .sub-items {
-    margin-left: 1rem;
-    font-size: 0.9rem;
-  }
 </style>
 @endsection
 @section('page-script')
@@ -163,7 +158,6 @@
       </div>
     </div>
   </div>
-
   <div class="card-body">
     <form method="GET" class="mb-4">
       <div class="row">
@@ -208,11 +202,13 @@
             <td>
               <div class="progress" style="height: 20px;">
                 <div class="progress-bar
-                  @if($data['utilization_percentage'] > 100) bg-danger
-                  @elseif($data['utilization_percentage'] > 80) bg-success
-                  @elseif($data['utilization_percentage'] > 50) bg-primary
-                  @else bg-warning text-dark
-                  @endif" style="width: {{ min($data['utilization_percentage'], 100) }}%">
+                                    @if($data['utilization_percentage'] > 100) bg-danger
+                                    @elseif($data['utilization_percentage'] > 80) bg-success
+                                    @elseif($data['utilization_percentage'] > 50) bg-primary
+                                    @else bg-warning text-dark
+                                    @endif" role="progressbar"
+                  style="width: {{ min($data['utilization_percentage'], 100) }}%"
+                  aria-valuenow="{{ $data['utilization_percentage'] }}" aria-valuemin="0" aria-valuemax="100">
                   {{ number_format($data['utilization_percentage'], 1) }}%
                 </div>
               </div>
@@ -224,6 +220,8 @@
                 <li>
                   <small>
                     <strong>
+                      {{-- {{ $project['project'] ? $project['project']->title : 'Non-Project' }} --}}
+
                       @if($project['project'])
                       {{ $project['project']->title }}
                       @elseif($project['category'])
@@ -231,19 +229,10 @@
                       @else
                       Non-Project
                       @endif
-                    </strong>:
-                    {{ number_format($project['hours'], 1) }} hrs
-                  </small>
 
-                  {{-- Show "Others" sub-items --}}
-                  {{-- @if(isset($project['category']) && strtolower($project['category']->name) === 'others' &&
-                  !empty($project['items']))
-                  <ul class="sub-items">
-                    @foreach($project['items'] as $item)
-                    <li>{{ $item->item_name }} – {{ number_format($item->hours, 1) }} hrs</li>
-                    @endforeach
-                  </ul>
-                  @endif --}}
+                    </strong>:
+                    {{ number_format($project['hours'], 1) }} hours
+                  </small>
                 </li>
                 @endforeach
               </ul>
@@ -258,7 +247,6 @@
               </button>
             </td>
           </tr>
-
           <tr class="collapse" id="details-{{ $data['user']->id }}">
             <td colspan="5">
               <div class="row">
@@ -274,12 +262,14 @@
                         <tr>
                           <th>Project</th>
                           <th>Hours</th>
-                          <th>%</th>
+                          <th>% of Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         @foreach($data['projects'] as $project)
                         <tr>
+                          {{-- <td>
+                            {{ $project['project'] ? $project['project']->title : 'Non-Project' }} --}}
                           <td>
                             @if($project['project'])
                             {{ $project['project']->title }}
@@ -289,70 +279,35 @@
                             Non-Project
                             @endif
                           </td>
-                          <td>{{ number_format($project['hours'], 1) }}</td>
-                          <td>
-                            @if($data['total_hours'] > 0)
-                            {{ number_format(($project['hours'] / $data['total_hours']) * 100, 1) }}%
-                            @else
-                            0%
-                            @endif
-                          </td>
-                        </tr>
-
-                        {{-- Include sub-items for "Others" basic view --}}
-                        {{-- @if(isset($project['category']) && strtolower($project['category']->name) === 'others' &&
-                        !empty($project['items']))
-                        @foreach($project['items'] as $item)
-                        <tr class="table-light">
-                          <td class="ps-4">↳ {{ $item->item_name }}</td>
-                          <td>{{ number_format($item->hours, 1) }}</td>
-                          <td>-</td>
-                        </tr>
-                        @endforeach
-                        @endif --}}
-                        @if(isset($project['category']) && strtolower($project['category']->name) === 'others' &&
-                        !empty($project['items']))
-
-                        @php
-                        // Group items by name and sum hours
-                        $groupedItems = collect($project['items'])
-                        ->groupBy(fn($i) => trim(strtolower($i->item_name)))
-                        ->map(function($group) {
-                        return [
-                        'item_name' => $group->first()->item_name,
-                        'hours' => $group->sum('hours')
-                        ];
-                        })
-                        ->values();
-                        @endphp
-
-                        @foreach($groupedItems as $item)
-                        <tr class="table-light">
-                          <td class="ps-4">↳ {{ $item['item_name'] }}</td>
-                          <td>{{ number_format($item['hours'], 1) }}</td>
-                          <td>-</td>
-                        </tr>
-                        @endforeach
-                        @endif
-                        @endforeach
-
-                        <tr class="table-light">
-                          <td><strong>Total</strong></td>
-                          <td><strong>{{ number_format($data['total_hours'], 1) }}</strong></td>
-                          <td><strong>100%</strong></td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
+                          {{--
+            </td> --}}
+            <td>{{ number_format($project['hours'], 1) }}</td>
+            <td>
+              @if($data['total_hours'] > 0)
+              {{ number_format(($project['hours'] / $data['total_hours']) * 100, 1) }}%
+              @else
+              0%
+              @endif
             </td>
           </tr>
           @endforeach
+          <tr class="table-light">
+            <td><strong>Total</strong></td>
+            <td><strong>{{ number_format($data['total_hours'], 1) }}</strong></td>
+            <td><strong>100%</strong></td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
+</div>
+</td>
+</tr>
+@endforeach
+</tbody>
+</table>
+</div>
+</div>
 </div>
 
 <div class="card mt-4">
