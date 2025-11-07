@@ -90,6 +90,75 @@
             contactSelect.innerHTML = '<option value="">Select Contact Person</option>';
         }
     });
+
+
+   ['tapal', 'documents'].forEach(type => {
+  fetch(`/pms/attachments/${type}`)
+    .then(res => res.text())
+    .then(html => {
+      const target = document.getElementById(`${type}-documents-list`);
+      if (target) target.innerHTML = html;
+    })
+    .catch(err => console.error('Attachment fetch failed for', type, err));
+});
+
+document.getElementById('selectDocumentsBtn').addEventListener('click', function() {
+  const selectedFiles = [];
+  document.querySelectorAll('.tapal-checkbox:checked, .document-checkbox:checked, .custom-checkbox:checked')
+    .forEach(el => selectedFiles.push(el.dataset.file));
+
+  if (selectedFiles.length === 0) {
+    alert('Please select at least one file.');
+    return;
+  }
+
+  const form = document.getElementById('requirementForm');
+  const list = document.getElementById('attachedDocumentsList');
+  const wrapper = document.getElementById('attachedDocumentsWrapper');
+  wrapper.style.display = 'block';
+
+  // Add to form and list
+  selectedFiles.forEach(filePath => {
+    // Avoid duplicates
+    if (form.querySelector(`input[value="${filePath}"]`)) return;
+
+    // Hidden input for submission
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = 'selected_files[]';
+    hidden.value = filePath;
+    form.appendChild(hidden);
+
+    // Display in visible list
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.innerHTML = `
+      <span><i class="bx bx-file me-2"></i>${filePath.replace('public/', '')}</span>
+      <button type="button" class="btn btn-sm btn-outline-danger remove-attached">&times;</button>
+    `;
+    list.appendChild(li);
+  });
+
+  // Allow removing attachments
+  list.querySelectorAll('.remove-attached').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const li = this.closest('li');
+      const filePath = li.querySelector('span').textContent.trim();
+      li.remove();
+      form.querySelectorAll('input[name="selected_files[]"]').forEach(input => {
+        if (input.value.includes(filePath)) input.remove();
+      });
+      if (!list.querySelectorAll('li').length) wrapper.style.display = 'none';
+    });
+  });
+
+  // Close modal
+  document.querySelector('#browseDocumentsModal .btn-close').click();
+});
+
+
+
+
 });
 </script>
 @endsection
@@ -99,7 +168,8 @@
   <div class="col-md-12">
     <div class="card">
       <div class="card-body">
-        <form action="{{ route('pms.requirements.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="requirementForm" action="{{ route('pms.requirements.store') }}" method="POST"
+          enctype="multipart/form-data">
           @csrf
 
           <div class="row mb-3">
@@ -209,7 +279,7 @@
               @enderror
             </div>
           </div>
-
+          {{--
           <div class="row mb-3">
             <div class="col-md-12">
               <label for="documents" class="form-label">Documents (Optional)</label>
@@ -219,7 +289,31 @@
               @enderror
               <small class="text-muted">You can upload multiple files (Max 10MB each)</small>
             </div>
+          </div> --}}
+
+
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label for="documents" class="form-label">Attach Documents</label>
+              <div class="input-group">
+                <input type="file" name="documents[]" id="documents" class="form-control" multiple>
+
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal"
+                  data-bs-target="#browseDocumentsModal">
+                  Browse Existing
+                </button>
+              </div>
+              <small class="text-muted">Upload new files or select from Tapal/Document system</small>
+            </div>
           </div>
+
+          <div class="row mt-3" id="attachedDocumentsWrapper" style="display:none;">
+            <div class="col-md-12">
+              <h6>Attached Documents</h6>
+              <ul id="attachedDocumentsList" class="list-group"></ul>
+            </div>
+          </div>
+
 
           <div class="mt-4">
             <button type="submit" class="btn btn-primary me-2">Create Requirement</button>
@@ -230,4 +324,7 @@
     </div>
   </div>
 </div>
+
+@include('pms/attachments/partials/browse-modal')
+
 @endsection

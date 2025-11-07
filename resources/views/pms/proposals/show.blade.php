@@ -72,16 +72,92 @@
     function toggleWorkorder() {
       if (clientStatus.value === "accepted") {
         workorderField.style.display = "block";
-        workorderInput.setAttribute("required", "required");
+        {{--  workorderInput.setAttribute("required", "required");  --}}
       } else {
         workorderField.style.display = "none";
-        workorderInput.removeAttribute("required");
-        workorderInput.value = ""; // clear file input when hidden
+        {{--  workorderInput.removeAttribute("required");
+        workorderInput.value = ""; // clear file input when hidden  --}}
       }
     }
 
     clientStatus.addEventListener("change", toggleWorkorder);
+     clientStatus.addEventListener("change", toggleRequired);
     toggleWorkorder(); // run once on load (useful if editing existing)
+    toggleRequired();
+
+    function toggleRequired() {
+    const hasSelectedFiles = document.querySelectorAll('input[name="selected_files[]"]').length > 0;
+    workorderInput.required = !hasSelectedFiles;
+  }
+
+
+   ['tapal', 'documents'].forEach(type => {
+  fetch(`/pms/attachments/${type}`)
+    .then(res => res.text())
+    .then(html => {
+      const target = document.getElementById(`${type}-documents-list`);
+      if (target) target.innerHTML = html;
+    })
+    .catch(err => console.error('Attachment fetch failed for', type, err));
+});
+    document.getElementById('selectDocumentsBtn').addEventListener('click', function() {
+  const selectedFiles = [];
+   setTimeout(toggleRequired, 300);
+  document.querySelectorAll('.tapal-checkbox:checked, .document-checkbox:checked, .custom-checkbox:checked')
+    .forEach(el => selectedFiles.push(el.dataset.file));
+
+  if (selectedFiles.length === 0) {
+    alert('Please select at least one file.');
+    return;
+  }
+
+  const form = document.getElementById('clientUpdateform');
+  const list = document.getElementById('attachedDocumentsList');
+  const wrapper = document.getElementById('attachedDocumentsWrapper');
+  wrapper.style.display = 'block';
+
+  // Add to form and list
+  selectedFiles.forEach(filePath => {
+    // Avoid duplicates
+    if (form.querySelector(`input[value="${filePath}"]`)) return;
+
+    // Hidden input for submission
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = 'selected_files[]';
+    hidden.value = filePath;
+    form.appendChild(hidden);
+
+    // Display in visible list
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.innerHTML = `
+     <small> <span>${filePath.replace('public/', '')}</span><br>
+      <button type="button" class="btn btn-sm btn-outline-danger remove-attached">&times;</button></small>
+    `;
+    list.appendChild(li);
+  });
+
+  // Allow removing attachments
+  list.querySelectorAll('.remove-attached').forEach(btn => {
+    btn.addEventListener('click', function() {
+      setTimeout(toggleRequired, 300);
+      const li = this.closest('li');
+      const filePath = li.querySelector('span').textContent.trim();
+      li.remove();
+      form.querySelectorAll('input[name="selected_files[]"]').forEach(input => {
+        if (input.value.includes(filePath)) input.remove();
+      });
+      if (!list.querySelectorAll('li').length) wrapper.style.display = 'none';
+    });
+  });
+
+  // Close modal
+  document.querySelector('#browseDocumentsModal .btn-close').click();
+});
+
+
+
   });
 </script>
 @endsection
@@ -386,7 +462,7 @@
         </form>
 
         <div class="mb-3">
-          <form action="{{ route('pms.proposals.client-status', $proposal->id) }}" method="POST"
+          <form id="clientUpdateform" action="{{ route('pms.proposals.client-status', $proposal->id) }}" method="POST"
             enctype="multipart/form-data">
             @csrf
             <div class="mb-3">
@@ -402,15 +478,49 @@
               <label for="client_comments" class="form-label">Comments</label>
               <textarea name="client_comments" id="client_comments" class="form-control" rows="3"></textarea>
             </div>
-            <div class="mb-3 " id="workorder_field" style="display: none;">
+            {{-- <div class="mb-3 " id="workorder_field" style="display: none;">
               <label for="documents" class="form-label">Documents (Workorder)*</label>
               <input type="file" id="documents" name="documents[]" class="form-control" multiple>
             </div>
+            --}}
+
+            <div class="mb-3 " id="workorder_field" style="display: none;">
+              <div class="row mb-3">
+                <div class="col-md-12">
+                  <label for="documents" class="form-label">Documents (Workorder)*</label>
+                  <div class="input-group">
+                    <input type="file" name="documents[]" id="documents" name="documents[]" class="form-control"
+                      multiple>
+
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal"
+                      data-bs-target="#browseDocumentsModal">
+                      Browse Existing
+                    </button>
+                  </div>
+                  <small class="text-muted">Upload new files or select from Tapal/Document system</small>
+                </div>
+                <div class="col-md-12">
+                  <div id="attachedDocumentsWrapper" class="mt-2" style="display:none;">
+                    <small>Attached Workorder Files From Tapals/Documents</small>
+
+                    <ul id="attachedDocumentsList" class="list-group"></ul>
+
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+
+
+
+
             <button type="submit" class="btn btn-success w-100">
               <i class="fas fa-check-circle"></i> Update Client Status
             </button>
           </form>
         </div>
+        @include('pms/attachments/partials/browse-modal')
         @endif
         @endif
 

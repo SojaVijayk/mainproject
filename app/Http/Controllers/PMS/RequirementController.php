@@ -13,7 +13,9 @@ use App\Models\ClientContactPerson;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
 
 class RequirementController extends Controller
 {
@@ -92,6 +94,37 @@ class RequirementController extends Controller
                 ]);
             }
         }
+
+          if ($request->filled('selected_files')) {
+        foreach ($request->selected_files as $filePath) {
+            // You can either "link" the file or "copy" it to requirements folder.
+            // Option 1 (recommended): Just link it
+            $requirement->documents()->create([
+                'name' => basename($filePath),
+                'path' => $filePath,
+                'type' => mime_content_type(storage_path('app/' . $filePath)),
+                'size' => filesize(storage_path('app/' . $filePath)),
+                'uploaded_by' => Auth::id(),
+                'source' => 'linked', // mark as linked instead of uploaded
+            ]);
+
+            // Option 2 (if you prefer to make a copy):
+
+            // $newPath = 'public/requirements/documents/' . basename($filePath);
+            // Storage::copy($filePath, $newPath);
+            // $requirement->documents()->create([
+            //     'name' => basename($filePath),
+            //     'path' => $newPath,
+            //     'type' => mime_content_type(storage_path('app/' . $filePath)),
+            //     'size' => filesize(storage_path('app/' . $filePath)),
+            //     'uploaded_by' => Auth::id(),
+            //     'source' => 'copied',
+            // ]);
+
+        }
+    }
+
+
 
         return redirect()->route('pms.requirements.show', $requirement->id)
             ->with('success', 'Requirement created successfully.');

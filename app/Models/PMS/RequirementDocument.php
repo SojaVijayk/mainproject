@@ -20,7 +20,8 @@ class RequirementDocument extends Model
         'path',
         'type',
         'size',
-        'uploaded_by'
+        'uploaded_by',
+        'source'
     ];
 
     public function requirement()

@@ -421,6 +421,36 @@ class ProposalController extends Controller
         }
     }
 
+       if ($request->filled('selected_files')) {
+        foreach ($request->selected_files as $filePath) {
+            // You can either "link" the file or "copy" it to requirements folder.
+            // Option 1 (recommended): Just link it
+            $proposal->workOrderDocuments()->create([
+                'name' => basename($filePath),
+                'path' => $filePath,
+                'type' => mime_content_type(storage_path('app/' . $filePath)),
+                'size' => filesize(storage_path('app/' . $filePath)),
+                'uploaded_by' => Auth::id(),
+                'category'=>'Work order',
+                'source' => 'linked', // mark as linked instead of uploaded
+            ]);
+
+            // Option 2 (if you prefer to make a copy):
+
+            // $newPath = 'public/requirements/documents/' . basename($filePath);
+            // Storage::copy($filePath, $newPath);
+            // $requirement->documents()->create([
+            //     'name' => basename($filePath),
+            //     'path' => $newPath,
+            //     'type' => mime_content_type(storage_path('app/' . $filePath)),
+            //     'size' => filesize(storage_path('app/' . $filePath)),
+            //     'uploaded_by' => Auth::id(),
+            //     'source' => 'copied',
+            // ]);
+
+        }
+    }
+
     // Log the status change
     ProposalStatusLog::create([
         'proposal_id' => $proposal->id,

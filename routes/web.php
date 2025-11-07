@@ -23,6 +23,8 @@ use App\Http\Controllers\PMS\FinanceDashboardController;
 use App\Http\Controllers\PMS\ExpenseController;
 use App\Http\Controllers\PMS\ExpenseCategoryController;
 use App\Http\Controllers\PMS\VendorController;
+use App\Http\Controllers\PMS\AttachmentController;
+
 
 
 use App\Exports\ProjectsExport;
@@ -530,6 +532,9 @@ Route::get('projects/{id}/timeline-data', [ProjectController::class, 'getProject
     Route::get('/{document}/download', [ProjectDocumentController::class, 'download'])->name('download');
     Route::delete('/{document}', [ProjectDocumentController::class, 'destroy'])->name('destroy');
 });
+
+Route::get('/attachments/tapal', [AttachmentController::class, 'tapalList']);
+Route::get('/attachments/documents', [AttachmentController::class, 'documentList']);
 
 
     // Project Milestones
