@@ -647,6 +647,8 @@ $user = Auth::user();
       'budget' => 0,
       'revenue' => 0,
       'invoice_raised' => 0,
+      'invoice_raised_tax' => 0,
+      'invoice_raised_proforma' => 0,
       'invoice_paid' => 0,
       'balance' => 0,
       'ongoing' => 0,
@@ -665,6 +667,8 @@ $user = Auth::user();
       'budget' => 0,
       'revenue' => 0,
       'invoice_raised' => 0,
+      'invoice_raised_tax' => 0,
+      'invoice_raised_proforma' => 0,
       'invoice_paid' => 0,
       'balance' => 0,
       'ongoing' => 0,
@@ -679,18 +683,23 @@ $user = Auth::user();
         style="border-collapse: collapse; width:100%; margin-bottom:20px;">
         <thead style="background:#f4f4f4;">
           <tr>
-            <th>Category</th>
-            <th>Budget (Lakhs)</th>
-            <th>Revenue (Lakhs)</th>
-            <th>Invoice Raised (Lakhs)</th>
-            <th>Invoice Paid (Lakhs)</th>
-            <th>Balance (Lakhs)</th>
-            <th><span class="badge bg-label-warning">Initiated</span></th>
-            <th><span class="badge bg-label-success">Ongoing</span></th>
-            <th><span class="badge bg-label-danger">Delayed</span></th>
-            <th><span class="badge bg-label-primary">Completed</span></th>
-            <th><span class="badge bg-label-dark">Archived</span></th>
+            <th rowspan="2">Category</th>
+            <th rowspan="2">Budget (Lakhs)</th>
+            <th rowspan="2">Revenue (Lakhs)</th>
+            <th colspan="3">Invoice Raised (Lakhs)</th>
+            <th rowspan="2">Invoice Paid (Lakhs)</th>
+            <th rowspan="2">Balance (Lakhs)</th>
+            <th rowspan="2"><span class="badge bg-label-warning">Initiated</span></th>
+            <th rowspan="2"><span class="badge bg-label-success">Ongoing</span></th>
+            <th rowspan="2"><span class="badge bg-label-danger">Delayed</span></th>
+            <th rowspan="2"><span class="badge bg-label-primary">Completed</span></th>
+            <th rowspan="2"><span class="badge bg-label-dark">Archived</span></th>
 
+          </tr>
+          <tr>
+            <th>Tax</th>
+            <th>Proforma</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
@@ -699,6 +708,8 @@ $user = Auth::user();
             <td>{{ $category }}</td>
             <td>{{ number_format($data['total_budget'], 2) }}</td>
             <td>{{ number_format($data['total_revenue'], 2) }}</td>
+            <td>{{ number_format($data['total_invoice_raised_tax'], 2) }}</td>
+            <td>{{ number_format($data['total_invoice_raised_proforma'], 2) }}</td>
             <td>{{ number_format($data['total_invoice_raised'], 2) }}</td>
             <td>{{ number_format($data['total_invoice_paid'], 2) }}</td>
             <td>{{ number_format($data['total_balance'], 2) }}</td>
@@ -715,6 +726,8 @@ $user = Auth::user();
           $subTotals['budget'] += $data['total_budget'];
           $subTotals['revenue'] += $data['total_revenue'];
           $subTotals['invoice_raised'] += $data['total_invoice_raised'];
+          $subTotals['invoice_raised_tax'] += $data['total_invoice_raised_tax'];
+          $subTotals['invoice_raised_proforma'] += $data['total_invoice_raised_proforma'];
           $subTotals['invoice_paid'] += $data['total_invoice_paid'];
           $subTotals['balance'] += $data['total_balance'];
           $subTotals['ongoing'] += $data['ongoing_count'];
@@ -730,6 +743,8 @@ $user = Auth::user();
             <td>Total ({{ $investigator }})</td>
             <td>{{ number_format($subTotals['budget'], 2) }}</td>
             <td>{{ number_format($subTotals['revenue'], 2) }}</td>
+            <td>{{ number_format($subTotals['invoice_raised_tax'], 2) }}</td>
+            <td>{{ number_format($subTotals['invoice_raised_proforma'], 2) }}</td>
             <td>{{ number_format($subTotals['invoice_raised'], 2) }}</td>
             <td>{{ number_format($subTotals['invoice_paid'], 2) }}</td>
             <td>{{ number_format($subTotals['balance'], 2) }}</td>
@@ -757,22 +772,29 @@ $user = Auth::user();
         style="border-collapse: collapse; width:100%; margin-top:20px; font-weight:bold;">
         <thead style="background:#dcdcdc;">
           <tr>
-            <th>Budget (Lakhs)</th>
-            <th>Revenue (Lakhs)</th>
-            <th>Invoice Raised (Lakhs)</th>
-            <th>Invoice Paid (Lakhs)</th>
-            <th>Balance (Lakhs)</th>
-            <th><span class="badge bg-label-warning">Initiated</span></th>
-            <th><span class="badge bg-label-success">Ongoing</span></th>
-            <th><span class="badge bg-label-danger">Delayed</span></th>
-            <th><span class="badge bg-label-primary">Completed</span></th>
-            <th><span class="badge bg-label-dark">Archived</span></th>
+            <th rowspan="2">Budget (Lakhs)</th>
+            <th rowspan="2">Revenue (Lakhs)</th>
+            <th colspan="3">Invoice Raised (Lakhs)</th>
+            <th rowspan="2">Invoice Paid (Lakhs)</th>
+            <th rowspan="2">Balance (Lakhs)</th>
+            <th rowspan="2"><span class="badge bg-label-warning">Initiated</span></th>
+            <th rowspan="2"><span class="badge bg-label-success">Ongoing</span></th>
+            <th rowspan="2"><span class="badge bg-label-danger">Delayed</span></th>
+            <th rowspan="2"><span class="badge bg-label-primary">Completed</span></th>
+            <th rowspan="2"><span class="badge bg-label-dark">Archived</span></th>
+          </tr>
+          <tr>
+            <th>Tax</th>
+            <th>Proforma</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>{{ number_format($grandTotals['budget'], 2) }}</td>
             <td>{{ number_format($grandTotals['revenue'], 2) }}</td>
+            <td>{{ number_format($grandTotals['invoice_raised_tax'], 2) }}</td>
+            <td>{{ number_format($grandTotals['invoice_raised_proforma'], 2) }}</td>
             <td>{{ number_format($grandTotals['invoice_raised'], 2) }}</td>
             <td>{{ number_format($grandTotals['invoice_paid'], 2) }}</td>
             <td>{{ number_format($grandTotals['balance'], 2) }}</td>
