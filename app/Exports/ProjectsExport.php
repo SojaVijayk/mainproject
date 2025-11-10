@@ -75,7 +75,7 @@ class ProjectsExport implements FromCollection, WithHeadings
                   'Proforma Invoiced' => $totalInvoiced_proforma,
                     'Tax Invoiced' => $totalInvoiced_tax,
                 'Paid' => $totalPaid,
-                'Outstanding' => $totalInvoiced - $totalPaid,
+                'Outstanding' => $totalInvoiced_tax - $totalPaid,
                 'Completion %' => $project->completion_percentage,
                 'Start Date' => $project->start_date?->format('Y-m-d'),
                 'End Date' => $project->end_date?->format('Y-m-d'),
