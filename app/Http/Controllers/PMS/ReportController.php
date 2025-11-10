@@ -169,11 +169,11 @@ class ReportController extends Controller
         return [
             'total_budget' => $group->sum('budget')/100000,
             'total_revenue' => $group->sum('revenue')/100000,
-            'total_invoice_raised' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount'))/100000,
-            'total_invoice_raised_tax' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',2)->sum('total_amount'))/100000,
-            'total_invoice_raised_proforma' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',1)->sum('total_amount'))/100000,
+            'total_invoice_raised' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->sum('total_amount'))/100000,
+            'total_invoice_raised_tax' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->where('invoice_type',2)->sum('total_amount'))/100000,
+            'total_invoice_raised_proforma' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->where('invoice_type',1)->sum('total_amount'))/100000,
             'total_invoice_paid' => $group->sum(fn($p) => $p->invoices->sum(fn($i) => $i->payments->sum('amount')))/100000,
-            'total_balance' => $group->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount')))/100000,
+            'total_balance' => $group->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount')))/100000,
             'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
             'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
             'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
@@ -189,11 +189,11 @@ $investigatorSummary = $investigatorWise->map(function ($group) {
     return [
         'total_budget' => $group->sum('budget') / 100000,
         'total_revenue' => $group->sum('revenue') / 100000,
-        'total_invoice_raised' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount')) / 100000,
-        'total_invoice_raised_tax' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',2)->sum('total_amount'))/100000,
-        'total_invoice_raised_proforma' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',1)->sum('total_amount'))/100000,
+        'total_invoice_raised' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->sum('total_amount')) / 100000,
+        'total_invoice_raised_tax' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->where('invoice_type',2)->sum('total_amount'))/100000,
+        'total_invoice_raised_proforma' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->where('invoice_type',1)->sum('total_amount'))/100000,
         'total_invoice_paid' => $group->sum(fn($p) => $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
-        'total_balance' => $group->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
+        'total_balance' => $group->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
         'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
         'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
         'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
@@ -210,11 +210,11 @@ $investigatorCategoryWise = $projects
                 return [
                     'total_budget' => $catGroup->sum('budget') / 100000,
                     'total_revenue' => $catGroup->sum('revenue') / 100000,
-                    'total_invoice_raised' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount')) / 100000,
-                        'total_invoice_raised_tax' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',2)->sum('total_amount'))/100000,
-            'total_invoice_raised_proforma' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',1)->sum('total_amount'))/100000,
+                    'total_invoice_raised' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->sum('total_amount')) / 100000,
+                        'total_invoice_raised_tax' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->where('invoice_type',2)->sum('total_amount'))/100000,
+            'total_invoice_raised_proforma' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->where('invoice_type',1)->sum('total_amount'))/100000,
                     'total_invoice_paid' => $catGroup->sum(fn($p) => $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
-                    'total_balance' => $catGroup->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
+                    'total_balance' => $catGroup->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
                     'ongoing_count' => $catGroup->where('status', Project::STATUS_ONGOING)->count(),
                      'completed_count' => $catGroup->where('status', Project::STATUS_COMPLETED)->count(),
                     'delayed_count' => $catGroup->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
@@ -723,15 +723,15 @@ $q->whereIn('designation', [2, 7, 9]);
         $budgetUtilization = $budget > 0 ? ($expenses / $budget) * 100 : 0;
 
         $totalInvoiced = $project->invoices
-            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])
+            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID, \App\Models\PMS\Invoice::STATUS_OVERDUE])
             ->sum('total_amount');
              $totalInvoiced_proforma = $project->invoices
              ->where('invoice_type',1)
-            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])
+            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID, \App\Models\PMS\Invoice::STATUS_OVERDUE])
             ->sum('total_amount');
              $totalInvoiced_tax = $project->invoices
              ->where('invoice_type',2)
-            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])
+            ->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID, \App\Models\PMS\Invoice::STATUS_OVERDUE])
             ->sum('total_amount');
 
         $totalPaid = $project->invoices->sum(function ($invoice) {

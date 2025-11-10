@@ -52,9 +52,9 @@ class ProjectsExport implements FromCollection, WithHeadings
             $budget = $project->budget ?? 0;
              $estimated_expense=$project->estimated_expense ?? 0;
             $expenses = $project->expenses->sum('total_amount');
-            $totalInvoiced = $project->invoices->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])->sum('total_amount');
-              $totalInvoiced_proforma = $project->invoices->where('invoice_type',1)->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])->sum('total_amount');
-             $totalInvoiced_tax = $project->invoices->where('invoice_type',2)->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID])->sum('total_amount');
+            $totalInvoiced = $project->invoices->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID, \App\Models\PMS\Invoice::STATUS_OVERDUE])->sum('total_amount');
+              $totalInvoiced_proforma = $project->invoices->where('invoice_type',1)->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID, \App\Models\PMS\Invoice::STATUS_OVERDUE])->sum('total_amount');
+             $totalInvoiced_tax = $project->invoices->where('invoice_type',2)->whereIn('status', [\App\Models\PMS\Invoice::STATUS_SENT, \App\Models\PMS\Invoice::STATUS_PAID, \App\Models\PMS\Invoice::STATUS_OVERDUE])->sum('total_amount');
               $totalPaid = $project->invoices->sum(function ($invoice) {
                 return $invoice->payments->sum('amount');
             });
@@ -72,8 +72,8 @@ class ProjectsExport implements FromCollection, WithHeadings
                 'Remaining Budget' => $budget - $expenses,
                 'Budget Utilization %' => $budget > 0 ? round(($expenses / $budget) * 100, 2) : 0,
                 'Total Invoiced' => $totalInvoiced,
-                  'Proforma Invoiced' => $totalInvoiced_proforma,
-                    'Tax Invoiced' => $totalInvoiced_tax,
+                'Proforma Invoiced' => $totalInvoiced_proforma,
+                'Tax Invoiced' => $totalInvoiced_tax,
                 'Paid' => $totalPaid,
                 'Outstanding' => $totalInvoiced_tax - $totalPaid,
                 'Completion %' => $project->completion_percentage,
