@@ -173,7 +173,7 @@ class ReportController extends Controller
             'total_invoice_raised_tax' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',2)->sum('total_amount'))/100000,
             'total_invoice_raised_proforma' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',1)->sum('total_amount'))/100000,
             'total_invoice_paid' => $group->sum(fn($p) => $p->invoices->sum(fn($i) => $i->payments->sum('amount')))/100000,
-            'total_balance' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount')))/100000,
+            'total_balance' => $group->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount')))/100000,
             'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
             'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
             'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
@@ -193,7 +193,7 @@ $investigatorSummary = $investigatorWise->map(function ($group) {
         'total_invoice_raised_tax' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',2)->sum('total_amount'))/100000,
         'total_invoice_raised_proforma' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',1)->sum('total_amount'))/100000,
         'total_invoice_paid' => $group->sum(fn($p) => $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
-        'total_balance' => $group->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
+        'total_balance' => $group->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
         'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
         'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
         'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
@@ -214,7 +214,7 @@ $investigatorCategoryWise = $projects
                         'total_invoice_raised_tax' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',2)->sum('total_amount'))/100000,
             'total_invoice_raised_proforma' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',1)->sum('total_amount'))/100000,
                     'total_invoice_paid' => $catGroup->sum(fn($p) => $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
-                    'total_balance' => $catGroup->sum(fn($p) => $p->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
+                    'total_balance' => $catGroup->sum(fn($p) => $p->invoices->where('invoice_type',2)->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount') - $p->invoices->sum(fn($i) => $i->payments->sum('amount'))) / 100000,
                     'ongoing_count' => $catGroup->where('status', Project::STATUS_ONGOING)->count(),
                      'completed_count' => $catGroup->where('status', Project::STATUS_COMPLETED)->count(),
                     'delayed_count' => $catGroup->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
@@ -748,7 +748,7 @@ $q->whereIn('designation', [2, 7, 9]);
               'total_invoiced_proforma' => $totalInvoiced_proforma,
                 'total_invoiced_tax' => $totalInvoiced_tax,
             'total_paid' => $totalPaid,
-            'outstanding' => $totalInvoiced - $totalPaid,
+            'outstanding' => $totalInvoiced_tax - $totalPaid,
         ];
 
         return $project;
