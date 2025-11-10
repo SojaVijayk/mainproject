@@ -83,31 +83,61 @@ class ReportController extends Controller
 
       $liveProjects = Project::where('status', Project::STATUS_ONGOING)
          ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        ->when($startDate && $endDate, fn($q) =>
+        $q->where(function ($query) use ($startDate, $endDate) {
+            $query->where('start_date', '<=', $endDate)
+                  ->where('end_date', '>=', $startDate);
+        })
+    )
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->count();
 
          $completedProjects = Project::where('status', Project::STATUS_COMPLETED)
          ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        ->when($startDate && $endDate, fn($q) =>
+        $q->where(function ($query) use ($startDate, $endDate) {
+            $query->where('start_date', '<=', $endDate)
+                  ->where('end_date', '>=', $startDate);
+        })
+    )
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->count();
       $ongoingProjects = Project::where('status', Project::STATUS_ONGOING)
          ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        ->when($startDate && $endDate, fn($q) =>
+        $q->where(function ($query) use ($startDate, $endDate) {
+            $query->where('start_date', '<=', $endDate)
+                  ->where('end_date', '>=', $startDate);
+        })
+    )
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->count();
 
         $delayedProjects = Project::where('status', Project::STATUS_ONGOING)
     ->where('end_date', '<', Carbon::today()) // ✅ ongoing projects with end_date in future
     ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-    ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+    // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+    ->when($startDate && $endDate, fn($q) =>
+        $q->where(function ($query) use ($startDate, $endDate) {
+            $query->where('start_date', '<=', $endDate)
+                  ->where('end_date', '>=', $startDate);
+        })
+    )
     ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
     ->count();
 
      $archived = Project::where('status', Project::STATUS_ARCHIVED)
          ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        ->when($startDate && $endDate, fn($q) =>
+        $q->where(function ($query) use ($startDate, $endDate) {
+            $query->where('start_date', '<=', $endDate)
+                  ->where('end_date', '>=', $startDate);
+        })
+    )
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->count();
 
@@ -159,7 +189,13 @@ class ReportController extends Controller
     $projects = Project::with(['requirement.category', 'proposal', 'invoices.payments', 'investigator'])
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        ->when($startDate && $endDate, fn($q) =>
+        $q->where(function ($query) use ($startDate, $endDate) {
+            $query->where('start_date', '<=', $endDate)
+                  ->where('end_date', '>=', $startDate);
+        })
+    )
         ->get();
 
     // Grouping by category
