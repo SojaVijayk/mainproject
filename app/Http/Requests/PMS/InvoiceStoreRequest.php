@@ -21,6 +21,7 @@ class InvoiceStoreRequest extends FormRequest
              'invoice_type' => 'required',
             'due_date' => 'required|date|after:invoice_date',
             'amount' => 'required|numeric|min:0',
+              'description' => 'nullable|string',
             // Invoice items validation
         'items'                          => 'required|array|min:1',
         'items.*.description'            => 'required|string|max:255',
