@@ -71,7 +71,7 @@ class ReportController extends Controller
   $user = Auth::user();
 
     $categoryId = $request->input('category_id');
-       if ($user->hasRole('director') || $user->hasRole('finance') || $user->hasRole('Project Report')) {
+       if ($user->hasRole('director') || $user->hasRole('finance') || $user->hasRole('Project Report') || $user->hasRole('Project Investigator')) {
     $investigatorId = $request->input('investigator_id');
        }
        else {

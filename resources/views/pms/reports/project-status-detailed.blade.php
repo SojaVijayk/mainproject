@@ -285,7 +285,7 @@ $user = Auth::user();
       </div>
 
       @if(Auth::user()->hasRole('director') || Auth::user()->hasRole('Project Report') ||
-      Auth::user()->hasRole('finance'))
+      Auth::user()->hasRole('finance') || Auth::user()->hasRole('Project Investigator') )
       <div class="col">
         <select name="investigator_id" class="form-control select2">
           <option value="">All Investigators</option>
