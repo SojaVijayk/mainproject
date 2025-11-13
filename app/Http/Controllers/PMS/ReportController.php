@@ -65,7 +65,7 @@ class ReportController extends Controller
         return view('pms.reports.project-status', compact('projects', 'statuses', 'statusFilter', 'dateRanges', 'dateRange'),['pageConfigs'=> $pageConfigs]);
     }
 
-    public function projectStatusDetailed(Request $request)
+    public function projectStatusDetailedWithoutinvoice_adtefilter(Request $request)
 {
   $pageConfigs = ['myLayout' => 'horizontal'];
 
@@ -200,9 +200,12 @@ class ReportController extends Controller
     )
         ->get();
 
-      //  $projectIds = $projects->pluck('id')->toArray();
-      //  $count = count($projectIds);
-      //  echo $count;
+//        $projectIds = $projects->pluck('id')->toArray();
+//        $count = count($projectIds);
+//        echo $count;
+
+// $commaSeparated = implode(',', $projectIds);
+// echo $commaSeparated;exit;
       //  print_r( $projectIds);exit;
 
     // ===============================
@@ -445,7 +448,7 @@ $investigatorCategoryWise = $projects
     ]);
 }
 
-public function projectStatusDetailedWithoutinvoice_adtefilter(Request $request)
+public function projectStatusDetailed(Request $request)
 {
   $pageConfigs = ['myLayout' => 'horizontal'];
 
@@ -570,6 +573,7 @@ public function projectStatusDetailedWithoutinvoice_adtefilter(Request $request)
     $projects = Project::with(['requirement.category', 'proposal', 'invoices.payments', 'investigator'])
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+           ->whereIn('status', [Project::STATUS_ONGOING,Project::STATUS_COMPLETED])
         // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
         ->when($startDate && $endDate, fn($q) =>
         $q->where(function ($query) use ($startDate, $endDate) {
