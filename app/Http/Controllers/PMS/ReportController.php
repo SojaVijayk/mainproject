@@ -190,6 +190,7 @@ class ReportController extends Controller
     $projects = Project::with(['requirement.category', 'proposal', 'invoices.payments', 'investigator'])
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->whereIn('status', [Project::STATUS_ONGOING,Project::STATUS_COMPLETED])
         // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
         ->when($startDate && $endDate, fn($q) =>
         $q->where(function ($query) use ($startDate, $endDate) {
@@ -198,6 +199,11 @@ class ReportController extends Controller
         })
     )
         ->get();
+
+      //  $projectIds = $projects->pluck('id')->toArray();
+      //  $count = count($projectIds);
+      //  echo $count;
+      //  print_r( $projectIds);exit;
 
     // ===============================
 // CATEGORY WISE SUMMARY
