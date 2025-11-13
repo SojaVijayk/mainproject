@@ -24,6 +24,7 @@ use App\Http\Controllers\PMS\ExpenseController;
 use App\Http\Controllers\PMS\ExpenseCategoryController;
 use App\Http\Controllers\PMS\VendorController;
 use App\Http\Controllers\PMS\AttachmentController;
+use App\Http\Controllers\CertificateController;
 
 
 
@@ -63,7 +64,16 @@ Route::post('forget-password', $controller_path . '\Auth\ForgotPasswordControlle
 Route::get('reset-password/{token}', $controller_path . '\Auth\ForgotPasswordController@showResetPasswordForm')->name('reset.password.get');
 Route::post('reset-password', $controller_path . '\Auth\ForgotPasswordController@submitResetPasswordForm')->name('reset.password.post');
 
+//EVENT CERTIFICATE
 
+Route::get('/certificate', [CertificateController::class, 'index'])->name('certificate.form');
+Route::post('/request-certificate-otp', [CertificateController::class, 'sendOtp'])->name('request.certificate.otp');
+Route::post('/certificate-otp-verification', [CertificateController::class, 'verifyOtp'])->name('certificate-otp-verify');
+Route::post('/certificate/check', [CertificateController::class, 'verify'])->name('certificate.verify');
+Route::get('/certificate/view/{id}', [CertificateController::class, 'view'])->name('certificate.view');
+Route::get('/certificate/download/{id}', [CertificateController::class, 'download'])->name('certificate.download');
+
+//
 
 Route::get('/lms-certificate', $controller_path . '\LMS\CertificateController@index')->name('lms-certificate');
 Route::post('/request-lms-otp', $controller_path . '\LMS\CertificateController@sendOtp')->name('request.lms.otp');
