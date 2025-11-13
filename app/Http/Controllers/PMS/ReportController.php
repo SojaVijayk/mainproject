@@ -61,105 +61,94 @@ class ReportController extends Controller
             'last_year' => 'Last Year',
             'custom' => 'Custom Range'
         ];
-
-        return view('pms.reports.project-status', compact('projects', 'statuses', 'statusFilter', 'dateRanges', 'dateRange'),['pageConfigs'=> $pageConfigs]);
-    }
-
-    public function projectStatusDetailedWithoutinvoice_adtefilter(Request $request)
+      }
+public function projectStatusDetailed(Request $request)
 {
-  $pageConfigs = ['myLayout' => 'horizontal'];
+    $pageConfigs = ['myLayout' => 'horizontal'];
 
-  $user = Auth::user();
+    $user = Auth::user();
 
     $categoryId = $request->input('category_id');
-       if ($user->hasRole('director') || $user->hasRole('finance') || $user->hasRole('Project Report') || $user->hasRole('Project Investigator')) {
-    $investigatorId = $request->input('investigator_id');
-       }
-       else {
-           $investigatorId =$user->id;
-       }
+    if ($user->hasRole('director') || $user->hasRole('finance') || $user->hasRole('Project Report') || $user->hasRole('Project Investigator')) {
+        $investigatorId = $request->input('investigator_id');
+    } else {
+        $investigatorId = $user->id;
+    }
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
 
-
-      $liveProjects = Project::where('status', Project::STATUS_ONGOING)
-         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+    $liveProjects = Project::where('status', Project::STATUS_ONGOING)
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
         ->when($startDate && $endDate, fn($q) =>
-        $q->where(function ($query) use ($startDate, $endDate) {
-            $query->where('start_date', '<=', $endDate)
-                  ->where('end_date', '>=', $startDate);
-        })
-    )
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->count();
 
-         $completedProjects = Project::where('status', Project::STATUS_COMPLETED)
-         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+    $completedProjects = Project::where('status', Project::STATUS_COMPLETED)
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
         ->when($startDate && $endDate, fn($q) =>
-        $q->where(function ($query) use ($startDate, $endDate) {
-            $query->where('start_date', '<=', $endDate)
-                  ->where('end_date', '>=', $startDate);
-        })
-    )
-        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
-        ->count();
-      $ongoingProjects = Project::where('status', Project::STATUS_ONGOING)
-         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
-        ->when($startDate && $endDate, fn($q) =>
-        $q->where(function ($query) use ($startDate, $endDate) {
-            $query->where('start_date', '<=', $endDate)
-                  ->where('end_date', '>=', $startDate);
-        })
-    )
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->count();
 
-        $delayedProjects = Project::where('status', Project::STATUS_ONGOING)
-    ->where('end_date', '<', Carbon::today()) // ✅ ongoing projects with end_date in future
-    ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-    // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
-    ->when($startDate && $endDate, fn($q) =>
-        $q->where(function ($query) use ($startDate, $endDate) {
-            $query->where('start_date', '<=', $endDate)
-                  ->where('end_date', '>=', $startDate);
-        })
-    )
-    ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
-    ->count();
-
-     $archived = Project::where('status', Project::STATUS_ARCHIVED)
-         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+    $ongoingProjects = Project::where('status', Project::STATUS_ONGOING)
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
         ->when($startDate && $endDate, fn($q) =>
-        $q->where(function ($query) use ($startDate, $endDate) {
-            $query->where('start_date', '<=', $endDate)
-                  ->where('end_date', '>=', $startDate);
-        })
-    )
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->count();
 
+    $delayedProjects = Project::where('status', Project::STATUS_ONGOING)
+        ->where('end_date', '<', Carbon::today())
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->when($startDate && $endDate, fn($q) =>
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->count();
 
-        // Proposal Submitted
-        $proposalSubmitted_query = Proposal::where('project_status', 0)
-         ->when($investigatorId, fn($q) => $q->where('created_by', $investigatorId))
-         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+    $archived = Project::where('status', Project::STATUS_ARCHIVED)
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->when($startDate && $endDate, fn($q) =>
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->count();
+
+    // Proposal Submitted
+    $proposalSubmitted_query = Proposal::where('project_status', 0)
+        ->when($investigatorId, fn($q) => $q->where('created_by', $investigatorId))
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->when($startDate && $endDate, fn($q) => $q->whereBetween('expected_start_date', [$startDate, $endDate]))
-            // ->whereNull('client_status')
-            ->where('project_status',0)
-            ->get();
-             $proposalSubmitted =  $proposalSubmitted_query->count();
+        ->where('project_status', 0)
+        ->get();
+    $proposalSubmitted = $proposalSubmitted_query->count();
 
-            // Grouping by category
+    // Grouping by category
     $categoryWise_proposalSubmitted = $proposalSubmitted_query->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized');
 
     $categorySummary_proposalSubmitted = $categoryWise_proposalSubmitted->map(function ($group) {
         return [
-            'total_budget' => $group->sum('budget')/100000,
-            'total_revenue' => $group->sum('revenue')/100000,
+            'total_budget' => $group->sum('budget') / 100000,
+            'total_revenue' => $group->sum('revenue') / 100000,
             'Accepted' => $group->where('client_status', 'accepted')->count(),
             'Rejected' => $group->where('client_status', 'rejected')->count(),
             'resubmit_requested' => $group->where('client_status', 'resubmit_requested')->count(),
@@ -167,255 +156,130 @@ class ReportController extends Controller
         ];
     });
 
-        // Planning Stage
-        $planningStage_query = Requirement::where('proposal_status', 0)
-          ->when($investigatorId, fn($q) => $q->where('created_by', $investigatorId))
-            ->when($categoryId, fn($q) => $q->where('project_category_id', $categoryId))
+    // Planning Stage
+    $planningStage_query = Requirement::where('proposal_status', 0)
+        ->when($investigatorId, fn($q) => $q->where('created_by', $investigatorId))
+        ->when($categoryId, fn($q) => $q->where('project_category_id', $categoryId))
         ->when($startDate && $endDate, fn($q) => $q->whereBetween('created_at', [$startDate, $endDate]))
         ->get();
-          $planningStage = $planningStage_query->count();
-      $categoryWise_planningStage = $planningStage_query->groupBy(fn($p) => $p->category->name ?? 'Uncategorized');
+    $planningStage = $planningStage_query->count();
 
-      $categorySummary_planningStage = $categoryWise_planningStage->map(function ($group) {
+    $categoryWise_planningStage = $planningStage_query->groupBy(fn($p) => $p->category->name ?? 'Uncategorized');
+
+    $categorySummary_planningStage = $categoryWise_planningStage->map(function ($group) {
         return [
             'created' => $group->where('status', 0)->count(),
             'submitted' => $group->where('status', 1)->count(),
             'under_pac' => $group->where('status', 4)->count(),
-            'rejected' => $group->where('status',3)->count(),
-              'approved' => $group->whereNotNull('allocated_to')->count(),
+            'rejected' => $group->where('status', 3)->count(),
+            'approved' => $group->whereNotNull('allocated_to')->count(),
         ];
     });
 
-    // Base query with relationships
-    $projects = Project::with(['requirement.category', 'proposal', 'invoices.payments', 'investigator'])
+    // Base query with relationships - Eager load invoices with date filter
+    $projectsQuery = Project::with(['requirement.category', 'proposal', 'investigator'])
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
-        ->whereIn('status', [Project::STATUS_ONGOING,Project::STATUS_COMPLETED])
-        // ->when($startDate && $endDate, fn($q) => $q->whereBetween('start_date', [$startDate, $endDate]))
+        ->whereIn('status', [Project::STATUS_ONGOING, Project::STATUS_COMPLETED])
         ->when($startDate && $endDate, fn($q) =>
-        $q->where(function ($query) use ($startDate, $endDate) {
-            $query->where('start_date', '<=', $endDate)
-                  ->where('end_date', '>=', $startDate);
-        })
-    )
-        ->get();
-
-//        $projectIds = $projects->pluck('id')->toArray();
-//        $count = count($projectIds);
-//        echo $count;
-
-// $commaSeparated = implode(',', $projectIds);
-// echo $commaSeparated;exit;
-      //  print_r( $projectIds);exit;
-
-    // ===============================
-// CATEGORY WISE SUMMARY
-// ===============================
-$categoryWise = $projects->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized');
-
-$categorySummary = $categoryWise->map(function ($group) use ($startDate, $endDate) {
-    return [
-        'total_budget' => $group->sum('budget') / 100000,
-        'total_revenue' => $group->sum('revenue') / 100000,
-
-        'total_invoice_raised' => $group->sum(function ($p) use ($startDate, $endDate) {
-            return $p->invoices
-                ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                ->sum('total_amount');
-        }) / 100000,
-
-        'total_invoice_raised_tax' => $group->sum(function ($p) use ($startDate, $endDate) {
-            return $p->invoices
-                ->where('invoice_type', 2)
-                ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                ->sum('total_amount');
-        }) / 100000,
-
-        'total_invoice_raised_proforma' => $group->sum(function ($p) use ($startDate, $endDate) {
-            return $p->invoices
-                ->where('invoice_type', 1)
-                ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                ->sum('total_amount');
-        }) / 100000,
-
-        'total_invoice_paid' => $group->sum(function ($p) use ($startDate, $endDate) {
-            return $p->invoices->sum(function ($i) use ($startDate, $endDate) {
-                return $i->payments
-                    ->when($startDate && $endDate, fn($c) => $c->whereBetween('payment_date', [$startDate, $endDate]))
-                    ->sum('amount');
-            });
-        }) / 100000,
-
-        'total_balance' => $group->sum(function ($p) use ($startDate, $endDate) {
-            $invoiceTotal = $p->invoices
-                ->where('invoice_type', 2)
-                ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                ->sum('total_amount');
-
-            $paymentTotal = $p->invoices->sum(function ($i) use ($startDate, $endDate) {
-                return $i->payments
-                    ->when($startDate && $endDate, fn($c) => $c->whereBetween('payment_date', [$startDate, $endDate]))
-                    ->sum('amount');
-            });
-
-            return $invoiceTotal - $paymentTotal;
-        }) / 100000,
-
-        'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
-        'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
-        'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
-        'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
-        'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
-    ];
-});
-
-
-// ===============================
-// INVESTIGATOR WISE SUMMARY
-// ===============================
-$investigatorWise = $projects->groupBy(fn($p) => $p->investigator->name ?? 'No Investigator');
-
-$investigatorSummary = $investigatorWise->map(function ($group) use ($startDate, $endDate) {
-    return [
-        'total_budget' => $group->sum('budget') / 100000,
-        'total_revenue' => $group->sum('revenue') / 100000,
-
-        'total_invoice_raised' => $group->sum(function ($p) use ($startDate, $endDate) {
-            return $p->invoices
-                ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                ->sum('total_amount');
-        }) / 100000,
-
-        'total_invoice_raised_tax' => $group->sum(function ($p) use ($startDate, $endDate) {
-            return $p->invoices
-                ->where('invoice_type', 2)
-                ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                ->sum('total_amount');
-        }) / 100000,
-
-        'total_invoice_raised_proforma' => $group->sum(function ($p) use ($startDate, $endDate) {
-            return $p->invoices
-                ->where('invoice_type', 1)
-                ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                ->sum('total_amount');
-        }) / 100000,
-
-        'total_invoice_paid' => $group->sum(function ($p) use ($startDate, $endDate) {
-            return $p->invoices->sum(function ($i) use ($startDate, $endDate) {
-                return $i->payments
-                    ->when($startDate && $endDate, fn($c) => $c->whereBetween('payment_date', [$startDate, $endDate]))
-                    ->sum('amount');
-            });
-        }) / 100000,
-
-        'total_balance' => $group->sum(function ($p) use ($startDate, $endDate) {
-            $invoiceTotal = $p->invoices
-                ->where('invoice_type', 2)
-                ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                ->sum('total_amount');
-
-            $paymentTotal = $p->invoices->sum(function ($i) use ($startDate, $endDate) {
-                return $i->payments
-                    ->when($startDate && $endDate, fn($c) => $c->whereBetween('payment_date', [$startDate, $endDate]))
-                    ->sum('amount');
-            });
-
-            return $invoiceTotal - $paymentTotal;
-        }) / 100000,
-
-        'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
-        'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
-        'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
-        'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
-        'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
-    ];
-});
-
-
-// ===============================
-// INVESTIGATOR + CATEGORY WISE SUMMARY
-// ===============================
-$investigatorCategoryWise = $projects
-    ->groupBy(fn($p) => $p->investigator->name ?? 'No Investigator')
-    ->map(function ($group) use ($startDate, $endDate) {
-        return $group->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized')
-            ->map(function ($catGroup) use ($startDate, $endDate) {
-                return [
-                    'total_budget' => $catGroup->sum('budget') / 100000,
-                    'total_revenue' => $catGroup->sum('revenue') / 100000,
-
-                    'total_invoice_raised' => $catGroup->sum(function ($p) use ($startDate, $endDate) {
-                        return $p->invoices
-                            ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                            ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                            ->sum('total_amount');
-                    }) / 100000,
-
-                    'total_invoice_raised_tax' => $catGroup->sum(function ($p) use ($startDate, $endDate) {
-                        return $p->invoices
-                            ->where('invoice_type', 2)
-                            ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                            ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                            ->sum('total_amount');
-                    }) / 100000,
-
-                    'total_invoice_raised_proforma' => $catGroup->sum(function ($p) use ($startDate, $endDate) {
-                        return $p->invoices
-                            ->where('invoice_type', 1)
-                            ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                            ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                            ->sum('total_amount');
-                    }) / 100000,
-
-                    'total_invoice_paid' => $catGroup->sum(function ($p) use ($startDate, $endDate) {
-                        return $p->invoices->sum(function ($i) use ($startDate, $endDate) {
-                            return $i->payments
-                                ->when($startDate && $endDate, fn($c) => $c->whereBetween('payment_date', [$startDate, $endDate]))
-                                ->sum('amount');
-                        });
-                    }) / 100000,
-
-                    'total_balance' => $catGroup->sum(function ($p) use ($startDate, $endDate) {
-                        $invoiceTotal = $p->invoices
-                            ->where('invoice_type', 2)
-                            ->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])
-                            ->when($startDate && $endDate, fn($c) => $c->whereBetween('invoice_date', [$startDate, $endDate]))
-                            ->sum('total_amount');
-
-                        $paymentTotal = $p->invoices->sum(function ($i) use ($startDate, $endDate) {
-                            return $i->payments
-                                ->when($startDate && $endDate, fn($c) => $c->whereBetween('payment_date', [$startDate, $endDate]))
-                                ->sum('amount');
-                        });
-
-                        return $invoiceTotal - $paymentTotal;
-                    }) / 100000,
-
-                    'ongoing_count' => $catGroup->where('status', Project::STATUS_ONGOING)->count(),
-                    'completed_count' => $catGroup->where('status', Project::STATUS_COMPLETED)->count(),
-                    'delayed_count' => $catGroup->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
-                    'initiated_count' => $catGroup->where('status', Project::STATUS_INITIATED)->count(),
-                    'archived_count' => $catGroup->where('status', Project::STATUS_ARCHIVED)->count(),
-                ];
-            });
-    })
-    ->sortByDesc(function ($categories, $investigator) {
-        $totalRevenue = $categories->sum('total_revenue');
-        $projectCount = $categories->sum(fn($c) =>
-            ($c['ongoing_count'] ?? 0)
-            + ($c['completed_count'] ?? 0)
-            + ($c['initiated_count'] ?? 0)
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
         );
-        return [$totalRevenue, $projectCount];
+
+    // Load projects with filtered invoices and their payments
+    $projects = $projectsQuery->get()->map(function ($project) use ($startDate, $endDate) {
+        // Load invoices filtered by date
+        $project->setRelation('invoices',
+            $project->invoices()
+                ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('invoice_date', [$startDate, $endDate]);
+                })
+                ->with('payments') // Load payments for the filtered invoices
+                ->get()
+        );
+        return $project;
     });
+
+    // Grouping by category with filtered invoices and payments
+    $categoryWise = $projects->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized');
+
+    $categorySummary = $categoryWise->map(function ($group) {
+        $allInvoices = $group->flatMap->invoices;
+        $allPayments = $allInvoices->flatMap->payments;
+
+        return [
+            'total_budget' => $group->sum('budget') / 100000,
+            'total_revenue' => $group->sum('revenue') / 100000,
+            'total_invoice_raised' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') / 100000,
+            'total_invoice_raised_tax' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 2)->sum('total_amount') / 100000,
+            'total_invoice_raised_proforma' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 1)->sum('total_amount') / 100000,
+            'total_invoice_paid' => $allPayments->sum('amount') / 100000, // Payments from filtered invoices only
+            'total_balance' => ($allInvoices->where('invoice_type', 2)->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') - $allPayments->sum('amount')) / 100000,
+            'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
+            'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
+            'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
+            'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
+            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count()
+        ];
+    });
+
+    $investigatorWise = $projects->groupBy(fn($p) => $p->investigator->name ?? 'No Investigator');
+
+    $investigatorSummary = $investigatorWise->map(function ($group) {
+        $allInvoices = $group->flatMap->invoices;
+        $allPayments = $allInvoices->flatMap->payments;
+
+        return [
+            'total_budget' => $group->sum('budget') / 100000,
+            'total_revenue' => $group->sum('revenue') / 100000,
+            'total_invoice_raised' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') / 100000,
+            'total_invoice_raised_tax' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 2)->sum('total_amount') / 100000,
+            'total_invoice_raised_proforma' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 1)->sum('total_amount') / 100000,
+            'total_invoice_paid' => $allPayments->sum('amount') / 100000, // Payments from filtered invoices only
+            'total_balance' => ($allInvoices->where('invoice_type', 2)->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') - $allPayments->sum('amount')) / 100000,
+            'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
+            'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
+            'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
+            'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
+            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count()
+        ];
+    });
+
+    $investigatorCategoryWise = $projects
+        ->groupBy(fn($p) => $p->investigator->name ?? 'No Investigator')
+        ->map(function ($group) {
+            return $group->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized')
+                ->map(function ($catGroup) {
+                    $allInvoices = $catGroup->flatMap->invoices;
+                    $allPayments = $allInvoices->flatMap->payments;
+
+                    return [
+                        'total_budget' => $catGroup->sum('budget') / 100000,
+                        'total_revenue' => $catGroup->sum('revenue') / 100000,
+                        'total_invoice_raised' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') / 100000,
+                        'total_invoice_raised_tax' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 2)->sum('total_amount') / 100000,
+                        'total_invoice_raised_proforma' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 1)->sum('total_amount') / 100000,
+                        'total_invoice_paid' => $allPayments->sum('amount') / 100000, // Payments from filtered invoices only
+                        'total_balance' => ($allInvoices->where('invoice_type', 2)->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') - $allPayments->sum('amount')) / 100000,
+                        'ongoing_count' => $catGroup->where('status', Project::STATUS_ONGOING)->count(),
+                        'completed_count' => $catGroup->where('status', Project::STATUS_COMPLETED)->count(),
+                        'delayed_count' => $catGroup->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
+                        'initiated_count' => $catGroup->where('status', Project::STATUS_INITIATED)->count(),
+                        'archived_count' => $catGroup->where('status', Project::STATUS_ARCHIVED)->count(),
+                    ];
+                });
+        })
+        ->sortByDesc(function ($categories, $investigator) {
+            $totalRevenue = $categories->sum('total_revenue');
+            $projectCount = $categories->sum(fn($c) =>
+                ($c['ongoing_count'] ?? 0)
+                + ($c['completed_count'] ?? 0)
+                + ($c['initiated_count'] ?? 0)
+            );
+            return [$totalRevenue, $projectCount];
+        });
 
     // Proposal submitted but no client status
     $proposalsPending = Proposal::with('requirement.category')
@@ -430,25 +294,25 @@ $investigatorCategoryWise = $projects
     return view('pms.reports.project-status-detailed', [
         'projects' => $projects,
         'categoryWise' => $categoryWise,
-         'categorySummary_proposalSubmitted' => $categorySummary_proposalSubmitted,
-          'categorySummary_planningStage' => $categorySummary_planningStage,
+        'categorySummary_proposalSubmitted' => $categorySummary_proposalSubmitted,
+        'categorySummary_planningStage' => $categorySummary_planningStage,
         'categorySummary' => $categorySummary,
         'proposalsPending' => $proposalsPending,
         'initiatedRequirements' => $initiatedRequirements,
-         'liveProjects'      => $liveProjects,
-          'ongoingProjects'      => $ongoingProjects,
-            'proposalSubmitted' => $proposalSubmitted,
-            'planningStage'     => $planningStage,
-            'completedProjects' =>$completedProjects,
-            'delayedProjects' =>$delayedProjects,
-            'archived'=>$archived,
-            'investigatorSummary' => $investigatorSummary,
-            'investigatorCategoryWise' => $investigatorCategoryWise,
-        'pageConfigs'=>$pageConfigs
+        'liveProjects' => $liveProjects,
+        'ongoingProjects' => $ongoingProjects,
+        'proposalSubmitted' => $proposalSubmitted,
+        'planningStage' => $planningStage,
+        'completedProjects' => $completedProjects,
+        'delayedProjects' => $delayedProjects,
+        'archived' => $archived,
+        'investigatorSummary' => $investigatorSummary,
+        'investigatorCategoryWise' => $investigatorCategoryWise,
+        'pageConfigs' => $pageConfigs
     ]);
 }
 
-public function projectStatusDetailed(Request $request)
+public function projectStatusDetailedWithoutinvoice_adtefilter(Request $request)
 {
   $pageConfigs = ['myLayout' => 'horizontal'];
 
