@@ -194,7 +194,7 @@ class ReportController extends Controller
         ->when($startDate && $endDate, fn($q) =>
         $q->where(function ($query) use ($startDate, $endDate) {
             $query->where('start_date', '<=', $endDate)
-                  ->where('end_dates', '>=', $startDate);
+                  ->where('end_date', '>=', $startDate);
         })
     )
         ->get();
