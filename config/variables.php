@@ -4,7 +4,7 @@
 return [
   "creatorName" => "Centre for Management Development",
   "creatorUrl" => "https://cmd.kerala.gov.in",
-  "templateName" => "CMD HRMS",
+  "templateName" => "CMD SUITE",
   "templateSuffix" => "Complete ERP Solution for CMD",
   "templateVersion" => "1.0.0",
   "templateFree" => false,

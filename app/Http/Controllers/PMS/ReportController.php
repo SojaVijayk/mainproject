@@ -201,6 +201,7 @@ public function projectStatusDetailed(Request $request)
         );
         return $project;
     });
+    // print_r($projects->where('id',876));exit;
 
     // Grouping by category with filtered invoices and payments
     $categoryWise = $projects->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized');

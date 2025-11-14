@@ -83,7 +83,7 @@
         </table>
       </div>
 
-      <div style="width:100%; margin:0; padding-top:20em;" class="cer_text">
+      <div style="width:100%; margin:0; padding-top:18em;" class="cer_text">
 
 
 
@@ -92,30 +92,33 @@
 
           <h2 class="nameText">{{ ucwords(strtolower($user->name)) }}</h2>
           {{-- <h4><i><strong>{{ $user->email }} </strong></i></h4> --}}
-          <br>
-          <h3 style="padding-left: 8em;padding-right: 8em;">has participated in the one day program <strong>“
-              International Multiplier Training - Entrepreneurship Education for All” </strong>conducted by CMD in
+          {{-- <br> --}}
+          <h3 style="padding-left: 8em;padding-right: 8em;">System Admin, CMD, has participated in the one day programme
+            on
+            <strong>“
+              International Multiplier Training- Entrepreneurship Education for All” </strong>conducted by CMD in
             collaboration with ASEM Lifelong Learning South Asia centre on
-            <strong>November 17, 2015 </strong> at <strong>Centre for Management Development,
+            <strong>November 17, 2015 </strong> at the <strong>Centre for Management Development,
               Thiruvananthapuram.</strong>
           </h3>
 
         </div>
 
       </div>
-      <div style="padding:3em 3em; padding-left:2em;">
+      <div style="padding:1em 1em; padding-left:2em;">
 
         <table width="100%">
 
 
           <tr>
             <td align="center" width="50%" valign="bottom" style="padding-bottom: 1em; ">
-              {{-- <img src="./assets/img/branding/seal.png" width="100px" height="100px"
-                style=" padding:0px;margin:0px;"> --}}
+              <img src="./assets/img/branding/ASEM-logo.png" width="80px" height="80px"
+                style=" padding:0px;margin:0px;">
 
-              <hr style="color: #d7a534; width:50%">
-              <p style=" padding:0px;margin:0px; font-weight:600;">Director <br><small style="color:#865b34">ASEM
-                  Lifelong Learning</small></p>
+              {{--
+              <hr style="color: #d7a534; width:50%"> --}}
+              <p style=" padding:0px;margin:0px; font-weight:600;"> <small>ASEM
+                  Lifelong Learning Hub</small></p>
             </td>
             {{-- <td align="center" width="30%" valign="bottom" style="padding-bottom: 1em;">
               <img src="./assets/img/branding/medal-icon.png" width="100px" height="100px"
@@ -124,11 +127,12 @@
             </td> --}}
 
             <td align="center" width="50%" valign="bottom" style="padding-bottom: 1em; ">
-              {{-- <img src="./assets/img/branding/signature.png" width="110px" height="100px"
-                style=" padding:0px;margin:0px;"> --}}
+              <img src="./assets/img/branding/cmdlogo.png" width="70px" height="70px" style=" padding:0px;margin:0px;">
 
-              <hr style="color: #d7a534; width:50%">
-              <p style=" padding:0px;margin:0px; font-weight:600;">Director <br><small style="color:#865b34">Centre for
+              {{--
+              <hr style="color: #d7a534; width:50%"> --}}
+              <p style=" padding:0px;margin:0px; font-weight:600;"> <small>Centre
+                  for
                   Management Development</small></p>
             </td>
           </tr>
