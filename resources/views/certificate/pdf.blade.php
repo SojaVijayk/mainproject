@@ -66,6 +66,9 @@
 
         <table width="100%">
           <tr>
+            <td align="right" width="50%" valign="bottom" style="padding-bottom: 1em; ">
+              <small>Ref.No: <strong>{{$user->ref_no}}</strong></small>
+            </td>
             {{-- <td align="center" width="50%" valign="bottom" style="padding-bottom: 1em; ">
               <img src="./assets/img/branding/ASEM-logo.png" width="150px" height="150px"
                 style=" padding:0px;margin:0px;">
@@ -92,57 +95,41 @@
 
           <h2 class="nameText">{{ ucwords(strtolower($user->name)) }}</h2>
           {{-- <h4><i><strong>{{ $user->email }} </strong></i></h4> --}}
-          {{-- <br> --}}
-          <h3 style="padding-left: 8em;padding-right: 8em;">System Admin, CMD, has participated in the one day programme
+          <br>
+          <h3 style="padding-left: 8em;padding-right: 8em;">{{$user->designation}}, {{$user->institution}}, has
+            participated in the one day programme
             on
             <strong>“
               International Multiplier Training- Entrepreneurship Education for All” </strong>conducted by CMD in
             collaboration with ASEM Lifelong Learning South Asia centre on
-            <strong>November 17, 2015 </strong> at the <strong>Centre for Management Development,
+            <strong>November 17, 2025 </strong> at the <strong>Centre for Management Development,
               Thiruvananthapuram.</strong>
           </h3>
 
         </div>
 
       </div>
-      <div style="padding:1em 1em; padding-left:2em;">
+
+      <div style=" position: absolute;
+    bottom: 70px;
+    left: 10em;
+    width: 100%;
+    text-align: center;
+    padding: 0 2em;">
 
         <table width="100%">
 
 
-          <tr>
-            <td align="center" width="50%" valign="bottom" style="padding-bottom: 1em; ">
-              <img src="./assets/img/branding/ASEM-logo.png" width="80px" height="80px"
-                style=" padding:0px;margin:0px;">
 
-              {{--
-              <hr style="color: #d7a534; width:50%"> --}}
-              <p style=" padding:0px;margin:0px; font-weight:600;"> <small>ASEM
-                  Lifelong Learning Hub</small></p>
-            </td>
-            {{-- <td align="center" width="30%" valign="bottom" style="padding-bottom: 1em;">
-              <img src="./assets/img/branding/medal-icon.png" width="100px" height="100px"
-                style=" padding:0px;margin:0px;">
-
-            </td> --}}
-
-            <td align="center" width="50%" valign="bottom" style="padding-bottom: 1em; ">
-              <img src="./assets/img/branding/cmdlogo.png" width="70px" height="70px" style=" padding:0px;margin:0px;">
-
-              {{--
-              <hr style="color: #d7a534; width:50%"> --}}
-              <p style=" padding:0px;margin:0px; font-weight:600;"> <small>Centre
-                  for
-                  Management Development</small></p>
-            </td>
-          </tr>
           <tr>
             <td colspan="4">
               <table width="100%">
                 <tr>
                   <td>
                     <p style="font-size: .8em; margin:0; padding:0;">
-                      {{-- Note : This certificate is computer generated and does not require any Seal in original. --}}
+                      Ref.No: <strong>{{$user->ref_no}}</strong>
+                      <small>This certificate is system generated. Issued on {{
+                        $user->certificate_generated_at}}</small>
 
                     </p>
                   </td>

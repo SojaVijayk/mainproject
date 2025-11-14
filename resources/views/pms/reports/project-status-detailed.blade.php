@@ -230,8 +230,54 @@
         }
     });
      $('.select2').select2({ width: 'resolve' });
+document.getElementById("downloadFullPDF").addEventListener("click", function () {
 
+    const page = document.body;
+
+    html2canvas(page, {
+        scale: 2,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight
+    }).then(canvas => {
+
+        const imgData = canvas.toDataURL("image/png");
+
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+
+        const pageWidth = 210;     // A4 width (mm)
+        const pageHeight = 297;    // A4 height (mm)
+
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+
+        // Image height proportionate to PDF width
+        const imgHeight = (canvasHeight * pageWidth) / canvasWidth;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // Add the first page
+        pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
+
+        heightLeft -= pageHeight;
+
+        // Add extra pages smoothly
+        while (heightLeft > -10) { // prevent cutoff
+            position -= pageHeight - 5; // 5mm overlap to avoid cutting
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save("Full_Report_" + Date.now() + ".pdf");
+    });
+});
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 @endsection
 @section('header', 'Project Status Report')
@@ -251,6 +297,9 @@ $user = Auth::user();
     <div class="d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Project Status Report</h5>
       <div>
+        {{-- <a type="button" id="downloadFullPDF" class="btn  btn-label-dark ">
+          📄 Export
+        </a> --}}
         <a type="button" class="btn btn-label-primary" href="{{ route('pms.reports.project-status') }}">Project Progress
           Report</a>
         {{-- @if(Auth::user()->hasRole('director') || Auth::user()->hasRole('finance')) --}}
