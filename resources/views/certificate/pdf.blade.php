@@ -66,9 +66,9 @@
 
         <table width="100%">
           <tr>
-            <td align="right" width="50%" valign="bottom" style="padding-bottom: 1em; ">
+            {{-- <td align="right" width="50%" valign="bottom" style="padding-bottom: 1em; ">
               <small>Ref.No: <strong>{{$user->ref_no}}</strong></small>
-            </td>
+            </td> --}}
             {{-- <td align="center" width="50%" valign="bottom" style="padding-bottom: 1em; ">
               <img src="./assets/img/branding/ASEM-logo.png" width="150px" height="150px"
                 style=" padding:0px;margin:0px;">
@@ -86,7 +86,7 @@
         </table>
       </div>
 
-      <div style="width:100%; margin:0; padding-top:18em;" class="cer_text">
+      <div style="width:100%; margin:0; padding-top:20em;" class="cer_text">
 
 
 
@@ -100,7 +100,7 @@
             participated in the one day programme
             on
             <strong>“
-              International Multiplier Training- Entrepreneurship Education for All” </strong>conducted by CMD in
+              International Multiplier Training- Entrepreneurship Education for All ” </strong>conducted by CMD in
             collaboration with ASEM Lifelong Learning South Asia centre on
             <strong>November 17, 2025 </strong> at the <strong>Centre for Management Development,
               Thiruvananthapuram.</strong>
