@@ -155,7 +155,7 @@
         })();
 
         Swal.fire({
-          title: 'Verified 🎉',
+          title: 'Verified',
           text: 'Your certificate is ready!',
           icon: 'success',
           timer: 2000,

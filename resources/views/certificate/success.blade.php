@@ -1,5 +1,5 @@
 <div class="success-container">
-  <h2>🎉 Congratulations, {{ $user->name }}! 🎉</h2>
+  <h2> Congratulations, <br> {{ $user->name }}! </h2>
   <p>
     Your participation in the <strong>International Multiplier Training</strong>
     has been successfully verified.
