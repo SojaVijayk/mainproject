@@ -569,13 +569,13 @@ $investigatorCategoryWise = $projects
             'total_revenue' => $projects->sum('revenue'),
             'total_expense' => $projects->sum('estimated_expense'),
             'total_invoiced' => $projects->sum(function($project) {
-                return $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->sum('total_amount');
+                return $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->sum('total_amount');
             }),
               'total_proforma_invoiced' => $projects->sum(function($project) {
-                return $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',1)->sum('total_amount');
+                return $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->where('invoice_type',1)->sum('total_amount');
             }),
              'total_tax_invoiced' => $projects->sum(function($project) {
-                return $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID])->where('invoice_type',2)->sum('total_amount');
+                return $project->invoices->whereIn('status', [Invoice::STATUS_SENT,Invoice::STATUS_PAID,Invoice::STATUS_OVERDUE])->where('invoice_type',2)->sum('total_amount');
             }),
             'total_paid' => $projects->sum(function($project) {
                 return $project->invoices->sum(function($invoice) {

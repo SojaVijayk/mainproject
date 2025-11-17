@@ -86,7 +86,7 @@
         </table>
       </div>
 
-      <div style="width:100%; margin:0; padding-top:20em;" class="cer_text">
+      <div style="width:100%; margin:0; padding-top:18em;" class="cer_text">
 
 
 
