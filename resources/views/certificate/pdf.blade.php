@@ -100,7 +100,8 @@
             participated in the one day programme
             on
             <strong>“
-              International Multiplier Training- Entrepreneurship Education for All ” </strong>conducted by CMD in
+              International Multiplier Training- Entrepreneurship Education for All ” </strong>conducted by Centre for
+            Management Development in
             collaboration with ASEM Lifelong Learning South Asia centre on
             <strong>November 17, 2025 </strong> at the <strong>Centre for Management Development,
               Thiruvananthapuram.</strong>
