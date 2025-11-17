@@ -96,7 +96,9 @@
           <h2 class="nameText">{{ ucwords(strtolower($user->name)) }}</h2>
           {{-- <h4><i><strong>{{ $user->email }} </strong></i></h4> --}}
           <br>
-          <h3 style="padding-left: 8em;padding-right: 8em;">{{$user->designation}}, {{$user->institution}}, has
+          <h3 style="padding-left: 8em;padding-right: 8em;">@if($user->designation!= '' && $user->designation!=
+            NULL){{$user->designation}}, @endif
+            @if($user->institution!= '' && $user->institution!= NULL){{$user->institution}},@endif has
             participated in the one day programme
             on
             <strong>“
