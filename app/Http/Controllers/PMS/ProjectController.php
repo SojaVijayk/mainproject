@@ -551,7 +551,7 @@ if ($request->has('team_members_json')) {
     {
         $pageConfigs = ['myLayout' => 'horizontal'];
         $project = Project::with([
-            'proposal',
+            'proposal.expenseComponents',
             'milestones.tasks',
             'invoices.payments',
             'expenses',

@@ -61,6 +61,9 @@ class ReportController extends Controller
             'last_year' => 'Last Year',
             'custom' => 'Custom Range'
         ];
+         return view('pms.reports.project-status', compact('projects', 'statuses', 'statusFilter', 'dateRanges', 'dateRange'),['pageConfigs'=> $pageConfigs]);
+
+
       }
 public function projectStatusDetailed(Request $request)
 {
