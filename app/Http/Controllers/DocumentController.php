@@ -328,6 +328,40 @@ protected function canEditDocument(Document $document)
         return back()->with('success', 'Attachment uploaded successfully.');
     }
 
+
+     public function uploadPartAttachment(Request $request, Document $document)
+    {
+        if ($document->status != 'active') {
+            return back()->with('error', 'Cannot upload attachment for this document in its current state.');
+        }
+
+        $request->validate([
+            'attachment' => 'required|file|max:10240', // 10MB max
+            'document_no' => 'required|string',
+        ]);
+
+        $file = $request->file('attachment');
+          // $path = $file->store('public/tapal_attachments');
+        $path = $file->store('public/documents');
+
+        $attachment = DocumentAttachment::create([
+            'document_id' => $document->id,
+            'file_path' => $path,
+            'original_name' => $file->getClientOriginalName().':'.$request->document_no,
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+        ]);
+
+        DocumentHistory::create([
+            'document_id' => $document->id,
+            'user_id' => Auth::id(),
+            'action' => 'attachment_uploaded',
+            'details' => 'Part File Attachment uploaded: ' . $file->getClientOriginalName()
+        ]);
+
+        return back()->with('success', 'Attachment uploaded successfully.');
+    }
+
     public function confirmDocument(Document $document)
     {
         if ($document->status == 'active' || $document->attachments->isEmpty()) {

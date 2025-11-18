@@ -289,6 +289,38 @@
           </form> --}}
           @endif
 
+
+          @if($document->status == 'active')
+          <hr>
+          <div class="accordion accordion-header-primary" id="accordionStyle5">
+            <div class="accordion-item">
+              <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button collapsed text-warning" data-bs-toggle="collapse"
+                  data-bs-target="#accordionStyle1-5" aria-expanded="false">Upload Part file Document
+                  Attachment</button>
+              </h2>
+              <div id="accordionStyle1-5" class="accordion-collapse collapse" data-bs-parent="#accordionStyle5">
+                <div class="accordion-body">
+
+                  <h5>Upload Attachment</h5>
+                  <form method="POST" action="{{ route('documents.part.upload', $document) }}"
+                    enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                      <input class="form-control" name="document_no" placeholder="new document number" required></input>
+                    </div>
+                    <div class="mb-3">
+                      <input type="file" class="form-control" name="attachment" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                  </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          @endif
+
           {{-- @if($document->despatches->count())
           <hr>
           <div class="accordion" id="accordionWithIcon1">

@@ -348,6 +348,7 @@ Route::delete('tapals/{tapal}', $controller_path .'\TapalController@destroy')->n
 Route::resource('documents', DocumentController::class);
 
     Route::post('/{document}/upload', [DocumentController::class, 'uploadAttachment'])->name('documents.upload');
+    Route::post('/{document}/part/upload', [DocumentController::class, 'uploadPartAttachment'])->name('documents.part.upload');
     Route::post('/{document}/confirm', [DocumentController::class, 'confirmDocument'])->name('documents.confirm');
     Route::post('/{document}/cancel', [DocumentController::class, 'cancelDocument'])->name('documents.cancel');
     Route::post('/{document}/revise', [DocumentController::class, 'reviseDocument'])->name('documents.revise');
