@@ -307,7 +307,10 @@
                     enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
-                      <input class="form-control" name="document_no" placeholder="new document number" required></input>
+                      <input class="form-control" name="document_no"
+                        placeholder="new document number eg:{{$document->document_number}}-1"
+                        value="{{$document->document_number.'-'.$document->attachments->count()+1}}" readonly
+                        required></input>
                     </div>
                     <div class="mb-3">
                       <input type="file" class="form-control" name="attachment" required>
