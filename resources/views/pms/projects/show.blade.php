@@ -130,11 +130,114 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
               </div>
             </div>
           </div>
+
           @endif --}}
+
+          <!-- Button trigger modal -->
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            View Approved Expense
+          </button>
+
+          <!-- Modal -->
+          <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Approved Estimated Expense</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                  </button>
+                </div>
+                <div class="modal-body">
+                  @if($project->proposal->expenseComponents->count() > 0)
+                  <div class="card mt-4">
+                    <div class="card-header">
+                      <h5 class="card-title mb-0 badge bg-label-success">Project Approved Estimated Expense Breakdown
+                      </h5>
+                    </div>
+                    <div class="card-body">
+                      @php
+                      $grouped = $project->proposal->expenseComponents->groupBy('group_name');
+                      $grandTotal = 0;
+                      @endphp
+
+                      <div class="accordion" id="proposalExpenseAccordion">
+                        @foreach($grouped as $groupName => $components)
+                        @php
+
+                        $groupId = Str::slug($groupName ?? 'ungrouped', '_');
+                        $groupTotal = $components->sum('amount');
+                        $grandTotal += $groupTotal;
+                        @endphp
+
+                        <div class="accordion-item border rounded mb-2 shadow-sm">
+                          <h2 class="accordion-header" id="heading_{{ $groupId }}">
+                            <button class="accordion-button collapsed d-flex justify-content-between" type="button"
+                              data-bs-toggle="collapse" data-bs-target="#collapse_{{ $groupId }}" aria-expanded="false"
+                              aria-controls="collapse_{{ $groupId }}">
+                              <div class="d-flex flex-column">
+                                <span class="fw-bold text-primary">{{ $groupName ?? 'Ungrouped' }}</span>
+                                <small class="text-muted">Subtotal: ₹{{ number_format($groupTotal, 2) }}</small>
+                              </div>
+                            </button>
+                          </h2>
+                          <div id="collapse_{{ $groupId }}" class="accordion-collapse collapse"
+                            aria-labelledby="heading_{{ $groupId }}" data-bs-parent="#proposalExpenseAccordion">
+                            <div class="accordion-body p-2">
+                              <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle mb-0">
+                                  <thead class="table-light">
+                                    <tr>
+                                      <th style="width:25%">Category</th>
+                                      <th style="width:35%">Component</th>
+                                      @if($groupName === 'HR')
+                                      <th style="width:10%" class="text-end">Persondays</th>
+                                      <th style="width:15%" class="text-end">Rate (₹)</th>
+                                      @endif
+                                      <th style="width:20%" class="text-end">Amount (₹)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    @foreach($components as $component)
+                                    <tr>
+                                      <td>{{ $component->category->name ?? 'N/A' }}</td>
+                                      <td>{{ $component->component }}</td>
+                                      @if($groupName === 'HR')
+                                      <td class="text-end">{{ $component->mandays ?? '-' }}</td>
+                                      <td class="text-end">{{ $component->rate ? number_format($component->rate, 2) :
+                                        '-' }}
+                                      </td>
+                                      @endif
+                                      <td class="text-end">₹{{ number_format($component->amount, 2) }}</td>
+                                    </tr>
+                                    @endforeach
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        @endforeach
+                      </div>
+
+                      <div class="border-top pt-3 mt-3 text-end">
+                        <strong>Grand Total Estimated Expense: ₹{{ number_format($grandTotal, 2) }}</strong>
+                      </div>
+                    </div>
+                  </div>
+                  @endif
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                </div>
+              </div>
+            </div>
+          </div>
           @if($project->expenseComponents->count() > 0)
           <div class="card mt-4">
             <div class="card-header">
-              <h5 class="card-title mb-0">Estimated Expense Breakdown</h5>
+              <h5 class="card-title mb-0">Current Estimated Expense Breakdown</h5>
             </div>
             <div class="card-body">
               @php
