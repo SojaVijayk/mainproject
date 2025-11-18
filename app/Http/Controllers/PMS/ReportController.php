@@ -708,7 +708,7 @@ $investigatorCategoryWise = $projects
 
         return view('pms.reports.resource-utilization', compact('utilizationData', 'dateRanges', 'dateRange', 'workingDays'),['pageConfigs'=> $pageConfigs]);
     }
-public function resourceUtilization(Request $request)
+public function resourceUtilization1(Request $request)
 {
     $pageConfigs = ['myLayout' => 'horizontal'];
     $dateRange = $request->input('date_range', 'this_month');
@@ -793,6 +793,264 @@ public function resourceUtilization(Request $request)
         'dateRange',
         'workingDays'
     ), ['pageConfigs' => $pageConfigs]);
+}
+
+public function resourceUtilization(Request $request)
+{
+    $pageConfigs = ['myLayout' => 'horizontal'];
+
+    // Get date range parameters
+    $dateRange = $request->input('date_range', 'this_month');
+    $startDate = $request->input('start_date');
+    $endDate = $request->input('end_date');
+
+    $query = Timesheet::with(['user', 'project', 'category', 'items']);
+
+    if (!auth()->user()->hasRole('director')) {
+        $query->where('user_id', auth()->id());
+    }
+
+    $query = $this->applyDateRangeFilterTimesheet($query, $dateRange, $startDate, $endDate);
+    $timesheets = $query->get();
+
+    // Calculate working days and period info
+    $periodInfo = $this->getPeriodInfo($dateRange, $startDate, $endDate);
+    $workingDays = $periodInfo['working_days'];
+    $totalAvailableHours = $workingDays * 8;
+
+    $utilizationData = [];
+
+    foreach ($timesheets->groupBy('user_id') as $userId => $userTimesheets) {
+        $user = $userTimesheets->first()->user;
+        $totalHours = $userTimesheets->sum('hours');
+        $utilizationPercentage = ($totalHours / $totalAvailableHours) * 100;
+
+        // Group timesheets by project-category combination
+        $projects = $userTimesheets
+            ->groupBy(fn($t) => ($t->project_id ?? 'none') . '-' . ($t->category_id ?? 'none'))
+            ->map(function ($grouped) {
+                $first = $grouped->first();
+                $categoryName = strtolower($first->category->name ?? '');
+
+                // Handle "Others" category with sub-items
+                if ($categoryName === 'others') {
+                    $items = $grouped->flatMap->items;
+
+                    return [
+                        'project' => $first->project,
+                        'category' => $first->category,
+                        'hours' => $items->sum('hours') ?: $grouped->sum('hours'),
+                        'items' => $items->map(function ($item) {
+                            return (object)[
+                                'description' => $item->description,
+                                'item_name' => $item->item_name,
+                                'hours' => $item->hours,
+                            ];
+                        })
+                    ];
+                }
+
+                // Regular project/category entry
+                return [
+                    'project' => $first->project,
+                    'category' => $first->category,
+                    'hours' => $grouped->sum('hours'),
+                    'items' => collect(), // empty
+                ];
+            })
+            ->values();
+
+        $utilizationData[] = [
+            'user' => $user,
+            'total_hours' => $totalHours,
+            'utilization_percentage' => $utilizationPercentage,
+            'projects' => $projects,
+        ];
+    }
+
+    $dateRanges = [
+       'today' => 'Today',
+        'yesterday' => 'Yesterday',
+        'this_week' => 'This Week',
+        'this_month' => 'This Month',
+        'this_quarter' => 'This Quarter',
+        'this_year' => 'This Year',
+        'last_week' => 'Last Week',
+        'last_month' => 'Last Month',
+        'last_quarter' => 'Last Quarter',
+        'last_year' => 'Last Year',
+        'custom' => 'Custom Range',
+    ];
+
+    return view('pms.reports.resource-utilization', compact(
+        'utilizationData',
+        'dateRanges',
+        'dateRange',
+        'workingDays',
+        'periodInfo',
+        'startDate',
+        'endDate'
+    ), ['pageConfigs' => $pageConfigs]);
+}
+
+private function applyDateRangeFilterTimesheet($query, $dateRange, $startDate = null, $endDate = null)
+{
+    switch ($dateRange) {
+      case 'today':
+            $query->whereDate('date', Carbon::today());
+            break;
+        case 'yesterday':
+            $query->whereDate('date', Carbon::yesterday());
+            break;
+        case 'this_week':
+            $query->whereBetween('date', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
+            break;
+        case 'this_month':
+            $query->whereBetween('date', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()]);
+            break;
+        case 'this_quarter':
+            $query->whereBetween('date', [Carbon::now()->startOfQuarter(), Carbon::now()->endOfQuarter()]);
+            break;
+        case 'this_year':
+            $query->whereBetween('date', [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()]);
+            break;
+        case 'last_week':
+            $query->whereBetween('date', [Carbon::now()->subWeek()->startOfWeek(), Carbon::now()->subWeek()->endOfWeek()]);
+            break;
+        case 'last_month':
+            $query->whereBetween('date', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()]);
+            break;
+        case 'last_quarter':
+            $query->whereBetween('date', [Carbon::now()->subQuarter()->startOfQuarter(), Carbon::now()->subQuarter()->endOfQuarter()]);
+            break;
+        case 'last_year':
+            $query->whereBetween('date', [Carbon::now()->subYear()->startOfYear(), Carbon::now()->subYear()->endOfYear()]);
+            break;
+        case 'custom':
+            if ($startDate && $endDate) {
+                $query->whereBetween('date', [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay()
+                ]);
+            }
+            break;
+    }
+
+    return $query;
+}
+
+private function getPeriodInfo($dateRange, $startDate = null, $endDate = null)
+{
+    $start = null;
+    $end = null;
+    $holidays = DB::table('holidays')->pluck('date')->map(function ($date) {
+        return Carbon::parse($date)->format('Y-m-d');
+    })->toArray();
+
+    switch ($dateRange) {
+        case 'today':
+            $start = Carbon::today();
+            $end = Carbon::today();
+            break;
+        case 'yesterday':
+            $start = Carbon::yesterday();
+            $end = Carbon::yesterday();
+            break;
+        case 'this_week':
+            $start = Carbon::now()->startOfWeek();
+            $end = Carbon::now()->endOfWeek();
+            break;
+        case 'this_month':
+            $start = Carbon::now()->startOfMonth();
+            $end = Carbon::now()->endOfMonth();
+            break;
+        case 'this_quarter':
+            $start = Carbon::now()->startOfQuarter();
+            $end = Carbon::now()->endOfQuarter();
+            break;
+        case 'this_year':
+            $start = Carbon::now()->startOfYear();
+            $end = Carbon::now()->endOfYear();
+            break;
+        case 'last_week':
+            $start = Carbon::now()->subWeek()->startOfWeek();
+            $end = Carbon::now()->subWeek()->endOfWeek();
+            break;
+        case 'last_month':
+            $start = Carbon::now()->subMonth()->startOfMonth();
+            $end = Carbon::now()->subMonth()->endOfMonth();
+            break;
+        case 'last_quarter':
+            $start = Carbon::now()->subQuarter()->startOfQuarter();
+            $end = Carbon::now()->subQuarter()->endOfQuarter();
+            break;
+        case 'last_year':
+            $start = Carbon::now()->subYear()->startOfYear();
+            $end = Carbon::now()->subYear()->endOfYear();
+            break;
+        case 'custom':
+            if ($startDate && $endDate) {
+                $start = Carbon::parse($startDate)->startOfDay();
+                $end = Carbon::parse($endDate)->endOfDay();
+            } else {
+                // Default to current month if no custom dates provided
+                $start = Carbon::now()->startOfMonth();
+                $end = Carbon::now()->endOfMonth();
+            }
+            break;
+        default:
+            $start = Carbon::now()->startOfMonth();
+            $end = Carbon::now()->endOfMonth();
+            break;
+    }
+
+    // Calculate working days excluding weekends and holidays
+    $workingDays = $this->calculateWorkingDays($start, $end, $holidays);
+    $totalDays = $start->diffInDays($end) + 1;
+    $holidayCount = $this->countHolidays($start, $end, $holidays);
+
+    return [
+        'start_date' => $start->format('Y-m-d'),
+        'end_date' => $end->format('Y-m-d'),
+        'working_days' => $workingDays,
+        'total_days' => $totalDays,
+        'holiday_count' => $holidayCount,
+        'period_string' => $start->format('M d, Y') . ' to ' . $end->format('M d, Y')
+    ];
+}
+
+private function calculateWorkingDays($start, $end, $holidays)
+{
+    $workingDays = 0;
+    $current = $start->copy();
+
+    while ($current <= $end) {
+        // Check if it's a weekend (Saturday = 6, Sunday = 0)
+        if (!$current->isWeekend()) {
+            // Check if it's not a holiday
+            if (!in_array($current->format('Y-m-d'), $holidays)) {
+                $workingDays++;
+            }
+        }
+        $current->addDay();
+    }
+
+    return $workingDays;
+}
+
+private function countHolidays($start, $end, $holidays)
+{
+    $holidayCount = 0;
+    $current = $start->copy();
+
+    while ($current <= $end) {
+        if (in_array($current->format('Y-m-d'), $holidays)) {
+            $holidayCount++;
+        }
+        $current->addDay();
+    }
+
+    return $holidayCount;
 }
 
     public function export($type, Request $request)

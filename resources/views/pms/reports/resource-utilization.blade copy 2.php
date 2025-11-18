@@ -49,21 +49,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-
-    // Toggle custom date fields visibility
-    const dateRangeSelect = document.getElementById('date_range');
-    const customDateFields = document.querySelectorAll('.custom-date-fields');
-
-    function toggleCustomDateFields() {
-      if (dateRangeSelect.value === 'custom') {
-        customDateFields.forEach(field => field.style.display = 'block');
-      } else {
-        customDateFields.forEach(field => field.style.display = 'none');
-      }
-    }
-
-    dateRangeSelect.addEventListener('change', toggleCustomDateFields);
-    toggleCustomDateFields(); // Initial call
     // Team Utilization Summary Chart
     const teamCtx = document.getElementById('teamUtilizationChart').getContext('2d');
     const teamChart = new Chart(teamCtx, {
@@ -182,7 +167,7 @@
   <div class="card-body">
     <form method="GET" class="mb-4">
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-8">
           <label for="date_range" class="form-label">Date Range</label>
           <select name="date_range" id="date_range" class="form-select">
             @foreach($dateRanges as $key => $value)
@@ -190,15 +175,7 @@
             @endforeach
           </select>
         </div>
-        <div class="col-md-3 custom-date-fields" style="{{ $dateRange != 'custom' ? 'display: none;' : '' }}">
-          <label for="start_date" class="form-label">Start Date</label>
-          <input type="date" name="start_date" id="start_date" class="form-control" value="{{ $startDate ?? '' }}">
-        </div>
-        <div class="col-md-3 custom-date-fields" style="{{ $dateRange != 'custom' ? 'display: none;' : '' }}">
-          <label for="end_date" class="form-label">End Date</label>
-          <input type="date" name="end_date" id="end_date" class="form-control" value="{{ $endDate ?? '' }}">
-        </div>
-        <div class="col-md-2 d-flex align-items-end">
+        <div class="col-md-4 d-flex align-items-end">
           <button type="submit" class="btn btn-primary">Apply Filters</button>
         </div>
       </div>
@@ -206,11 +183,7 @@
 
     <div class="alert alert-info mb-4">
       <i class="fas fa-info-circle"></i>
-      Reporting period: {{ $periodInfo['period_string'] }}<br>
-      Total days: {{ $periodInfo['total_days'] }} |
-      Working days: {{ $workingDays }} |
-      Holidays: {{ $periodInfo['holiday_count'] }}<br>
-      Available hours per resource: {{ $workingDays * 8 }} hours
+      Reporting period: {{ $workingDays }} working days ({{ $workingDays * 8 }} available hours per resource)
     </div>
 
     <div class="table-responsive">
