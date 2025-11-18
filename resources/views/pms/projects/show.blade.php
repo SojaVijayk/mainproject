@@ -132,11 +132,12 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
           </div>
 
           @endif --}}
-
+          @if($project->proposal->expenseComponents->count() > 0)
           <!-- Button trigger modal -->
           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
             View Approved Expense
           </button>
+          @endif
 
           <!-- Modal -->
           <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
