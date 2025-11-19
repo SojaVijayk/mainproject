@@ -503,7 +503,7 @@ public function convertProformaToTaxInvoice(Request $request, Invoice $invoice)
     //     'due_date'        => 'required_if:conversion_type,full,partial|date|after_or_equal:invoice_date',
     // ]);
   $request->validate([
-    'conversion_type' => 'required|in:cancel,full,partial',
+    'conversion_type' => 'required|in:cancel,full,partial,partial_no_proforma',
 
     // Remark is required only when cancel
     'remark' => 'required_if:conversion_type,cancel|nullable|string',
