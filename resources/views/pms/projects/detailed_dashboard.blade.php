@@ -407,7 +407,7 @@
       @endif
     </div>
     <div class="col-md-6">
-      @if($project->proposal->expenseComponents->count() > 0)
+      @if($project->proposal && $project->proposal->expenseComponents->count() > 0)
       <div class="card mt-4">
         <div class="card-header">
           <h5 class="card-title mb-0 badge bg-label-success">Project Approved Estimated Expense Breakdown </h5>

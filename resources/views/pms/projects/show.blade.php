@@ -132,7 +132,7 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
           </div>
 
           @endif --}}
-          @if($project->proposal->expenseComponents->count() > 0)
+          @if($project->proposal && $project->proposal->expenseComponents->count() > 0)
           <!-- Button trigger modal -->
           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
             View Approved Expense
@@ -150,7 +150,7 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
                   </button>
                 </div>
                 <div class="modal-body">
-                  @if($project->proposal->expenseComponents->count() > 0)
+                  @if($project->proposal && $project->proposal->expenseComponents->count() > 0)
                   <div class="card mt-4">
                     <div class="card-header">
                       <h5 class="card-title mb-0 badge bg-label-success">Project Approved Estimated Expense Breakdown
@@ -534,13 +534,16 @@ auth()->id())->whereIn('role',['lead','leadMember'])->exists();
         <h5 class="card-title">Linked Proposal</h5>
       </div>
       <div class="card-body">
-        <p><strong>Budget:</strong> {{ number_format($project->proposal->budget, 2) }}</p>
-        <p><strong>Tenure:</strong> {{ $project->proposal->tenure }}</p>
-        <p><strong>Expected Start:</strong> @if(!is_null($project->proposal->expected_start_date)) {{
+        <p><strong>Budget:</strong> {{ number_format($project->proposal->budget?? 0, 2) }}</p>
+        <p><strong>Tenure:</strong> {{ $project->proposal->tenure ?? '' }}</p>
+        <p><strong>Expected Start:</strong> @if($project->proposal && !is_null(
+          $project->proposal->expected_start_date))
+          {{
           $project->proposal->expected_start_date->format('d M Y') }} @endif</p>
+        @if($project->proposal)
         <a href="{{ route('pms.proposals.show', $project->proposal->id) }}" class="btn  btn-label-primary w-100 mt-2">
           <i class="fas fa-eye"></i> View Proposal
-        </a>
+        </a>@endif
       </div>
     </div>
   </div>
