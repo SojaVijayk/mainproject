@@ -593,23 +593,34 @@ public function convertProformaToTaxInvoice(Request $request, Invoice $invoice)
         elseif ($conversionType === 'partial_no_proforma') {
             $invoice->update([
                 'status' => Invoice::STATUS_PARTIAL_NO_PROFORMA,
-                'invoice_number' => $invoice->invoice_number . '-PARTIAL',
+                'invoice_number' => $invoice->invoice_number . '-PARTIAL-CONVERTED',
             ]);
 
             // Create only new Tax Invoice
-            $newTaxInvoice = new Invoice([
-                'project_id' => $invoice->project_id,
-                'milestone_id' => $invoice->milestone_id,
-                'invoice_type' => 2,
-                'invoice_number' => $request->invoice_number,
-                'invoice_date' => $request->invoice_date,
-                'due_date' => $request->due_date,
-                'status' => Invoice::STATUS_DRAFT,
-                'requested_by' => $invoice->requested_by,
-                'generated_by' => $invoice->generated_by,
-                'description' => 'Created as Partial (No Proforma) conversion from ' . $invoice->invoice_number,
-            ]);
+              $newTaxInvoice = $invoice->replicate();
+            $newTaxInvoice->invoice_type = 2;
+            $newTaxInvoice->invoice_number = $request->invoice_number;
+            $newTaxInvoice->invoice_date = $request->invoice_date;
+            $newTaxInvoice->due_date = $request->due_date;
+            $newTaxInvoice->status = Invoice::STATUS_DRAFT;
+             $newTaxInvoice->proforma_id = $invoice->id;
             $newTaxInvoice->save();
+            foreach ($invoice->items as $item) {
+                $newTaxInvoice->items()->create($item->toArray());
+            }
+            // $newTaxInvoice = new Invoice([
+            //     'project_id' => $invoice->project_id,
+            //     'milestone_id' => $invoice->milestone_id,
+            //     'invoice_type' => 2,
+            //     'invoice_number' => $request->invoice_number,
+            //     'invoice_date' => $request->invoice_date,
+            //     'due_date' => $request->due_date,
+            //     'status' => Invoice::STATUS_DRAFT,
+            //     'requested_by' => $invoice->requested_by,
+            //     'generated_by' => $invoice->generated_by,
+            //     'description' => 'Created as Partial (No Proforma) conversion from ' . $invoice->invoice_number,
+            // ]);
+            // $newTaxInvoice->save();
 
             \DB::commit();
 
