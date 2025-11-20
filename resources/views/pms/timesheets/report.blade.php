@@ -36,10 +36,11 @@
     <div class="d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Timesheet Report</h5>
       <div>
-        <a href="{{ route('pms.timesheets.export', ['type' => 'timesheet']) }}?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}&user_id={{ request('user_id') }}"
+        {{-- <a
+          href="{{ route('pms.timesheets.export', ['type' => 'timesheet']) }}?start_date={{ request('start_date') }}&end_date={{ request('end_date') }}&user_id={{ request('user_id') }}"
           class="btn btn-sm btn-success me-2">
           <i class="fas fa-file-export"></i> Export
-        </a>
+        </a> --}}
       </div>
     </div>
   </div>
