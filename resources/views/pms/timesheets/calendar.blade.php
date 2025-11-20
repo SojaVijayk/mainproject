@@ -78,7 +78,7 @@
                 timesheetForm.insertAdjacentHTML('beforeend', '<input type="hidden" name="_method" value="PUT">');
 
                 // Show modal
-                timesheetModal.show();
+                {{--  timesheetModal.show();  --}}
             }
         });
 
