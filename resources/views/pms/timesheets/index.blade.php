@@ -474,6 +474,9 @@ function unblockUI() {
     <div class="d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Daily Timesheet</h5>
       <div>
+        <a type="button" class="btn btn-label-danger" href="{{ route('pms.reports.resource-utilization') }}">Team
+          Resource
+          Utilization Chart</a>
         <a href="{{ route('pms.timesheets.calendar') }}" class="btn btn-sm btn-info me-2">
           <i class="fas fa-calendar-alt"></i> Calendar View
         </a>

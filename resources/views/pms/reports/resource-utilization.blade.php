@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}">
 
 @endsection
 
@@ -22,6 +23,7 @@
 <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
 
 @endsection
 @section('page-style')
@@ -160,6 +162,7 @@
     });
     @endif
     @endforeach
+    $('.select2').select2({ width: 'resolve' });
 });
 </script>
 @endsection
@@ -190,6 +193,7 @@
             @endforeach
           </select>
         </div>
+
         <div class="col-md-3 custom-date-fields" style="{{ $dateRange != 'custom' ? 'display: none;' : '' }}">
           <label for="start_date" class="form-label">Start Date</label>
           <input type="date" name="start_date" id="start_date" class="form-control" value="{{ $startDate ?? '' }}">
@@ -198,6 +202,20 @@
           <label for="end_date" class="form-label">End Date</label>
           <input type="date" name="end_date" id="end_date" class="form-control" value="{{ $endDate ?? '' }}">
         </div>
+        {{-- @if(auth()->user()->hasRole('director')) --}}
+        <div class="col-md-3">
+          <label class="form-label">Select Users</label>
+          <select name="user_id[]" class="form-select select2" multiple>
+            @foreach($users as $user)
+            <option value="{{ $user->id }}" @if(!empty($filterUser) && in_array($user->id, (array)$filterUser)) selected
+              @endif>
+              {{ $user->name }}
+            </option>
+            @endforeach
+          </select>
+          <small class="text-muted">Hold CTRL or CMD to select multiple users</small>
+        </div>
+        {{-- @endif --}}
         <div class="col-md-2 d-flex align-items-end">
           <button type="submit" class="btn btn-primary">Apply Filters</button>
         </div>

@@ -694,9 +694,9 @@ document.addEventListener('DOMContentLoaded', function() {
           --}}
           <a type="button" class="btn btn-label-danger" href="{{ route('pms.reports.resource-utilization') }}">Resource
             Utilization Chart</a>
-          <a type="button" class="btn btn-label-warning"
+          {{-- <a type="button" class="btn btn-label-warning"
             href="{{ route('pms.timesheets.resource-utilization') }}">Resource
-            Utilization Timesheet</a>
+            Utilization Timesheet</a> --}}
           <a type="button" class="btn btn-label-info" href="{{ route('pms.timesheets.calendar') }}">Timesheet
             Calendar</a>
           {{-- <a type="button" class="btn btn-label-dark" href="{{ route('pms.timesheets.report') }}">Report</a> --}}

@@ -803,12 +803,91 @@ public function resourceUtilization(Request $request)
     $dateRange = $request->input('date_range', 'this_month');
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
+     // Get selected user filter (single or multiple user IDs)
+    $filterUser = $request->input('user_id', []);
+        // Build list of users for filter dropdown (only for directors)
+    $authUser = auth()->user();
+
+if ($authUser->hasRole('director')) {
+
+    // Director can see all active users
+    $users = User::where('active', 1)
+        ->orderBy('name')
+        ->get();
+
+} else {
+
+    $users = collect();
+
+    /** ------------------------------
+     *  CASE 1: Project Investigator
+     * ------------------------------ */
+    // if ($authUser->hasRole('Project Investigator')) {
+
+    //     $projectUserIds = Project::where('project_investigator_id', $authUser->id)
+    //         ->with('teamMembers') // relation: project → teamMembers
+    //         ->get()
+    //         ->flatMap(fn($p) => $p->teamMembers->pluck('user_id'))
+    //         ->unique();
+
+    //     $users = $users->merge(
+    //         User::whereIn('id', $projectUserIds)
+    //             ->where('active', 1)
+    //             ->get()
+    //     );
+    // }
+
+    /** ------------------------------
+     *  CASE 2: Leave Approver (Reporting Officer)
+     *  Get employees whose reporting_officer == auth user
+     * ------------------------------ */
+    if ($authUser->hasRole('Leave Approver')) {
+
+        $reporteeUserIds = User::whereHas('employee', function ($q) use ($authUser) {
+            $q->where('reporting_officer', $authUser->id);
+        })->pluck('id');
+
+        $users = $users->merge(
+            User::whereIn('id', $reporteeUserIds)
+                ->where('active', 1)
+                ->get()
+        );
+    }
+
+    /** ------------------------------
+     *  CASE 3: If both empty → fallback
+     * ------------------------------ */
+    if ($users->isEmpty()) {
+        $users = collect([$authUser]);
+    }
+
+    // Remove duplicates & sort
+    $users = $users->unique('id')->sortBy('name')->values();
+}
 
     $query = Timesheet::with(['user', 'project', 'category', 'items']);
 
-    if (!auth()->user()->hasRole('director')) {
-        $query->where('user_id', auth()->id());
-    }
+    // if (!auth()->user()->hasRole('director')) {
+    //     $query->where('user_id', auth()->id());
+    // }
+    // if (auth()->user()->hasRole('director')) {
+    //     if (!empty($filterUser)) {
+    //         // If user selects one or more users
+    //         $query->whereIn('user_id', (array)$filterUser);
+    //     }
+    // }
+    // else {
+    //     // Normal users → only their own data
+    //     $query->where('user_id', auth()->id());
+    // }
+
+    if (!empty($filterUser)) {
+            // If user selects one or more users
+            $query->whereIn('user_id', (array)$filterUser);
+        }
+        else{
+            $query->where('user_id', auth()->id());
+        }
 
     $query = $this->applyDateRangeFilterTimesheet($query, $dateRange, $startDate, $endDate);
     $timesheets = $query->get();
@@ -889,7 +968,9 @@ public function resourceUtilization(Request $request)
         'workingDays',
         'periodInfo',
         'startDate',
-        'endDate'
+        'endDate',
+        'users',      // ADD THIS
+        'filterUser'
     ), ['pageConfigs' => $pageConfigs]);
 }
 
