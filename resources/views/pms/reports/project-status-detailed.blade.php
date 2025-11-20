@@ -285,11 +285,14 @@ document.getElementById("downloadFullPDF").addEventListener("click", function ()
 @section('content')
 @php
 
-$users = \App\Models\User::with('employee')
-->whereHas('employee', function($q) {
-$q->whereIn('designation', [2, 7, 9]);
-$user = Auth::user();
-})
+//$users = \App\Models\User::with('employee')
+//->whereHas('employee', function($q) {
+//$q->whereIn('designation', [2, 7, 9]);
+//$user = Auth::user();
+//})
+//->get();
+$users = \App\Models\User::role('Project Investigator')
+->with('employee')
 ->get();
 @endphp
 <div class="card">

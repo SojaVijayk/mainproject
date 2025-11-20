@@ -1213,9 +1213,13 @@ $q->whereIn('designation', [2, 7, 9]);
 
   $pageConfigs = ['myLayout' => 'horizontal'];
 //  $investigators = User::whereHas('projects')->orderBy('name')->get();
-    $investigators = User::whereHas('employee', function($q) {
-$q->whereIn('designation', [2, 7, 9]);
-    })->get();
+//     $investigators = User::whereHas('employee', function($q) {
+// $q->whereIn('designation', [2, 7, 9]);
+//     })->get();
+
+    $investigators = \App\Models\User::role('Project Investigator')
+->with('employee')
+->get();
 
     $clients = Client::orderBy('client_name')->get();
   $user = Auth::user();
