@@ -407,7 +407,7 @@ function unblockUI() {
     <h4>General Time Horizontal Scroll</h4>
   </div>
   <div class="general-time-section scroll-x">
-    @foreach($categories as $category)
+    @foreach($categories->whereIn('id',[6,7,8]) as $category)
     <div class="project-card">
       <div class="project-header">{{ $category->name }}</div>
 
@@ -446,15 +446,15 @@ function unblockUI() {
 
       <div class="time-input-container mt-2">
         @php
-        if (!isset($entry)) {
-        $entry = $timesheets->firstWhere(fn($item) =>
+        //if (!isset($entry)) {
+        $entryCat = $timesheets->firstWhere(fn($item) =>
         $item->project_id === null &&
         $item->category_id == $category->id
         );
-        }
+        // }
         @endphp
         <input type="number" step="0.1" min="0" max="24" class="form-control category-time-input"
-          value="{{ $entry ? $entry->hours : '' }}" data-date="{{ $selectedDate->format('Y-m-d') }}"
+          value="{{ $entryCat ? $entryCat->hours : '' }}" data-date="{{ $selectedDate->format('Y-m-d') }}"
           data-category-id="{{ $category->id }}" placeholder="0.0">
         <span>hours</span>
       </div>

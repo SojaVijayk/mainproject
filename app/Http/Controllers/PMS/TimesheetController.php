@@ -164,7 +164,25 @@ for ($i = 0; $i < 7; $i++) {
         'entries.*.items.*.hours' => 'required_with:entries.*.items|numeric|min:0.1|max:24',
     ]);
 
+      $userId = auth()->id();
 
+    // Extract dates from incoming entries
+    $dates = collect($request->entries)->pluck('date')->unique();
+
+    /**
+     * 🔥 DELETE existing entries for only these dates
+     * Related `timesheet_items` will also be deleted because of FK cascade or manually below
+     */
+    $timesheetsToDelete = Timesheet::where('user_id', $userId)
+        ->whereIn('date', $dates)
+        ->get();
+
+    foreach ($timesheetsToDelete as $ts) {
+        // delete child items
+        $ts->items()->delete();
+        // delete the parent timesheet
+        $ts->delete();
+    }
     foreach ($request->entries as $entry) {
         $timesheet= Timesheet::updateOrCreate(
             [
