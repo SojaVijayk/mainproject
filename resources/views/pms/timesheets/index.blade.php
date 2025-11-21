@@ -361,13 +361,60 @@ function unblockUI() {
   {{ $selectedDate->format('l, F j, Y') }}
 </div>
 
-<div id="floatingCategoryTotals" style="position:fixed; top:150px; left:20px; background:#ffffff; color:#000;
+{{-- <div id="floatingCategoryTotals" style="position:fixed; top:150px; left:20px; background:#ffffff; color:#000;
      padding:12px 18px; border-radius:8px; min-width:200px;
      box-shadow:0 4px 10px rgba(0,0,0,0.25); font-size:14px; z-index:9999;">
   <strong>Category Totals</strong>
   <div id="categoryTotalsList" style="margin-top:8px;"></div>
   <hr>
   <strong>Total Today: <span id="grandTotal">0.0</span> hrs</strong>
+</div> --}}
+<div id="floatingCategoryTotals" style="
+        position:fixed;
+        top:150px;
+        left:20px;
+        padding:14px 16px;
+        min-width:220px;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        font-size: 13px;
+        color:#333;
+        z-index:9999;
+     ">
+
+  <div style="font-weight:600; font-size:14px; margin-bottom:6px; color:#1d3557;">
+    Category Totals
+  </div>
+
+  <div id="categoryTotalsList" style="margin-bottom:10px; line-height:1.5;"></div>
+
+  <div style="
+        height:1px;
+        background: rgba(0,0,0,0.1);
+        margin:6px 0 10px 0;">
+  </div>
+
+  <div style="
+        font-weight:600;
+        font-size:14px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        color:#1d3557;">
+    Total Today:
+    <span id="grandTotal" style="
+                padding:3px 10px;
+                background:#1d3557;
+                color:white;
+                border-radius:20px;
+                font-size:13px;">
+      0.0
+    </span>
+  </div>
+
 </div>
 
 <div class="timesheet-container">
