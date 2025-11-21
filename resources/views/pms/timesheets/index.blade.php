@@ -276,6 +276,67 @@
         }
     });
     @endif
+
+
+
+
+    function updateAllTotals() {
+    let grand = 0;
+    let categoryTotals = {};
+
+    // 1️⃣ CATEGORY TIME INPUTS (GENERAL + OTHERS)
+    $(".category-time-input").each(function () {
+        const hours = parseFloat($(this).val());
+        if (isNaN(hours) || hours <= 0) return;
+
+        const card = $(this).closest(".project-card");
+        const catName = card.find(".project-header").text().trim();
+
+        categoryTotals[catName] = (categoryTotals[catName] || 0) + hours;
+        grand += hours;
+    });
+
+
+    // 2️⃣ PROJECT TIME INPUTS → GROUP BY CATEGORY, NOT BY PROJECT
+    $(".project-time-input").each(function () {
+        const hours = parseFloat($(this).val());
+        if (isNaN(hours) || hours <= 0) return;
+
+        const projectCard = $(this).closest(".project-card");
+
+        // Inside the accordion, category name is the accordion button
+        const catHeader = projectCard.closest(".accordion-item")
+            .find(".accordion-button")
+            .first()
+            .text()
+            .trim();
+
+        const categoryName = catHeader || "Uncategorized";
+
+        categoryTotals[categoryName] = (categoryTotals[categoryName] || 0) + hours;
+        grand += hours;
+    });
+
+
+    // 3️⃣ Render category totals
+    let html = "";
+    Object.entries(categoryTotals).forEach(([name, total]) => {
+        html += `<div><strong>${name}</strong>: ${total.toFixed(2)} hrs</div>`;
+    });
+
+    $("#categoryTotalsList").html(html);
+    $("#grandTotal").text(grand.toFixed(2));
+}
+
+// 🔄 Trigger updates when typing
+$(document).on("input", ".category-time-input, .project-time-input, .item-hours", function () {
+    updateAllTotals();
+});
+
+// Initialize
+updateAllTotals();
+
+
 });
 
 function blockUI() {
@@ -300,7 +361,14 @@ function unblockUI() {
   {{ $selectedDate->format('l, F j, Y') }}
 </div>
 
-
+<div id="floatingCategoryTotals" style="position:fixed; top:150px; left:20px; background:#ffffff; color:#000;
+     padding:12px 18px; border-radius:8px; min-width:200px;
+     box-shadow:0 4px 10px rgba(0,0,0,0.25); font-size:14px; z-index:9999;">
+  <strong>Category Totals</strong>
+  <div id="categoryTotalsList" style="margin-top:8px;"></div>
+  <hr>
+  <strong>Total Today: <span id="grandTotal">0.0</span> hrs</strong>
+</div>
 
 <div class="timesheet-container">
   <!-- Projects Horizontal Scroll old working -->
