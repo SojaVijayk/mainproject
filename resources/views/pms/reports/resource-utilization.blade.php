@@ -45,6 +45,21 @@
     margin-left: 1rem;
     font-size: 0.9rem;
   }
+
+  .select2-container .select2-selection--multiple {
+    min-height: 38px !important;
+    height: auto !important;
+    max-height: 120px !important;
+    /* fixed height */
+    overflow-y: auto !important;
+  }
+
+  .select2-container .select2-selection__rendered {
+    display: block !important;
+    overflow-y: auto !important;
+    max-height: 110px !important;
+    /* scroll area */
+  }
 </style>
 @endsection
 @section('page-script')
@@ -163,6 +178,21 @@
     @endif
     @endforeach
     $('.select2').select2({ width: 'resolve' });
+    // Select All
+$('#selectAll').on('click', function () {
+    let values = [];
+    $('#userSelect option').each(function () {
+        values.push($(this).val());
+    });
+    $('#userSelect').val(values).trigger('change');
+});
+
+// Deselect All
+$('#deselectAll').on('click', function () {
+    $('#userSelect').val(null).trigger('change');
+});
+
+
 });
 </script>
 @endsection
@@ -205,7 +235,11 @@
         {{-- @if(auth()->user()->hasRole('director')) --}}
         <div class="col-md-3">
           <label class="form-label">Select Users</label>
-          <select name="user_id[]" class="form-select select2" multiple>
+          <div class="mb-2">
+            <button type="button" id="selectAll" class="btn btn-sm btn-primary">Select All</button>
+            <button type="button" id="deselectAll" class="btn btn-sm btn-secondary">Deselect All</button>
+          </div>
+          <select name="user_id[]" id="userSelect" class="form-select select2" multiple>
             @foreach($users as $user)
             <option value="{{ $user->id }}" @if(!empty($filterUser) && in_array($user->id, (array)$filterUser)) selected
               @endif>

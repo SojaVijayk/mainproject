@@ -886,7 +886,10 @@ if ($authUser->hasRole('director')) {
             $query->whereIn('user_id', (array)$filterUser);
         }
         else{
-            $query->where('user_id', auth()->id());
+          if(!$authUser->hasRole('director')){
+             $query->where('user_id', auth()->id());
+          }
+
         }
 
     $query = $this->applyDateRangeFilterTimesheet($query, $dateRange, $startDate, $endDate);
