@@ -1,4 +1,40 @@
 @extends('layouts/layoutMaster')
+@section('title', 'Projects Expense Management')
+
+@section('vendor-style')
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css')}}">
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/formvalidation/dist/css/formValidation.min.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
+<link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}">
+
+@endsection
+
+@section('vendor-script')
+<script src="{{asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
+
+@endsection
+
+
+@section('page-script')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    $('.select2').select2({ width: 'resolve' });
+  });
+</script>
+@endsection
 
 @section('content')
 <div class="container-fluid">
@@ -17,16 +53,17 @@
           <form method="GET" action="{{ route('pms.expenses.index') }}" class="mb-4">
             <div class="row">
               <div class="col-md-2">
-                <select name="project_id" class="form-control">
+                <select name="project_id" class="form-control select2">
                   <option value="">All Projects</option>
                   @foreach($projects as $project)
                   <option value="{{ $project->id }}" {{ request('project_id')==$project->id ? 'selected' : '' }}>{{
-                    $project->title }}</option>
+                    $project->title }} - {{
+                    $project->project_code }}</option>
                   @endforeach
                 </select>
               </div>
               <div class="col-md-2">
-                <select name="category_id" class="form-control">
+                <select name="category_id" class="form-control select2">
                   <option value="">All Categories</option>
                   @foreach($categories as $category)
                   <option value="{{ $category->id }}" {{ request('category_id')==$category->id ? 'selected' : '' }}>{{
@@ -35,7 +72,7 @@
                 </select>
               </div>
               <div class="col-md-2">
-                <select name="vendor_id" class="form-control">
+                <select name="vendor_id" class="form-control select2">
                   <option value="">All Vendors</option>
                   @foreach($vendors as $vendor)
                   <option value="{{ $vendor->id }}" {{ request('vendor_id')==$vendor->id ? 'selected' : '' }}>{{
@@ -44,7 +81,7 @@
                 </select>
               </div>
               <div class="col-md-2">
-                <select name="payment_mode" class="form-control">
+                <select name="payment_mode" class="form-control select2">
                   <option value="">All Payment Modes</option>
                   @foreach($paymentModes as $mode)
                   <option value="{{ $mode }}" {{ request('payment_mode')==$mode ? 'selected' : '' }}>{{
@@ -118,7 +155,8 @@
           </div>
 
           <div class="d-flex justify-content-center">
-            {{ $expenses->links() }}
+            {{ $expenses->appends(request()->query())->links('pagination::bootstrap-5') }}
+            {{-- {{ $expenses->links() }} --}}
           </div>
         </div>
       </div>
