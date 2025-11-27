@@ -419,7 +419,7 @@ class TapalController extends Controller
     }
 
     $validated = $request->validate([
-        'completion_remarks' => 'required|string|max:500'
+        'completion_remarks' => 'required|string'
     ]);
 
     $movement->update([
