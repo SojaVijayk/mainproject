@@ -180,7 +180,487 @@ public function projectStatusDetailed(Request $request)
     });
 
     // Base query with relationships - Eager load invoices with date filter
-    $projectsQuery = Project::with(['requirement.category', 'proposal', 'investigator'])
+    $projectsQuery = Project::with(['requirement.category', 'proposal', 'investigator', 'yearlyBudgets.financialYear', 'expenseComponents'])
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->whereIn('status', [Project::STATUS_ONGOING, Project::STATUS_COMPLETED])
+        ->when($startDate && $endDate, fn($q) =>
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        );
+
+    // Load projects with filtered invoices and their payments
+    $projects = $projectsQuery->get()->map(function ($project) use ($startDate, $endDate) {
+        // Load invoices filtered by date
+        $project->setRelation('invoices',
+            $project->invoices()
+                ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('invoice_date', [$startDate, $endDate]);
+                })
+                ->with('payments') // Load payments for the filtered invoices
+                ->get()
+        );
+        return $project;
+    });
+    // print_r($projects->where('id',876));exit;
+
+    // Get all unique financial years from projects (sorted descending - newest first)
+    $allFinancialYears = collect();
+    foreach ($projects as $project) {
+        foreach ($project->yearlyBudgets as $yb) {
+            if ($yb->financialYear) {
+                $allFinancialYears->push($yb->financialYear);
+            }
+        }
+    }
+    $allFinancialYearsFromProjects = $allFinancialYears->unique('id')->sortByDesc('start_date')->values();
+
+    // Get all financial years from database for filter dropdown
+    $allFinancialYearsForFilter = \App\Models\PMS\FinancialYear::orderBy('start_date', 'desc')->get();
+
+    // Filter financial years based on user selection
+    $selectedFinancialYearIds = $request->input('financial_year_ids', []);
+    if (!empty($selectedFinancialYearIds)) {
+        // User has selected specific years
+        $financialYears = $allFinancialYearsFromProjects->whereIn('id', $selectedFinancialYearIds)->values();
+    } else {
+        // No selection, show all years from projects
+        $financialYears = $allFinancialYearsFromProjects;
+    }
+
+    // Grouping by category with filtered invoices and payments
+    $categoryWise = $projects->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized');
+
+    $categorySummary = $categoryWise->map(function ($group) use ($financialYears) {
+        $allInvoices = $group->flatMap->invoices;
+        $allPayments = $allInvoices->flatMap->payments;
+
+        // Calculate year-wise budget and revenue with fallback
+        $yearlyBudgetTotal = 0;
+        $yearlyRevenueTotal = 0;
+
+        // Initialize year-wise data structure
+        $yearWiseData = [];
+        foreach ($financialYears as $fy) {
+            $yearWiseData[$fy->id] = ['budget' => 0, 'revenue' => 0];
+        }
+
+        // Find current financial year
+        $today = Carbon::today();
+        $currentFY = $financialYears->first(function($fy) use ($today) {
+            return $today->between($fy->start_date, $fy->end_date);
+        });
+
+        foreach ($group as $project) {
+            if ($project->yearlyBudgets->isNotEmpty()) {
+                // Use year-wise budget and revenue
+                $yearlyBudgetTotal += $project->yearlyBudgets->sum('amount');
+                $yearlyRevenueTotal += $project->yearlyBudgets->sum('yearly_revenue');
+
+                // Populate year-wise data
+                foreach ($project->yearlyBudgets as $yb) {
+                    if ($yb->financial_year_id && isset($yearWiseData[$yb->financial_year_id])) {
+                        $yearWiseData[$yb->financial_year_id]['budget'] += $yb->amount;
+                        $yearWiseData[$yb->financial_year_id]['revenue'] += $yb->yearly_revenue;
+                    }
+                }
+            } else {
+                // Fallback to project-level budget and revenue
+                $yearlyBudgetTotal += $project->budget;
+                $yearlyRevenueTotal += $project->revenue;
+
+                if ($currentFY && isset($yearWiseData[$currentFY->id])) {
+                    $yearWiseData[$currentFY->id]['budget'] += $project->budget;
+                    $yearWiseData[$currentFY->id]['revenue'] += $project->revenue;
+                }
+            }
+        }
+
+        return [
+            'total_budget' => $group->sum('budget') / 100000,
+            'total_revenue' => $group->sum('revenue') / 100000,
+            'yearly_budget' => $yearlyBudgetTotal / 100000,
+            'yearly_revenue' => $yearlyRevenueTotal / 100000,
+            'year_wise_data' => collect($yearWiseData)->map(fn($data) => [
+                'budget' => $data['budget'] / 100000,
+                'revenue' => $data['revenue'] / 100000
+            ])->toArray(),
+            'total_invoice_raised' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') / 100000,
+            'total_invoice_raised_tax' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 2)->sum('total_amount') / 100000,
+            'total_invoice_raised_proforma' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 1)->sum('total_amount') / 100000,
+            'total_invoice_paid' => $allPayments->sum('amount') / 100000, // Payments from filtered invoices only
+            'total_balance' => ($allInvoices->where('invoice_type', 2)->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') - $allPayments->sum('amount')) / 100000,
+            'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
+            'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
+            'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
+            'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
+            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
+             'total_expense' => $group->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+            'yearly_financials' => $group->reduce(function ($carry, $project) {
+                 foreach ($project->yearlyBudgets as $yb) {
+                    $fy = $yb->financialYear->name ?? 'N/A';
+                    if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                    $carry[$fy]['budget'] += $yb->budget_amount;
+                }
+                foreach ($project->expenseComponents as $ec) {
+                    if ($ec->type == 1 && $ec->financial_year) {
+                         $fy = $ec->financial_year;
+                         if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                         $carry[$fy]['expense'] += $ec->amount;
+                    }
+                }
+                ksort($carry);
+                return $carry;
+            }, [])
+        ];
+    });
+
+    $investigatorWise = $projects->groupBy(fn($p) => $p->investigator->name ?? 'No Investigator');
+
+    $investigatorSummary = $investigatorWise->map(function ($group) use ($financialYears) {
+        $allInvoices = $group->flatMap->invoices;
+        $allPayments = $allInvoices->flatMap->payments;
+
+        // Calculate year-wise budget and revenue with fallback
+        $yearlyBudgetTotal = 0;
+        $yearlyRevenueTotal = 0;
+
+        // Initialize year-wise data structure
+        $yearWiseData = [];
+        foreach ($financialYears as $fy) {
+            $yearWiseData[$fy->id] = ['budget' => 0, 'revenue' => 0];
+        }
+
+        // Find current financial year
+        $today = Carbon::today();
+        $currentFY = $financialYears->first(function($fy) use ($today) {
+            return $today->between($fy->start_date, $fy->end_date);
+        });
+
+        foreach ($group as $project) {
+            if ($project->yearlyBudgets->isNotEmpty()) {
+                $yearlyBudgetTotal += $project->yearlyBudgets->sum('amount');
+                $yearlyRevenueTotal += $project->yearlyBudgets->sum('yearly_revenue');
+
+                // Populate year-wise data
+                foreach ($project->yearlyBudgets as $yb) {
+                    if ($yb->financial_year_id && isset($yearWiseData[$yb->financial_year_id])) {
+                        $yearWiseData[$yb->financial_year_id]['budget'] += $yb->amount;
+                        $yearWiseData[$yb->financial_year_id]['revenue'] += $yb->yearly_revenue;
+                    }
+                }
+            } else {
+                $yearlyBudgetTotal += $project->budget;
+                $yearlyRevenueTotal += $project->revenue;
+
+                if ($currentFY && isset($yearWiseData[$currentFY->id])) {
+                    $yearWiseData[$currentFY->id]['budget'] += $project->budget;
+                    $yearWiseData[$currentFY->id]['revenue'] += $project->revenue;
+                }
+            }
+        }
+
+        return [
+            'total_budget' => $group->sum('budget') / 100000,
+            'total_revenue' => $group->sum('revenue') / 100000,
+            'yearly_budget' => $yearlyBudgetTotal / 100000,
+            'yearly_revenue' => $yearlyRevenueTotal / 100000,
+            'year_wise_data' => collect($yearWiseData)->map(fn($data) => [
+                'budget' => $data['budget'] / 100000,
+                'revenue' => $data['revenue'] / 100000
+            ])->toArray(),
+            'total_invoice_raised' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') / 100000,
+            'total_invoice_raised_tax' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 2)->sum('total_amount') / 100000,
+            'total_invoice_raised_proforma' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 1)->sum('total_amount') / 100000,
+            'total_invoice_paid' => $allPayments->sum('amount') / 100000, // Payments from filtered invoices only
+            'total_balance' => ($allInvoices->where('invoice_type', 2)->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') - $allPayments->sum('amount')) / 100000,
+            'ongoing_count' => $group->where('status', Project::STATUS_ONGOING)->count(),
+            'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
+            'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
+            'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
+            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
+             'total_expense' => $group->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+            'yearly_financials' => $group->reduce(function ($carry, $project) {
+                // Budget Fallback Logic
+                if ($project->yearlyBudgets->isEmpty()) {
+                     $fy = 'Others';
+                     if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                     $carry[$fy]['budget'] += $project->budget;
+                } else {
+                    foreach ($project->yearlyBudgets as $yb) {
+                        $fy = $yb->financialYear->name ?? 'N/A';
+                        if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                        $carry[$fy]['budget'] += $yb->budget_amount;
+                    }
+                }
+
+                // Expense Logic
+                foreach ($project->expenseComponents as $ec) {
+                    if ($ec->type == 1) {
+                         $fy = $ec->financial_year ?? 'Others';
+                         if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                         $carry[$fy]['expense'] += $ec->amount;
+                    }
+                }
+                ksort($carry);
+                // Move 'Others' to bottom if exists
+                if (isset($carry['Others'])) {
+                    $others = $carry['Others'];
+                    unset($carry['Others']);
+                    $carry['Others'] = $others;
+                }
+                return $carry;
+            }, [])
+        ];
+    });
+
+    $investigatorCategoryWise = $projects
+        ->groupBy(fn($p) => $p->investigator->name ?? 'No Investigator')
+        ->map(function ($group) use ($financialYears) {
+            return $group->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized')
+                ->map(function ($catGroup) use ($financialYears) {
+                    $allInvoices = $catGroup->flatMap->invoices;
+                    $allPayments = $allInvoices->flatMap->payments;
+
+                    // Calculate year-wise budget and revenue with fallback
+                    $yearlyBudgetTotal = 0;
+                    $yearlyRevenueTotal = 0;
+
+                    // Initialize year-wise data structure
+                    $yearWiseData = [];
+                    foreach ($financialYears as $fy) {
+                        $yearWiseData[$fy->id] = ['budget' => 0, 'revenue' => 0];
+                    }
+
+                    // Find current financial year
+                    $today = Carbon::today();
+                    $currentFY = $financialYears->first(function($fy) use ($today) {
+                        return $today->between($fy->start_date, $fy->end_date);
+                    });
+
+                    foreach ($catGroup as $project) {
+                        if ($project->yearlyBudgets->isNotEmpty()) {
+                            $yearlyBudgetTotal += $project->yearlyBudgets->sum('amount');
+                            $yearlyRevenueTotal += $project->yearlyBudgets->sum('yearly_revenue');
+
+                            // Populate year-wise data
+                            foreach ($project->yearlyBudgets as $yb) {
+                                if ($yb->financial_year_id && isset($yearWiseData[$yb->financial_year_id])) {
+                                    $yearWiseData[$yb->financial_year_id]['budget'] += $yb->amount;
+                                    $yearWiseData[$yb->financial_year_id]['revenue'] += $yb->yearly_revenue;
+                                }
+                            }
+                        } else {
+                            $yearlyBudgetTotal += $project->budget;
+                            $yearlyRevenueTotal += $project->revenue;
+
+                            if ($currentFY && isset($yearWiseData[$currentFY->id])) {
+                                $yearWiseData[$currentFY->id]['budget'] += $project->budget;
+                                $yearWiseData[$currentFY->id]['revenue'] += $project->revenue;
+                            }
+                        }
+                    }
+
+                    return [
+                        'total_budget' => $catGroup->sum('budget') / 100000,
+                        'total_revenue' => $catGroup->sum('revenue') / 100000,
+                        'yearly_budget' => $yearlyBudgetTotal / 100000,
+                        'yearly_revenue' => $yearlyRevenueTotal / 100000,
+                        'year_wise_data' => collect($yearWiseData)->map(fn($data) => [
+                            'budget' => $data['budget'] / 100000,
+                            'revenue' => $data['revenue'] / 100000
+                        ])->toArray(),
+                        'total_invoice_raised' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') / 100000,
+                        'total_invoice_raised_tax' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 2)->sum('total_amount') / 100000,
+                        'total_invoice_raised_proforma' => $allInvoices->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->where('invoice_type', 1)->sum('total_amount') / 100000,
+                        'total_invoice_paid' => $allPayments->sum('amount') / 100000, // Payments from filtered invoices only
+                        'total_balance' => ($allInvoices->where('invoice_type', 2)->whereIn('status', [Invoice::STATUS_SENT, Invoice::STATUS_PAID, Invoice::STATUS_OVERDUE])->sum('total_amount') - $allPayments->sum('amount')) / 100000,
+                        'ongoing_count' => $catGroup->where('status', Project::STATUS_ONGOING)->count(),
+                        'completed_count' => $catGroup->where('status', Project::STATUS_COMPLETED)->count(),
+                        'delayed_count' => $catGroup->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
+                        'initiated_count' => $catGroup->where('status', Project::STATUS_INITIATED)->count(),
+                        'archived_count' => $catGroup->where('status', Project::STATUS_ARCHIVED)->count(),
+                         'total_expense' => $catGroup->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+                        'yearly_financials' => $catGroup->reduce(function ($carry, $project) {
+                             foreach ($project->yearlyBudgets as $yb) {
+                                $fy = $yb->financialYear->name ?? 'N/A';
+                                if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                                $carry[$fy]['budget'] += $yb->budget_amount;
+                            }
+                            foreach ($project->expenseComponents as $ec) {
+                                if ($ec->type == 1 && $ec->financial_year) {
+                                     $fy = $ec->financial_year;
+                                     if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                                     $carry[$fy]['expense'] += $ec->amount;
+                                }
+                            }
+                            ksort($carry);
+                            return $carry;
+                        }, [])
+                    ];
+                });
+        })
+        ->sortByDesc(function ($categories, $investigator) {
+            $totalRevenue = $categories->sum('total_revenue');
+            $projectCount = $categories->sum(fn($c) =>
+                ($c['ongoing_count'] ?? 0)
+                + ($c['completed_count'] ?? 0)
+                + ($c['initiated_count'] ?? 0)
+            );
+            return [$totalRevenue, $projectCount];
+        });
+
+    // Proposal submitted but no client status
+    $proposalsPending = Proposal::with('requirement.category')
+        ->whereNull('client_status')
+        ->get();
+
+    // Initiated stage requirements
+    $initiatedRequirements = Requirement::with('category')
+        ->where('proposal_status', 0)
+        ->get();
+
+    return view('pms.reports.project-status-detailed', [
+        'projects' => $projects,
+        'categoryWise' => $categoryWise,
+        'categorySummary_proposalSubmitted' => $categorySummary_proposalSubmitted,
+        'categorySummary_planningStage' => $categorySummary_planningStage,
+        'categorySummary' => $categorySummary,
+        'proposalsPending' => $proposalsPending,
+        'initiatedRequirements' => $initiatedRequirements,
+        'liveProjects' => $liveProjects,
+        'ongoingProjects' => $ongoingProjects,
+        'proposalSubmitted' => $proposalSubmitted,
+        'planningStage' => $planningStage,
+        'completedProjects' => $completedProjects,
+        'delayedProjects' => $delayedProjects,
+        'archived' => $archived,
+        'investigatorSummary' => $investigatorSummary,
+        'investigatorCategoryWise' => $investigatorCategoryWise,
+        'financialYears' => $financialYears,
+        'allFinancialYearsForFilter' => $allFinancialYearsForFilter,
+        'selectedFinancialYearIds' => $selectedFinancialYearIds,
+        'pageConfigs' => $pageConfigs
+    ]);
+}
+public function projectStatusDetailedWithoutYearSplitup(Request $request)
+{
+    $pageConfigs = ['myLayout' => 'horizontal'];
+
+    $user = Auth::user();
+
+    $categoryId = $request->input('category_id');
+    if ($user->hasRole('director') || $user->hasRole('finance') || $user->hasRole('Project Report') || $user->hasRole('Project Investigator')) {
+        $investigatorId = $request->input('investigator_id');
+    } else {
+        $investigatorId = $user->id;
+    }
+    $startDate = $request->input('start_date');
+    $endDate = $request->input('end_date');
+
+    $liveProjects = Project::where('status', Project::STATUS_ONGOING)
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->when($startDate && $endDate, fn($q) =>
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->count();
+
+    $completedProjects = Project::where('status', Project::STATUS_COMPLETED)
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->when($startDate && $endDate, fn($q) =>
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->count();
+
+    $ongoingProjects = Project::where('status', Project::STATUS_ONGOING)
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->when($startDate && $endDate, fn($q) =>
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->count();
+
+    $delayedProjects = Project::where('status', Project::STATUS_ONGOING)
+        ->where('end_date', '<', Carbon::today())
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->when($startDate && $endDate, fn($q) =>
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->count();
+
+    $archived = Project::where('status', Project::STATUS_ARCHIVED)
+        ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
+        ->when($startDate && $endDate, fn($q) =>
+            $q->where(function ($query) use ($startDate, $endDate) {
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+        )
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->count();
+
+    // Proposal Submitted
+    $proposalSubmitted_query = Proposal::where('project_status', 0)
+        ->when($investigatorId, fn($q) => $q->where('created_by', $investigatorId))
+        ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
+        ->when($startDate && $endDate, fn($q) => $q->whereBetween('expected_start_date', [$startDate, $endDate]))
+        ->where('project_status', 0)
+        ->get();
+    $proposalSubmitted = $proposalSubmitted_query->count();
+
+    // Grouping by category
+    $categoryWise_proposalSubmitted = $proposalSubmitted_query->groupBy(fn($p) => $p->requirement->category->name ?? 'Uncategorized');
+
+    $categorySummary_proposalSubmitted = $categoryWise_proposalSubmitted->map(function ($group) {
+        return [
+            'total_budget' => $group->sum('budget') / 100000,
+            'total_revenue' => $group->sum('revenue') / 100000,
+            'Accepted' => $group->where('client_status', 'accepted')->count(),
+            'Rejected' => $group->where('client_status', 'rejected')->count(),
+            'resubmit_requested' => $group->where('client_status', 'resubmit_requested')->count(),
+            'submitted' => $group->whereNull('client_status')->count(),
+        ];
+    });
+
+    // Planning Stage
+    $planningStage_query = Requirement::where('proposal_status', 0)
+        ->when($investigatorId, fn($q) => $q->where('created_by', $investigatorId))
+        ->when($categoryId, fn($q) => $q->where('project_category_id', $categoryId))
+        ->when($startDate && $endDate, fn($q) => $q->whereBetween('created_at', [$startDate, $endDate]))
+        ->get();
+    $planningStage = $planningStage_query->count();
+
+    $categoryWise_planningStage = $planningStage_query->groupBy(fn($p) => $p->category->name ?? 'Uncategorized');
+
+    $categorySummary_planningStage = $categoryWise_planningStage->map(function ($group) {
+        return [
+            'created' => $group->where('status', 0)->count(),
+            'submitted' => $group->where('status', 1)->count(),
+            'under_pac' => $group->where('status', 4)->count(),
+            'rejected' => $group->where('status', 3)->count(),
+            'approved' => $group->whereNotNull('allocated_to')->count(),
+        ];
+    });
+
+    // Base query with relationships - Eager load invoices with date filter
+    $projectsQuery = Project::with(['requirement.category', 'proposal', 'investigator', 'yearlyBudgets.financialYear', 'expenseComponents'])
         ->when($categoryId, fn($q) => $q->whereHas('requirement', fn($r) => $r->where('project_category_id', $categoryId)))
         ->when($investigatorId, fn($q) => $q->where('project_investigator_id', $investigatorId))
         ->whereIn('status', [Project::STATUS_ONGOING, Project::STATUS_COMPLETED])
@@ -225,7 +705,24 @@ public function projectStatusDetailed(Request $request)
             'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
             'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
             'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
-            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count()
+            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
+             'total_expense' => $group->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+            'yearly_financials' => $group->reduce(function ($carry, $project) {
+                 foreach ($project->yearlyBudgets as $yb) {
+                    $fy = $yb->financialYear->name ?? 'N/A';
+                    if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                    $carry[$fy]['budget'] += $yb->budget_amount;
+                }
+                foreach ($project->expenseComponents as $ec) {
+                    if ($ec->type == 1 && $ec->financial_year) {
+                         $fy = $ec->financial_year;
+                         if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                         $carry[$fy]['expense'] += $ec->amount;
+                    }
+                }
+                ksort($carry);
+                return $carry;
+            }, [])
         ];
     });
 
@@ -247,7 +744,39 @@ public function projectStatusDetailed(Request $request)
             'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
             'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
             'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
-            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count()
+            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
+             'total_expense' => $group->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+            'yearly_financials' => $group->reduce(function ($carry, $project) {
+                // Budget Fallback Logic
+                if ($project->yearlyBudgets->isEmpty()) {
+                     $fy = 'Others';
+                     if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                     $carry[$fy]['budget'] += $project->budget;
+                } else {
+                    foreach ($project->yearlyBudgets as $yb) {
+                        $fy = $yb->financialYear->name ?? 'N/A';
+                        if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                        $carry[$fy]['budget'] += $yb->budget_amount;
+                    }
+                }
+
+                // Expense Logic
+                foreach ($project->expenseComponents as $ec) {
+                    if ($ec->type == 1) {
+                         $fy = $ec->financial_year ?? 'Others';
+                         if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                         $carry[$fy]['expense'] += $ec->amount;
+                    }
+                }
+                ksort($carry);
+                // Move 'Others' to bottom if exists
+                if (isset($carry['Others'])) {
+                    $others = $carry['Others'];
+                    unset($carry['Others']);
+                    $carry['Others'] = $others;
+                }
+                return $carry;
+            }, [])
         ];
     });
 
@@ -272,6 +801,23 @@ public function projectStatusDetailed(Request $request)
                         'delayed_count' => $catGroup->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
                         'initiated_count' => $catGroup->where('status', Project::STATUS_INITIATED)->count(),
                         'archived_count' => $catGroup->where('status', Project::STATUS_ARCHIVED)->count(),
+                         'total_expense' => $catGroup->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+                        'yearly_financials' => $catGroup->reduce(function ($carry, $project) {
+                             foreach ($project->yearlyBudgets as $yb) {
+                                $fy = $yb->financialYear->name ?? 'N/A';
+                                if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                                $carry[$fy]['budget'] += $yb->budget_amount;
+                            }
+                            foreach ($project->expenseComponents as $ec) {
+                                if ($ec->type == 1 && $ec->financial_year) {
+                                     $fy = $ec->financial_year;
+                                     if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                                     $carry[$fy]['expense'] += $ec->amount;
+                                }
+                            }
+                            ksort($carry);
+                            return $carry;
+                        }, [])
                     ];
                 });
         })
@@ -467,7 +1013,35 @@ public function projectStatusDetailedWithoutinvoice_adtefilter(Request $request)
             'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
             'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
             'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
-            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count()
+            'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
+             'total_expense' => $group->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+            'yearly_financials' => $group->reduce(function ($carry, $project) {
+                if ($project->yearlyBudgets->isEmpty()) {
+                     $fy = 'Others';
+                     if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                     $carry[$fy]['budget'] += $project->budget;
+                } else {
+                    foreach ($project->yearlyBudgets as $yb) {
+                        $fy = $yb->financialYear->name ?? 'N/A';
+                        if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                        $carry[$fy]['budget'] += $yb->budget_amount;
+                    }
+                }
+                foreach ($project->expenseComponents as $ec) {
+                    if ($ec->type == 1) {
+                         $fy = $ec->financial_year ?? 'Others';
+                         if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                         $carry[$fy]['expense'] += $ec->amount;
+                    }
+                }
+                ksort($carry);
+                if (isset($carry['Others'])) {
+                    $others = $carry['Others'];
+                    unset($carry['Others']);
+                    $carry['Others'] = $others;
+                }
+                return $carry;
+            }, [])
         ];
     });
 
@@ -487,7 +1061,35 @@ $investigatorSummary = $investigatorWise->map(function ($group) {
         'completed_count' => $group->where('status', Project::STATUS_COMPLETED)->count(),
         'initiated_count' => $group->where('status', Project::STATUS_INITIATED)->count(),
          'archived_count' => $group->where('status', Project::STATUS_ARCHIVED)->count(),
-        'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count()
+        'delayed_count' => $group->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
+         'total_expense' => $group->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+        'yearly_financials' => $group->reduce(function ($carry, $project) {
+            if ($project->yearlyBudgets->isEmpty()) {
+                 $fy = 'Others';
+                 if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                 $carry[$fy]['budget'] += $project->budget;
+            } else {
+                foreach ($project->yearlyBudgets as $yb) {
+                    $fy = $yb->financialYear->name ?? 'N/A';
+                    if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                    $carry[$fy]['budget'] += $yb->budget_amount;
+                }
+            }
+            foreach ($project->expenseComponents as $ec) {
+                if ($ec->type == 1) {
+                     $fy = $ec->financial_year ?? 'Others';
+                     if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                     $carry[$fy]['expense'] += $ec->amount;
+                }
+            }
+            ksort($carry);
+            if (isset($carry['Others'])) {
+                $others = $carry['Others'];
+                unset($carry['Others']);
+                $carry['Others'] = $others;
+            }
+            return $carry;
+        }, [])
     ];
 });
 
@@ -508,7 +1110,36 @@ $investigatorCategoryWise = $projects
                      'completed_count' => $catGroup->where('status', Project::STATUS_COMPLETED)->count(),
                     'delayed_count' => $catGroup->where('status', Project::STATUS_ONGOING)->where('end_date', '<', Carbon::today())->count(),
                     'initiated_count' => $catGroup->where('status', Project::STATUS_INITIATED)->count(),
+                    'initiated_count' => $catGroup->where('status', Project::STATUS_INITIATED)->count(),
                      'archived_count' => $catGroup->where('status', Project::STATUS_ARCHIVED)->count(),
+                      'total_expense' => $catGroup->flatMap->expenseComponents->where('type', 1)->sum('amount') / 100000,
+                     'yearly_financials' => $catGroup->reduce(function ($carry, $project) {
+                         if ($project->yearlyBudgets->isEmpty()) {
+                              $fy = 'Others';
+                              if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                              $carry[$fy]['budget'] += $project->budget;
+                         } else {
+                             foreach ($project->yearlyBudgets as $yb) {
+                                 $fy = $yb->financialYear->name ?? 'N/A';
+                                 if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                                 $carry[$fy]['budget'] += $yb->budget_amount;
+                             }
+                         }
+                         foreach ($project->expenseComponents as $ec) {
+                             if ($ec->type == 1) {
+                                  $fy = $ec->financial_year ?? 'Others';
+                                  if (!isset($carry[$fy])) $carry[$fy] = ['budget' => 0, 'expense' => 0];
+                                  $carry[$fy]['expense'] += $ec->amount;
+                             }
+                         }
+                         ksort($carry);
+                         if (isset($carry['Others'])) {
+                             $others = $carry['Others'];
+                             unset($carry['Others']);
+                             $carry['Others'] = $others;
+                         }
+                         return $carry;
+                     }, [])
                 ];
             });
     })

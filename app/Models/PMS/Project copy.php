@@ -150,16 +150,11 @@ public function expenseComponents()
     return $this->hasMany(ProjectExpenseComponent::class);
 }
 
-  // Helper methods
-    public function getTotalEstimatedExpenseAttribute()
-    {
-        return $this->estimatedExpenseComponents()->sum('amount');
-    }
-
-    public function getTotalBudgetedExpenseAttribute()
-    {
-        return $this->budgetedExpenseComponents()->sum('amount');
-    }
+// Add this method to calculate total expense from components
+public function getTotalEstimatedExpenseAttribute()
+{
+    return $this->expenseComponents->sum('amount');
+}
 
 // Add this method to get proposal expense components (for initial creation)
 public function getProposalExpenseComponentsAttribute()
@@ -167,33 +162,5 @@ public function getProposalExpenseComponentsAttribute()
     return $this->proposal ? $this->proposal->expenseComponents : collect();
 }
 
-
-  // Estimated expense components
-    public function estimatedExpenseComponents()
-    {
-        return $this->expenseComponents()->where('type', ProjectExpenseComponent::TYPE_ESTIMATED);
-    }
-
-     // Budgeted expense components
-    public function budgetedExpenseComponents()
-    {
-        return $this->expenseComponents()->where('type', ProjectExpenseComponent::TYPE_BUDGETED);
-    }
-
-     // Year-wise budgets
-    public function yearlyBudgets()
-    {
-        return $this->hasMany(ProjectYearlyBudget::class);
-    }
-
-      public function getTotalYearlyBudgetAttribute()
-    {
-        return $this->yearlyBudgets()->sum('amount');
-    }
-
-     public function getExpectedRevenueAttribute()
-    {
-        return $this->getTotalYearlyBudgetAttribute() - $this->getTotalEstimatedExpenseAttribute();
-    }
 
 }

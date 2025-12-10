@@ -49,6 +49,10 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
     const STATUS_REJECTED = 3;
     const STATUS_RETURNED_FOR_CLARIFICATION = 4;
 
+    // Type constants for expense components
+    const TYPE_BUDGETED = 0;
+    const TYPE_ESTIMATED = 1;
+
     public function requirement()
     {
         return $this->belongsTo(Requirement::class);
@@ -145,9 +149,60 @@ public function getStatusBadgeColorAttribute()
     return $this->hasMany(ProposalExpenseComponent::class);
 }
 
-// Add this method to calculate total expense from components
-public function getTotalEstimatedExpenseAttribute()
-{
-    return $this->expenseComponents->sum('amount');
-}
+
+// // Add this method to calculate total expense from components
+// public function getTotalEstimatedExpenseAttribute()
+// {
+//     return $this->expenseComponents->sum('amount');
+// }
+
+
+// Estimated expense components only (type = 1)
+    public function estimatedExpenseComponents()
+    {
+        return $this->hasMany(ProposalExpenseComponent::class)->where('type', self::TYPE_ESTIMATED);
+    }
+
+    // Budgeted expense components only (type = 0)
+    public function budgetedExpenseComponents()
+    {
+        return $this->hasMany(ProposalExpenseComponent::class)->where('type', self::TYPE_BUDGETED);
+    }
+
+    // Add this method to calculate total estimated expense from components
+    public function getTotalEstimatedExpenseAttribute()
+    {
+        return $this->estimatedExpenseComponents->sum('amount');
+    }
+
+    // Add this method to calculate total budgeted expense from components
+    public function getTotalBudgetedExpenseAttribute()
+    {
+        return $this->budgetedExpenseComponents->sum('amount');
+    }
+
+    // Calculate the difference between budgeted and estimated
+    public function getExpenseDifferenceAttribute()
+    {
+        return $this->total_budgeted_expense - $this->total_estimated_expense;
+    }
+
+    // Helper method to get expense summary
+    public function getExpenseSummaryAttribute()
+    {
+        return [
+            'estimated' => $this->total_estimated_expense,
+            'budgeted' => $this->total_budgeted_expense,
+            'difference' => $this->expense_difference,
+        ];
+    }
+
+    // Get grouped expense components by type
+    public function getGroupedExpenseComponentsAttribute()
+    {
+        return [
+            'estimated' => $this->estimatedExpenseComponents->groupBy('group_name'),
+            'budgeted' => $this->budgetedExpenseComponents->groupBy('group_name'),
+        ];
+    }
 }

@@ -11,20 +11,6 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
-
-@endsection
-
-@section('vendor-script')
-<script src="{{asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
-
-@endsection
-@section('page-style')
 <style>
   .timeline {
     position: relative;
@@ -60,8 +46,40 @@
   .timeline-item-content {
     padding-left: 1.5rem;
   }
+
+  .difference-positive {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+  }
+
+  .difference-negative {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+  }
+
+  .budget-badge {
+    background-color: #3b82f6;
+    color: white;
+  }
+
+  .estimated-badge {
+    background-color: #10b981;
+    color: white;
+  }
 </style>
 @endsection
+
+@section('vendor-script')
+<script src="{{asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
+
+@endsection
+
 @section('page-script')
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -72,16 +90,13 @@
     function toggleWorkorder() {
       if (clientStatus.value === "accepted") {
         workorderField.style.display = "block";
-        {{--  workorderInput.setAttribute("required", "required");  --}}
       } else {
         workorderField.style.display = "none";
-        {{--  workorderInput.removeAttribute("required");
-        workorderInput.value = ""; // clear file input when hidden  --}}
       }
     }
 
     clientStatus.addEventListener("change", toggleWorkorder);
-     clientStatus.addEventListener("change", toggleRequired);
+    clientStatus.addEventListener("change", toggleRequired);
     toggleWorkorder(); // run once on load (useful if editing existing)
     toggleRequired();
 
@@ -184,128 +199,26 @@
             <p><strong>Start Date:</strong> @if(!is_null($proposal->expected_start_date)) {{
               $proposal->expected_start_date->format('d M Y') }} @endif</p>
           </div>
-        </div>
-        <div class="col-md-12">
-          <p><strong>End Date:</strong> @if(!is_null($proposal->expected_end_date)){{
-            $proposal->expected_end_date->format('d M Y') }} @endif</p>
-          <p><strong>Estimated Expense:</strong> ₹{{ number_format($proposal->estimated_expense, 2) }}</p>
-          {{-- @if($proposal->expenseComponents->count() > 0)
-          <div class="card mt-4">
-            <div class="card-header">
-              <h5 class="card-title">Estimated Expense Breakdown</h5>
-            </div>
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Category</th>
-                      <th>Component</th>
-                      <th>Amount (₹)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @foreach($proposal->expenseComponents as $component)
-                    <tr>
-                      <td>{{ $component->category->name }}</td>
-                      <td>{{ $component->component }}</td>
-                      <td>₹{{ number_format($component->amount, 2) }}</td>
-                    </tr>
-                    @endforeach
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th colspan="2" class="text-end">Total Estimated Expense:</th>
-                      <th>₹{{ number_format($proposal->estimated_expense, 2) }}</th>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
+          <div class="col-md-4">
+            <p><strong>End Date:</strong> @if(!is_null($proposal->expected_end_date)){{
+              $proposal->expected_end_date->format('d M Y') }} @endif</p>
+            <p><strong>Estimated Expense:</strong> ₹{{ number_format($proposal->estimated_expense, 2) }}</p>
+            <p><strong>Expected Revenue:</strong> ₹{{ number_format($proposal->revenue, 2) }}</p>
+            <p><strong>Created By:</strong> {{ $proposal->creator->name }}</p>
           </div>
-          @endif --}}
-
-          @if($proposal->expenseComponents->count() > 0)
-          <div class="card mt-4">
-            <div class="card-header">
-              <h5 class="card-title mb-0">Estimated Expense Breakdown</h5>
-            </div>
-            <div class="card-body">
+          <div class="col-md-4">
+            <p><strong>Budgeted Expense:</strong> ₹{{ number_format($proposal->total_budgeted_expense, 2) }}</p>
+            <p><strong>Difference:</strong>
               @php
-              $grouped = $proposal->expenseComponents->groupBy('group_name');
-              $grandTotal = 0;
+              $difference = $proposal->total_budgeted_expense - $proposal->estimated_expense;
+              $badgeClass = $difference >= 0 ? 'difference-positive' : 'difference-negative';
               @endphp
-
-              <div class="accordion" id="proposalExpenseAccordion">
-                @foreach($grouped as $groupName => $components)
-                @php
-
-                $groupId = Str::slug($groupName ?? 'ungrouped', '_');
-                $groupTotal = $components->sum('amount');
-                $grandTotal += $groupTotal;
-                @endphp
-
-                <div class="accordion-item border rounded mb-2 shadow-sm">
-                  <h2 class="accordion-header" id="heading_{{ $groupId }}">
-                    <button class="accordion-button collapsed d-flex justify-content-between" type="button"
-                      data-bs-toggle="collapse" data-bs-target="#collapse_{{ $groupId }}" aria-expanded="false"
-                      aria-controls="collapse_{{ $groupId }}">
-                      <div class="d-flex flex-column">
-                        <span class="fw-bold text-primary">{{ $groupName ?? 'Ungrouped' }}</span>
-                        <small class="text-muted">Subtotal: ₹{{ number_format($groupTotal, 2) }}</small>
-                      </div>
-                    </button>
-                  </h2>
-                  <div id="collapse_{{ $groupId }}" class="accordion-collapse collapse"
-                    aria-labelledby="heading_{{ $groupId }}" data-bs-parent="#proposalExpenseAccordion">
-                    <div class="accordion-body p-2">
-                      <div class="table-responsive">
-                        <table class="table table-sm table-bordered align-middle mb-0">
-                          <thead class="table-light">
-                            <tr>
-                              <th style="width:25%">Category</th>
-                              <th style="width:35%">Component</th>
-                              @if($groupName === 'HR')
-                              <th style="width:10%" class="text-end">Persondays</th>
-                              <th style="width:15%" class="text-end">Rate (₹)</th>
-                              @endif
-                              <th style="width:20%" class="text-end">Amount (₹)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            @foreach($components as $component)
-                            <tr>
-                              <td>{{ $component->category->name ?? 'N/A' }}</td>
-                              <td>{{ $component->component }}</td>
-                              @if($groupName === 'HR')
-                              <td class="text-end">{{ $component->mandays ?? '-' }}</td>
-                              <td class="text-end">{{ $component->rate ? number_format($component->rate, 2) : '-' }}
-                              </td>
-                              @endif
-                              <td class="text-end">₹{{ number_format($component->amount, 2) }}</td>
-                            </tr>
-                            @endforeach
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                @endforeach
-              </div>
-
-              <div class="border-top pt-3 mt-3 text-end">
-                <strong>Grand Total Estimated Expense: ₹{{ number_format($grandTotal, 2) }}</strong>
-              </div>
-            </div>
+              <span class="badge {{ $badgeClass }}">
+                ₹{{ number_format($difference, 2) }}
+              </span>
+            </p>
           </div>
-          @endif
-
-
-          <p><strong>Expected Revenue:</strong> ₹{{ number_format($proposal->revenue, 2) }}</p>
-          <p><strong>Created By:</strong> {{ $proposal->creator->name }}</p>
         </div>
-
 
         @if($proposal->technical_details)
         <div class="mt-3">
@@ -322,6 +235,296 @@
         @endif
       </div>
     </div>
+
+    {{-- Expense Components Section --}}
+    @if($proposal->expenseComponents->count() > 0)
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Expense Components</h5>
+      </div>
+      <div class="card-body">
+        {{-- Tabs for Estimated vs Budgeted --}}
+        <ul class="nav nav-tabs" id="expenseTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="estimated-tab" data-bs-toggle="tab" data-bs-target="#estimated"
+              type="button" role="tab">
+              Estimated Expenses
+              <span class="badge estimated-badge ms-2">{{ number_format($proposal->total_estimated_expense, 2) }}</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="budgeted-tab" data-bs-toggle="tab" data-bs-target="#budgeted" type="button"
+              role="tab">
+              Budgeted Expenses
+              <span class="badge budget-badge ms-2">{{ number_format($proposal->total_budgeted_expense, 2) }}</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="comparison-tab" data-bs-toggle="tab" data-bs-target="#comparison" type="button"
+              role="tab">
+              Comparison
+              <span class="badge bg-info ms-2">
+                Diff: ₹{{ number_format($proposal->total_budgeted_expense - $proposal->total_estimated_expense, 2) }}
+              </span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content mt-3" id="expenseTabsContent">
+          {{-- Estimated Expenses Tab --}}
+          <div class="tab-pane fade show active" id="estimated" role="tabpanel">
+            @php
+            $estimatedGrouped = $proposal->estimatedExpenseComponents->groupBy('group_name');
+            $estimatedTotal = 0;
+            @endphp
+
+            <div class="accordion" id="estimatedExpenseAccordion">
+              @foreach($estimatedGrouped as $groupName => $components)
+              @php
+              $groupId = Str::slug($groupName ?? 'ungrouped', '_') . '_estimated';
+              $groupTotal = $components->sum('amount');
+              $estimatedTotal += $groupTotal;
+              @endphp
+
+              <div class="accordion-item border rounded mb-2 shadow-sm">
+                <h2 class="accordion-header" id="heading_{{ $groupId }}">
+                  <button class="accordion-button collapsed d-flex justify-content-between" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapse_{{ $groupId }}" aria-expanded="false"
+                    aria-controls="collapse_{{ $groupId }}">
+                    <div class="d-flex flex-column">
+                      <span class="fw-bold text-primary">{{ $groupName ?? 'Ungrouped' }}</span>
+                      <small class="text-muted">Subtotal: ₹{{ number_format($groupTotal, 2) }}</small>
+                    </div>
+                  </button>
+                </h2>
+                <div id="collapse_{{ $groupId }}" class="accordion-collapse collapse"
+                  aria-labelledby="heading_{{ $groupId }}" data-bs-parent="#estimatedExpenseAccordion">
+                  <div class="accordion-body p-2">
+                    <div class="table-responsive">
+                      <table class="table table-sm table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                          <tr>
+                            <th style="width:25%">Category</th>
+                            <th style="width:35%">Component</th>
+                            @if($groupName === 'HR')
+                            <th style="width:10%" class="text-end">Persondays</th>
+                            <th style="width:15%" class="text-end">Rate (₹)</th>
+                            @endif
+                            <th style="width:20%" class="text-end">Amount (₹)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @foreach($components as $component)
+                          <tr>
+                            <td>{{ $component->category->name ?? 'N/A' }}</td>
+                            <td>{{ $component->component }}</td>
+                            @if($groupName === 'HR')
+                            <td class="text-end">{{ $component->mandays ?? '-' }}</td>
+                            <td class="text-end">{{ $component->rate ? number_format($component->rate, 2) : '-' }}</td>
+                            @endif
+                            <td class="text-end">₹{{ number_format($component->amount, 2) }}</td>
+                          </tr>
+                          @endforeach
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="{{ $groupName === 'HR' ? 4 : 2 }}" class="text-end"><strong>Group
+                                Total:</strong></td>
+                            <td class="text-end"><strong>₹{{ number_format($groupTotal, 2) }}</strong></td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              @endforeach
+            </div>
+
+            <div class="border-top pt-3 mt-3 text-end">
+              <strong>Total Estimated Expense: ₹{{ number_format($estimatedTotal, 2) }}</strong>
+            </div>
+          </div>
+
+          {{-- Budgeted Expenses Tab --}}
+          <div class="tab-pane fade" id="budgeted" role="tabpanel">
+            @php
+            $budgetedGrouped = $proposal->budgetedExpenseComponents->groupBy('group_name');
+            $budgetedTotal = 0;
+            @endphp
+
+            <div class="accordion" id="budgetedExpenseAccordion">
+              @foreach($budgetedGrouped as $groupName => $components)
+              @php
+              $groupId = Str::slug($groupName ?? 'ungrouped', '_') . '_budgeted';
+              $groupTotal = $components->sum('amount');
+              $budgetedTotal += $groupTotal;
+              @endphp
+
+              <div class="accordion-item border rounded mb-2 shadow-sm">
+                <h2 class="accordion-header" id="heading_{{ $groupId }}">
+                  <button class="accordion-button collapsed d-flex justify-content-between" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapse_{{ $groupId }}" aria-expanded="false"
+                    aria-controls="collapse_{{ $groupId }}">
+                    <div class="d-flex flex-column">
+                      <span class="fw-bold text-primary">{{ $groupName ?? 'Ungrouped' }}</span>
+                      <small class="text-muted">Subtotal: ₹{{ number_format($groupTotal, 2) }}</small>
+                    </div>
+                  </button>
+                </h2>
+                <div id="collapse_{{ $groupId }}" class="accordion-collapse collapse"
+                  aria-labelledby="heading_{{ $groupId }}" data-bs-parent="#budgetedExpenseAccordion">
+                  <div class="accordion-body p-2">
+                    <div class="table-responsive">
+                      <table class="table table-sm table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                          <tr>
+                            <th style="width:25%">Category</th>
+                            <th style="width:35%">Component</th>
+                            @if($groupName === 'HR')
+                            <th style="width:10%" class="text-end">Persondays</th>
+                            <th style="width:15%" class="text-end">Rate (₹)</th>
+                            @endif
+                            <th style="width:20%" class="text-end">Amount (₹)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @foreach($components as $component)
+                          <tr>
+                            <td>{{ $component->category->name ?? 'N/A' }}</td>
+                            <td>{{ $component->component }}</td>
+                            @if($groupName === 'HR')
+                            <td class="text-end">{{ $component->mandays ?? '-' }}</td>
+                            <td class="text-end">{{ $component->rate ? number_format($component->rate, 2) : '-' }}</td>
+                            @endif
+                            <td class="text-end">₹{{ number_format($component->amount, 2) }}</td>
+                          </tr>
+                          @endforeach
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="{{ $groupName === 'HR' ? 4 : 2 }}" class="text-end"><strong>Group
+                                Total:</strong></td>
+                            <td class="text-end"><strong>₹{{ number_format($groupTotal, 2) }}</strong></td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              @endforeach
+            </div>
+
+            <div class="border-top pt-3 mt-3 text-end">
+              <strong>Total Budgeted Expense: ₹{{ number_format($budgetedTotal, 2) }}</strong>
+            </div>
+          </div>
+
+          {{-- Comparison Tab --}}
+          <div class="tab-pane fade" id="comparison" role="tabpanel">
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width:30%">Component</th>
+                    <th style="width:10%">Group</th>
+                    <th style="width:15%" class="text-end">Estimated (₹)</th>
+                    <th style="width:15%" class="text-end">Budgeted (₹)</th>
+                    <th style="width:15%" class="text-end">Difference (₹)</th>
+                    <th style="width:15%" class="text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @php
+                  $totalEstimated = 0;
+                  $totalBudgeted = 0;
+                  @endphp
+
+                  @foreach($estimatedComponents = $proposal->estimatedExpenseComponents as $estimated)
+                  @php
+                  $matchingBudgeted = $proposal->budgetedExpenseComponents->first(function ($budgeted) use ($estimated)
+                  {
+                  return $budgeted->component == $estimated->component &&
+                  $budgeted->group_name == $estimated->group_name;
+                  });
+
+                  $estimatedAmount = $estimated->amount;
+                  $budgetedAmount = $matchingBudgeted ? $matchingBudgeted->amount : 0;
+                  $difference = $budgetedAmount - $estimatedAmount;
+                  $differenceClass = $difference > 0 ? 'difference-positive' : ($difference < 0 ? 'difference-negative'
+                    : '' ); $totalEstimated +=$estimatedAmount; $totalBudgeted +=$budgetedAmount; @endphp <tr>
+                    <td>{{ $estimated->component }}</td>
+                    <td>{{ $estimated->group_name }}</td>
+                    <td class="text-end">₹{{ number_format($estimatedAmount, 2) }}</td>
+                    <td class="text-end">₹{{ number_format($budgetedAmount, 2) }}</td>
+                    <td class="text-end {{ $differenceClass }}">₹{{ number_format($difference, 2) }}</td>
+                    <td class="text-center">
+                      @if($difference > 0)
+                      <span class="badge bg-warning">Increased</span>
+                      @elseif($difference < 0) <span class="badge bg-danger">Decreased</span>
+                        @else
+                        <span class="badge bg-success">No Change</span>
+                        @endif
+                    </td>
+                    </tr>
+                    @endforeach
+
+                    {{-- Show budget-only components --}}
+                    @foreach($budgetedOnly = $proposal->budgetedExpenseComponents->filter(function($budgeted) use
+                    ($estimatedComponents) {
+                    return !$estimatedComponents->contains(function($estimated) use ($budgeted) {
+                    return $estimated->component == $budgeted->component &&
+                    $estimated->group_name == $budgeted->group_name;
+                    });
+                    }) as $budgetedOnlyComponent)
+                    @php
+                    $budgetedAmount = $budgetedOnlyComponent->amount;
+                    $totalBudgeted += $budgetedAmount;
+                    $difference = $budgetedAmount; // No estimated counterpart
+                    @endphp
+
+                    <tr>
+                      <td>{{ $budgetedOnlyComponent->component }}</td>
+                      <td>{{ $budgetedOnlyComponent->group_name }}</td>
+                      <td class="text-end">₹0.00</td>
+                      <td class="text-end">₹{{ number_format($budgetedAmount, 2) }}</td>
+                      <td class="text-end difference-positive">₹{{ number_format($difference, 2) }}</td>
+                      <td class="text-center">
+                        <span class="badge bg-info">New Budget Item</span>
+                      </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot class="table-dark">
+                  <tr>
+                    <td colspan="2" class="text-end"><strong>Total:</strong></td>
+                    <td class="text-end"><strong>₹{{ number_format($totalEstimated, 2) }}</strong></td>
+                    <td class="text-end"><strong>₹{{ number_format($totalBudgeted, 2) }}</strong></td>
+                    <td
+                      class="text-end {{ $totalBudgeted > $totalEstimated ? 'difference-positive' : ($totalBudgeted < $totalEstimated ? 'difference-negative' : '') }}">
+                      <strong>₹{{ number_format($totalBudgeted - $totalEstimated, 2) }}</strong>
+                    </td>
+                    <td class="text-center">
+                      @php
+                      $overallDifference = $totalBudgeted - $totalEstimated;
+                      @endphp
+                      @if($overallDifference > 0)
+                      <span class="badge bg-warning">Overall Increase</span>
+                      @elseif($overallDifference < 0) <span class="badge bg-success">Overall Decrease</span>
+                        @else
+                        <span class="badge bg-secondary">No Overall Change</span>
+                        @endif
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    @endif
 
     <div class="card mt-4">
       <div class="card-header">
@@ -478,11 +681,6 @@
               <label for="client_comments" class="form-label">Comments</label>
               <textarea name="client_comments" id="client_comments" class="form-control" rows="3"></textarea>
             </div>
-            {{-- <div class="mb-3 " id="workorder_field" style="display: none;">
-              <label for="documents" class="form-label">Documents (Workorder)*</label>
-              <input type="file" id="documents" name="documents[]" class="form-control" multiple>
-            </div>
-            --}}
 
             <div class="mb-3 " id="workorder_field" style="display: none;">
               <div class="row mb-3">

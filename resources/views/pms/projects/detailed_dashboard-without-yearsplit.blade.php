@@ -330,250 +330,141 @@
   </div>
   <div class="row mb-4">
     <div class="col-md-6">
-      <div class="card mt-4 h-100">
-        <div class="card-header border-bottom">
-          <h5 class="card-title mb-0 text-primary">
-            <i class="fas fa-project-diagram me-2"></i> Project Financials
-          </h5>
+      @if($project->expenseComponents->count() > 0)
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0 badge bg-label-warning">Project Current Estimated Expense Breakdown </h5>
         </div>
-        <div class="card-body pt-3">
-          <div class="accordion" id="projectFinancialsAccordion">
-            {{-- 1. Project Budgeted --}}
+        <div class="card-body">
+          @php
+          $grouped = $project->expenseComponents->groupBy('group_name');
+          $grandTotal = 0;
+          @endphp
+
+          <div class="accordion" id="proposalExpenseAccordion">
+            @foreach($grouped as $groupName => $components)
             @php
-            $projBudgeted = $project->expenseComponents->where('type',
-            \App\Models\PMS\ProjectExpenseComponent::TYPE_BUDGETED);
+
+            $groupId = Str::slug($groupName ?? 'ungrouped', '_');
+            $groupTotal = $components->sum('amount');
+            $grandTotal += $groupTotal;
             @endphp
-            <div class="accordion-item shadow-sm border mb-2">
-              <h2 class="accordion-header" id="headingProjBudgeted">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                  data-bs-target="#collapseProjBudgeted" aria-expanded="true" aria-controls="collapseProjBudgeted">
-                  <span class="fw-bold"><i class="fas fa-coins me-2 text-primary"></i>Budgeted Expense</span>
-                  <span class="ms-auto badge bg-label-primary">₹{{ number_format($projBudgeted->sum('amount'), 2)
-                    }}</span>
+
+            <div class="accordion-item border rounded mb-2 shadow-sm">
+              <h2 class="accordion-header" id="heading_{{ $groupId }}">
+                <button class="accordion-button collapsed d-flex justify-content-between" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#collapse_{{ $groupId }}" aria-expanded="false"
+                  aria-controls="collapse_{{ $groupId }}">
+                  <div class="d-flex flex-column">
+                    <span class="fw-bold text-primary">{{ $groupName ?? 'Ungrouped' }}</span>
+                    <small class="text-muted">Subtotal: ₹{{ number_format($groupTotal, 2) }}</small>
+                  </div>
                 </button>
               </h2>
-              <div id="collapseProjBudgeted" class="accordion-collapse collapse show"
-                aria-labelledby="headingProjBudgeted" data-bs-parent="#projectFinancialsAccordion">
-                <div class="accordion-body p-0">
-                  @if($projBudgeted->count() > 0)
-                  <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                    <table class="table table-sm table-striped mb-0">
-                      <thead class="table-light sticky-top">
+              <div id="collapse_{{ $groupId }}" class="accordion-collapse collapse"
+                aria-labelledby="heading_{{ $groupId }}" data-bs-parent="#proposalExpenseAccordion">
+                <div class="accordion-body p-2">
+                  <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0">
+                      <thead class="table-light">
                         <tr>
-                          <th>Component</th>
-                          <th class="text-end">Amount (₹)</th>
+                          <th style="width:25%">Category</th>
+                          <th style="width:35%">Component</th>
+                          @if($groupName === 'HR')
+                          <th style="width:10%" class="text-end">Persondays</th>
+                          <th style="width:15%" class="text-end">Rate (₹)</th>
+                          @endif
+                          <th style="width:20%" class="text-end">Amount (₹)</th>
                         </tr>
                       </thead>
                       <tbody>
-                        @foreach($projBudgeted as $comp)
+                        @foreach($components as $component)
                         <tr>
-                          <td>
-                            <div class="d-flex flex-column">
-                              <span>{{ $comp->component }}</span>
-                              <small class="text-muted">{{ $comp->group_name }} | {{ $comp->category->name ?? '-'
-                                }}</small>
-                            </div>
+                          <td>{{ $component->category->name ?? 'N/A' }}</td>
+                          <td>{{ $component->component }}</td>
+                          @if($groupName === 'HR')
+                          <td class="text-end">{{ $component->mandays ?? '-' }}</td>
+                          <td class="text-end">{{ $component->rate ? number_format($component->rate, 2) : '-' }}
                           </td>
-                          <td class="text-end fw-bold">₹{{ number_format($comp->amount, 2) }}</td>
+                          @endif
+                          <td class="text-end">₹{{ number_format($component->amount, 2) }}</td>
                         </tr>
                         @endforeach
                       </tbody>
                     </table>
                   </div>
-                  @else
-                  <div class="text-center p-3 text-muted">No budgeted expenses.</div>
-                  @endif
-                </div>
-              </div>
-            </div>
-
-            {{-- 2. Project Estimated (Yearly or Flat) --}}
-            @if($project->yearlyBudgets->count() > 0)
-            {{-- Yearly Mode --}}
-            <div class="d-flex align-items-center mt-3 mb-2">
-              <h6 class="mb-0 text-muted w-100 border-bottom pb-2">Yearly Expense Estimates</h6>
-            </div>
-            @foreach($project->yearlyBudgets as $yearBudget)
-            @php
-            $yearId = $yearBudget->financial_year_id;
-            $yearName = $yearBudget->financialYear->name ?? 'Unknown';
-            $yearEstimates = $project->expenseComponents->filter(function($c) use ($yearId) {
-            return $c->type == \App\Models\PMS\ProjectExpenseComponent::TYPE_ESTIMATED && $c->financial_year_id ==
-            $yearId;
-            });
-            $totalEst = $yearEstimates->sum('amount');
-            @endphp
-            <div class="accordion-item shadow-sm border mb-2">
-              <h2 class="accordion-header" id="headingYear{{ $yearId }}">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                  data-bs-target="#collapseYear{{ $yearId }}" aria-expanded="false"
-                  aria-controls="collapseYear{{ $yearId }}">
-                  <div class="d-flex w-100 justify-content-between align-items-center pe-2">
-                    <span class="fw-bold">{{ $yearName }}</span>
-                    <span class="badge bg-label-warning">Est: ₹{{ number_format($totalEst, 2) }}</span>
-                  </div>
-                </button>
-              </h2>
-              <div id="collapseYear{{ $yearId }}" class="accordion-collapse collapse"
-                aria-labelledby="headingYear{{ $yearId }}" data-bs-parent="#projectFinancialsAccordion">
-                <div class="accordion-body p-0">
-                  @if($yearEstimates->count() > 0)
-                  <div class="table-responsive">
-                    <table class="table table-sm table-striped mb-0">
-                      <tbody>
-                        @foreach($yearEstimates as $comp)
-                        <tr>
-                          <td>{{ $comp->component }}</td>
-                          <td class="text-end">₹{{ number_format($comp->amount, 2) }}</td>
-                        </tr>
-                        @endforeach
-                      </tbody>
-                    </table>
-                  </div>
-                  @else
-                  <div class="p-2 text-center text-muted small">No estimates.</div>
-                  @endif
                 </div>
               </div>
             </div>
             @endforeach
-            @else
-            {{-- Flat Mode Fallback --}}
-            @php
-            $allEstimates = $project->expenseComponents->where('type',
-            \App\Models\PMS\ProjectExpenseComponent::TYPE_ESTIMATED);
-            @endphp
-            @if($allEstimates->count() > 0)
-            <div class="accordion-item shadow-sm border mb-2 mt-2">
-              <h2 class="accordion-header" id="headingEstFlat">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                  data-bs-target="#collapseEstFlat" aria-expanded="false" aria-controls="collapseEstFlat">
-                  <span class="fw-bold"><i class="fas fa-calculator me-2 text-warning"></i> Estimated Expenses
-                    (Total)</span>
-                  <span class="ms-auto badge bg-label-warning">₹{{ number_format($allEstimates->sum('amount'), 2)
-                    }}</span>
-                </button>
-              </h2>
-              <div id="collapseEstFlat" class="accordion-collapse collapse" aria-labelledby="headingEstFlat"
-                data-bs-parent="#projectFinancialsAccordion">
-                <div class="accordion-body p-0">
-                  <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                    <table class="table table-sm table-striped mb-0">
-                      <thead class="table-light sticky-top">
-                        <tr>
-                          <th>Component</th>
-                          <th class="text-end">Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @foreach($allEstimates as $comp)
-                        <tr>
-                          <td>{{ $comp->component }}</td>
-                          <td class="text-end">₹{{ number_format($comp->amount, 2) }}</td>
-                        </tr>
-                        @endforeach
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-            @endif
-            @endif
+          </div>
+
+          <div class="border-top pt-3 mt-3 text-end">
+            <strong>Grand Total Estimated Expense: ₹{{ number_format($grandTotal, 2) }}</strong>
           </div>
         </div>
       </div>
+      @endif
     </div>
-
     <div class="col-md-6">
-      @if($project->proposal)
-      <div class="card mt-4 h-100">
-        <div class="card-header border-bottom">
-          <h5 class="card-title mb-0 text-success">
-            <i class="fas fa-file-contract me-2"></i> Proposal Estimates
-          </h5>
+      @if($project->proposal && $project->proposal->expenseComponents->count() > 0)
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0 badge bg-label-success">Project Approved Estimated Expense Breakdown </h5>
         </div>
-        <div class="card-body pt-3">
-          <div class="accordion" id="proposalFinancialsAccordion">
-            {{-- 1. Proposal Budgeted --}}
+        <div class="card-body">
+          @php
+          $grouped = $project->proposal->expenseComponents->groupBy('group_name');
+          $grandTotal = 0;
+          @endphp
+
+          <div class="accordion" id="proposalExpenseAccordion">
+            @foreach($grouped as $groupName => $components)
             @php
-            $propBudgeted = $project->proposal->expenseComponents->where('type',
-            \App\Models\PMS\ProposalExpenseComponent::TYPE_BUDGETED);
+
+            $groupId = Str::slug($groupName ?? 'ungrouped', '_');
+            $groupTotal = $components->sum('amount');
+            $grandTotal += $groupTotal;
             @endphp
-            <div class="accordion-item shadow-sm border mb-2">
-              <h2 class="accordion-header" id="headingPropBudgeted">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                  data-bs-target="#collapsePropBudgeted" aria-expanded="true" aria-controls="collapsePropBudgeted">
-                  <span class="fw-bold"><i class="fas fa-money-check-alt me-2 text-success"></i> Proposal
-                    Budgeted</span>
-                  <span class="ms-auto badge bg-label-success">₹{{ number_format($propBudgeted->sum('amount'), 2)
-                    }}</span>
+
+            <div class="accordion-item border rounded mb-2 shadow-sm">
+              <h2 class="accordion-header" id="heading_{{ $groupId }}">
+                <button class="accordion-button collapsed d-flex justify-content-between" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#collapse_{{ $groupId }}" aria-expanded="false"
+                  aria-controls="collapse_{{ $groupId }}">
+                  <div class="d-flex flex-column">
+                    <span class="fw-bold text-primary">{{ $groupName ?? 'Ungrouped' }}</span>
+                    <small class="text-muted">Subtotal: ₹{{ number_format($groupTotal, 2) }}</small>
+                  </div>
                 </button>
               </h2>
-              <div id="collapsePropBudgeted" class="accordion-collapse collapse show"
-                aria-labelledby="headingPropBudgeted" data-bs-parent="#proposalFinancialsAccordion">
-                <div class="accordion-body p-0">
-                  @if($propBudgeted->count() > 0)
-                  <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                    <table class="table table-sm table-striped mb-0">
-                      <thead class="table-light sticky-top">
+              <div id="collapse_{{ $groupId }}" class="accordion-collapse collapse"
+                aria-labelledby="heading_{{ $groupId }}" data-bs-parent="#proposalExpenseAccordion">
+                <div class="accordion-body p-2">
+                  <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0">
+                      <thead class="table-light">
                         <tr>
-                          <th>Component</th>
-                          <th class="text-end">Amount</th>
+                          <th style="width:25%">Category</th>
+                          <th style="width:35%">Component</th>
+                          @if($groupName === 'HR')
+                          <th style="width:10%" class="text-end">Persondays</th>
+                          <th style="width:15%" class="text-end">Rate (₹)</th>
+                          @endif
+                          <th style="width:20%" class="text-end">Amount (₹)</th>
                         </tr>
                       </thead>
                       <tbody>
-                        @foreach($propBudgeted as $comp)
+                        @foreach($components as $component)
                         <tr>
-                          <td>{{ $comp->component }}</td>
-                          <td class="text-end">₹{{ number_format($comp->amount, 2) }}</td>
-                        </tr>
-                        @endforeach
-                      </tbody>
-                    </table>
-                  </div>
-                  @else
-                  <div class="text-center p-3 text-muted">No budgeted items.</div>
-                  @endif
-                </div>
-              </div>
-            </div>
-
-            {{-- 2. Proposal Estimated --}}
-            @php
-            $propEstimated = $project->proposal->expenseComponents->where('type',
-            \App\Models\PMS\ProposalExpenseComponent::TYPE_ESTIMATED);
-            $propGroups = $propEstimated->groupBy('group_name');
-            @endphp
-            @if($propEstimated->count() > 0)
-            <div class="d-flex align-items-center mt-3 mb-2">
-              <h6 class="mb-0 text-muted w-100 border-bottom pb-2">Proposal Estimated Breakdown</h6>
-            </div>
-            @foreach($propGroups as $groupName => $components)
-            @php
-            $groupId = Str::slug($groupName ?? 'ungrouped', '_') . '_prop';
-            $groupTotal = $components->sum('amount');
-            @endphp
-            <div class="accordion-item shadow-sm border mb-2">
-              <h2 class="accordion-header" id="heading{{ $groupId }}">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                  data-bs-target="#collapse{{ $groupId }}" aria-expanded="false" aria-controls="collapse{{ $groupId }}">
-                  <div class="d-flex w-100 justify-content-between align-items-center pe-2">
-                    <span class="fw-bold">{{ $groupName }}</span>
-                    <span class="badge bg-label-info">₹{{ number_format($groupTotal, 2) }}</span>
-                  </div>
-                </button>
-              </h2>
-              <div id="collapse{{ $groupId }}" class="accordion-collapse collapse"
-                aria-labelledby="heading{{ $groupId }}" data-bs-parent="#proposalFinancialsAccordion">
-                <div class="accordion-body p-0">
-                  <div class="table-responsive">
-                    <table class="table table-sm table-striped mb-0">
-                      <tbody>
-                        @foreach($components as $comp)
-                        <tr>
-                          <td>{{ $comp->component }}</td>
-                          <td class="text-end">₹{{ number_format($comp->amount, 2) }}</td>
+                          <td>{{ $component->category->name ?? 'N/A' }}</td>
+                          <td>{{ $component->component }}</td>
+                          @if($groupName === 'HR')
+                          <td class="text-end">{{ $component->mandays ?? '-' }}</td>
+                          <td class="text-end">{{ $component->rate ? number_format($component->rate, 2) : '-' }}
+                          </td>
+                          @endif
+                          <td class="text-end">₹{{ number_format($component->amount, 2) }}</td>
                         </tr>
                         @endforeach
                       </tbody>
@@ -583,11 +474,10 @@
               </div>
             </div>
             @endforeach
-            <div class="mt-2 text-end">
-              <small class="fw-bold text-success">Total Est: ₹{{ number_format($propEstimated->sum('amount'), 2)
-                }}</small>
-            </div>
-            @endif
+          </div>
+
+          <div class="border-top pt-3 mt-3 text-end">
+            <strong>Grand Total Estimated Expense: ₹{{ number_format($grandTotal, 2) }}</strong>
           </div>
         </div>
       </div>

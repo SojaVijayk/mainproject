@@ -40,10 +40,9 @@ class ProposalController extends Controller
         return view('pms.proposals.create', compact('requirement','expenseCategories'),['pageConfigs'=> $pageConfigs]);
     }
 
-    public function store(ProposalStoreRequest $request, Requirement $requirement)
+    public function storeOld(ProposalStoreRequest $request, Requirement $requirement)
     {
-    //    dd($request->all());
-    //  dd($request->validated());exit;
+
         if(!in_array($requirement->status, [Requirement::STATUS_APPROVED_BY_DIRECTOR,Requirement::STATUS_APPROVED_BY_PAC]) || $requirement->allocated_to != Auth::id()){
             return redirect()->route('pms.requirements.show', $requirement->id)
                 ->with('error', 'You cannot create a proposal for this requirement.');
@@ -60,14 +59,6 @@ class ProposalController extends Controller
         $proposal = Proposal::create($data);
 
 
-        // Save expense components
-        // foreach ($data['expense_components'] as $component) {
-        //     $proposal->expenseComponents()->create([
-        //         'expense_category_id' => $component['category_id'],
-        //         'component' => $component['component'],
-        //         'amount' => $component['amount'],
-        //     ]);
-        // }
 
         foreach ($data['expense_components'] as $component) {
     $proposal->expenseComponents()->create([
@@ -103,6 +94,157 @@ class ProposalController extends Controller
             ->with('success', 'Proposal created successfully.');
     }
 
+  public function store(ProposalStoreRequest $request, Requirement $requirement)
+{
+    if(!in_array($requirement->status, [Requirement::STATUS_APPROVED_BY_DIRECTOR,Requirement::STATUS_APPROVED_BY_PAC]) || $requirement->allocated_to != Auth::id()){
+        return redirect()->route('pms.requirements.show', $requirement->id)
+            ->with('error', 'You cannot create a proposal for this requirement.');
+    }
+
+    $data = $request->validated();
+    $data['requirement_id'] = $requirement->id;
+    $data['created_by'] = Auth::id();
+    $data['status'] = Proposal::STATUS_CREATED;
+
+    // Calculate estimated expense from components
+    $totalEstimated = 0;
+    if (isset($data['expense_components'])) {
+        foreach ($data['expense_components'] as $component) {
+            $totalEstimated += $component['amount'] ?? 0;
+        }
+    }
+    $data['estimated_expense'] = $totalEstimated;
+
+    // Calculate revenue
+    $data['revenue'] = ($data['budget'] ?? 0) - $totalEstimated;
+
+    $proposal = Proposal::create($data);
+
+    // Save estimated expense components (type = 1)
+    if (isset($data['expense_components'])) {
+        foreach ($data['expense_components'] as $key => $component) {
+            // Handle HR components with mandays calculation
+            $amount = $component['amount'] ?? 0;
+            if (isset($component['mandays']) && isset($component['rate'])) {
+                $mandays = $component['mandays'] ?? 0;
+                $rate = $component['rate'] ?? 0;
+                $amount = $mandays * $rate;
+            }
+
+            // Get the first expense category if not provided or invalid
+            $categoryId = $component['category_id'] ?? null;
+            if (!$categoryId || !ExpenseCategory::find($categoryId)) {
+                $firstCategory = ExpenseCategory::first();
+                $categoryId = $firstCategory ? $firstCategory->id : null;
+            }
+
+            $proposal->expenseComponents()->create([
+                'expense_category_id' => $categoryId,
+                'group_name' => $component['group'] ?? 'Custom',
+                'component' => $component['component'] ?? 'Custom Component',
+                'mandays' => $component['mandays'] ?? null,
+                'rate' => $component['rate'] ?? null,
+                'amount' => $amount,
+                'type' => Proposal::TYPE_ESTIMATED, // Estimated expense
+            ]);
+        }
+    }
+
+    // Save budgeted expense components if copy button was clicked (type = 0)
+    $hasBudgetComponents = false;
+    if ($request->has('copy_to_budget') && $request->copy_to_budget == '1') {
+        $hasBudgetComponents = true;
+
+        // Save cloned components
+        // if (isset($data['expense_components'])) {
+        //     foreach ($data['expense_components'] as $key => $component) {
+        //         // Get budget values if provided, otherwise use estimated values
+        //         $budgetAmount = $request->budgeted_expense_components[$key]['amount'] ?? $component['amount'] ?? 0;
+        //         $budgetMandays = $request->budgeted_expense_components[$key]['mandays'] ?? $component['mandays'] ?? null;
+        //         $budgetRate = $component['rate'] ?? null;
+
+        //         // Recalculate amount for HR components if mandays changed
+        //         if ($budgetMandays && $budgetRate) {
+        //             $budgetAmount = $budgetMandays * $budgetRate;
+        //         }
+
+        //         // Get the first expense category if not provided or invalid
+        //         $categoryId = $component['category_id'] ?? null;
+        //         if (!$categoryId || !ExpenseCategory::find($categoryId)) {
+        //             $firstCategory = ExpenseCategory::first();
+        //             $categoryId = $firstCategory ? $firstCategory->id : null;
+        //         }
+
+        //         $proposal->expenseComponents()->create([
+        //             'expense_category_id' => $categoryId,
+        //             'group_name' => $component['group'] ?? 'Custom',
+        //             'component' => $component['component'] ?? 'Custom Component',
+        //             'mandays' => $budgetMandays,
+        //             'rate' => $budgetRate,
+        //             'amount' => $budgetAmount,
+        //             'type' => Proposal::TYPE_BUDGETED, // Budgeted expense
+        //         ]);
+        //     }
+        // }
+
+        // Save custom budget components (those starting with custom_budget_)
+        if ($request->has('budgeted_expense_components')) {
+            foreach ($request->budgeted_expense_components as $key => $component) {
+                // if (str_starts_with($key, 'custom_budget_')) {
+                    // Get the first expense category if not provided or invalid
+                    $categoryId = $component['category_id'] ?? null;
+                    if (!$categoryId || !ExpenseCategory::find($categoryId)) {
+                        $firstCategory = ExpenseCategory::first();
+                        $categoryId = $firstCategory ? $firstCategory->id : null;
+                    }
+
+                    $proposal->expenseComponents()->create([
+                        'expense_category_id' => $categoryId,
+                        'group_name' => $component['group'] ?? 'Custom',
+                        'component' => $component['component'] ?? 'Custom Budget Component',
+                        'mandays' => $component['mandays'] ?? null,
+                        'rate' => $component['rate'] ?? null,
+                        'amount' => $component['amount'] ?? 0,
+                        'type' => Proposal::TYPE_BUDGETED, // Budgeted expense
+                    ]);
+                // }
+            }
+        }
+    }
+
+    // Handle document uploads if any
+    if ($request->hasFile('documents')) {
+        foreach ($request->file('documents') as $file) {
+            $path = $file->store('public/proposals/documents');
+
+            $proposal->documents()->create([
+                'name' => $file->getClientOriginalName(),
+                'path' => $path,
+                'type' => $file->getClientMimeType(),
+                'size' => $file->getSize(),
+                'uploaded_by' => Auth::id(),
+            ]);
+        }
+    }
+
+    // Update requirement proposal status
+    $requirement->update(['proposal_status' => 1]);
+
+    // // Log the creation
+    // activity()
+    //     ->performedOn($proposal)
+    //     ->causedBy(Auth::user())
+    //     ->withProperties([
+    //         'has_budget_components' => $hasBudgetComponents,
+    //         'estimated_expense' => $data['estimated_expense'],
+    //         'budgeted_expense' => $hasBudgetComponents ? $proposal->total_budgeted_expense : 0,
+    //     ])
+    //     ->log('Proposal created with ' . ($hasBudgetComponents ? 'estimated and budgeted expenses' : 'estimated expenses only'));
+
+    return redirect()->route('pms.proposals.show', $proposal->id)
+        ->with('success', 'Proposal created successfully.');
+}
+
     public function show(Proposal $proposal)
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
@@ -135,8 +277,160 @@ class ProposalController extends Controller
 
         return view('pms.proposals.edit', compact('proposal','expenseCategories'),['pageConfigs'=> $pageConfigs]);
     }
+public function update(ProposalUpdateRequest $request, Proposal $proposal)
+{
+    if ($proposal->status != Proposal::STATUS_CREATED && $proposal->status != Proposal::STATUS_RETURNED_FOR_CLARIFICATION) {
+        return redirect()->back()
+            ->with('error', 'Proposal cannot be edited in its current status.');
+    }
 
-    public function update(ProposalUpdateRequest $request, Proposal $proposal)
+    if ($proposal->created_by != Auth::id()) {
+        return redirect()->back()
+            ->with('error', 'You are not authorized to edit this proposal.');
+    }
+
+    $data = $request->validated();
+
+    // Calculate estimated expense from components if not provided
+    if (!isset($data['estimated_expense']) && isset($data['expense_components'])) {
+        $totalEstimated = 0;
+        foreach ($data['expense_components'] as $component) {
+            $totalEstimated += $component['amount'] ?? 0;
+        }
+        $data['estimated_expense'] = $totalEstimated;
+    }
+
+    // Calculate revenue
+    $data['revenue'] = ($data['budget'] ?? 0) - ($data['estimated_expense'] ?? 0);
+
+    $proposal->update($data);
+
+    // Delete existing expense components
+    $proposal->expenseComponents()->delete();
+
+    // Save estimated expense components (type = 1)
+    if (isset($data['expense_components'])) {
+        foreach ($data['expense_components'] as $key => $component) {
+            // Handle HR components with mandays calculation
+            $amount = $component['amount'] ?? 0;
+            if (isset($component['mandays']) && isset($component['rate'])) {
+                $mandays = $component['mandays'] ?? 0;
+                $rate = $component['rate'] ?? 0;
+                $amount = $mandays * $rate;
+            }
+
+            // Ensure category_id exists or use default
+            $categoryId = $component['category_id'] ?? null;
+            if (!$categoryId || !ExpenseCategory::find($categoryId)) {
+                $firstCategory = ExpenseCategory::first();
+                $categoryId = $firstCategory ? $firstCategory->id : null;
+            }
+
+            $proposal->expenseComponents()->create([
+                'expense_category_id' => $categoryId,
+                'group_name' => $component['group'] ?? 'Custom',
+                'component' => $component['component'] ?? 'Custom Component',
+                'mandays' => $component['mandays'] ?? null,
+                'rate' => $component['rate'] ?? null,
+                'amount' => $amount,
+                'type' => Proposal::TYPE_ESTIMATED, // Estimated expense
+            ]);
+        }
+    }
+
+    // Save budgeted expense components if they exist
+    $hasBudgetComponents = false;
+    if ($request->has('copy_to_budget') && $request->copy_to_budget == '1') {
+        $hasBudgetComponents = true;
+
+        // Save cloned components
+        // if (isset($data['expense_components'])) {
+        //     foreach ($data['expense_components'] as $key => $component) {
+        //         // Get budget values if provided, otherwise use estimated values
+        //         $budgetAmount = $request->budgeted_expense_components[$key]['amount'] ?? $component['amount'] ?? 0;
+        //         $budgetMandays = $request->budgeted_expense_components[$key]['mandays'] ?? $component['mandays'] ?? null;
+        //         $budgetRate = $component['rate'] ?? null;
+
+        //         // Recalculate amount for HR components if mandays changed
+        //         if ($budgetMandays && $budgetRate) {
+        //             $budgetAmount = $budgetMandays * $budgetRate;
+        //         }
+
+        //         // Ensure category_id exists or use default
+        //         $categoryId = $component['category_id'] ?? null;
+        //         if (!$categoryId || !ExpenseCategory::find($categoryId)) {
+        //             $firstCategory = ExpenseCategory::first();
+        //             $categoryId = $firstCategory ? $firstCategory->id : null;
+        //         }
+
+        //         $proposal->expenseComponents()->create([
+        //             'expense_category_id' => $categoryId,
+        //             'group_name' => $component['group'] ?? 'Custom',
+        //             'component' => $component['component'] ?? 'Custom Component',
+        //             'mandays' => $budgetMandays,
+        //             'rate' => $budgetRate,
+        //             'amount' => $budgetAmount,
+        //             'type' => Proposal::TYPE_BUDGETED, // Budgeted expense
+        //         ]);
+        //     }
+        // }
+
+        // Save custom budget components (those starting with custom_budget_)
+        if ($request->has('budgeted_expense_components')) {
+            foreach ($request->budgeted_expense_components as $key => $component) {
+                // if (str_starts_with($key, 'custom_budget_')) {
+                    // Ensure category_id exists or use default
+                    $categoryId = $component['category_id'] ?? null;
+                    if (!$categoryId || !ExpenseCategory::find($categoryId)) {
+                        $firstCategory = ExpenseCategory::first();
+                        $categoryId = $firstCategory ? $firstCategory->id : null;
+                    }
+
+                    $proposal->expenseComponents()->create([
+                        'expense_category_id' => $categoryId,
+                        'group_name' => $component['group'] ?? 'Custom',
+                        'component' => $component['component'] ?? 'Custom Budget Component',
+                        'mandays' => $component['mandays'] ?? null,
+                        'rate' => $component['rate'] ?? null,
+                        'amount' => $component['amount'] ?? 0,
+                        'type' => Proposal::TYPE_BUDGETED, // Budgeted expense
+                    ]);
+                // }
+            }
+        }
+    }
+
+    // Handle document uploads if any
+    if ($request->hasFile('documents')) {
+        foreach ($request->file('documents') as $file) {
+            $path = $file->store('public/proposals/documents');
+
+            $proposal->documents()->create([
+                'name' => $file->getClientOriginalName(),
+                'path' => $path,
+                'type' => $file->getClientMimeType(),
+                'size' => $file->getSize(),
+                'uploaded_by' => Auth::id(),
+            ]);
+        }
+    }
+
+    // // Log the update
+    // activity()
+    //     ->performedOn($proposal)
+    //     ->causedBy(Auth::user())
+    //     ->withProperties([
+    //         'has_budget_components' => $hasBudgetComponents,
+    //         'estimated_expense' => $data['estimated_expense'] ?? $proposal->estimated_expense,
+    //         'budgeted_expense' => $hasBudgetComponents ? $proposal->total_budgeted_expense : 0,
+    //     ])
+    //     ->log('Proposal updated with ' . ($hasBudgetComponents ? 'estimated and budgeted expenses' : 'estimated expenses only'));
+
+    return redirect()->route('pms.proposals.show', $proposal->id)
+        ->with('success', 'Proposal updated successfully.');
+}
+
+    public function updateOld(ProposalUpdateRequest $request, Proposal $proposal)
     {
         if ($proposal->status != Proposal::STATUS_CREATED && $proposal->status != Proposal::STATUS_RETURNED_FOR_CLARIFICATION) {
             return redirect()->back()

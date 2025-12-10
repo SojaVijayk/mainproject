@@ -12,8 +12,6 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}">
-@endsection
-@section('page-style')
 
 @endsection
 
@@ -124,169 +122,6 @@
             }]
         }
     });
-
-  // Year-wise Budget and Revenue Chart
-  const yearWiseCtx = document.getElementById('yearWiseChart');
-  if (yearWiseCtx) {
-    // Prepare year-wise data
-    const yearLabels = {!! json_encode($financialYears->pluck('name')->toArray()) !!};
-    const yearBudgetData = [];
-    const yearRevenueData = [];
-
-    @foreach($financialYears as $fy)
-      let budgetSum_{{ $fy->id }} = 0;
-      let revenueSum_{{ $fy->id }} = 0;
-      @foreach($categorySummary as $cat => $data)
-        budgetSum_{{ $fy->id }} += {{ $data['year_wise_data'][$fy->id]['budget'] ?? 0 }};
-        revenueSum_{{ $fy->id }} += {{ $data['year_wise_data'][$fy->id]['revenue'] ?? 0 }};
-      @endforeach
-      yearBudgetData.push(budgetSum_{{ $fy->id }});
-      yearRevenueData.push(revenueSum_{{ $fy->id }});
-    @endforeach
-
-    new Chart(yearWiseCtx, {
-      type: 'bar',
-      data: {
-        labels: yearLabels,
-        datasets: [{
-          label: 'Budget (Lakhs)',
-          data: yearBudgetData,
-          backgroundColor: 'rgba(54, 162, 235, 0.6)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
-        }, {
-          label: 'Revenue (Lakhs)',
-          data: yearRevenueData,
-          backgroundColor: 'rgba(75, 192, 192, 0.6)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Amount (Lakhs)'
-            }
-          },
-          x: {
-            title: {
-              display: true,
-              text: 'Financial Year'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top'
-          },
-          title: {
-            display: true,
-            text: 'Year-wise Budget vs Revenue Comparison'
-          }
-        }
-      }
-    });
-  }
-
-  // Category-wise Year-wise Chart
-  const categoryYearWiseCtx = document.getElementById('categoryYearWiseChart');
-  if (categoryYearWiseCtx) {
-    const categories = {!! json_encode(array_keys($categorySummary->toArray())) !!};
-    const yearLabels = {!! json_encode($financialYears->pluck('name')->toArray()) !!};
-
-    // Prepare datasets for each category
-    const datasets = [];
-    const colors = [
-      'rgba(255, 99, 132, 0.7)',
-      'rgba(54, 162, 235, 0.7)',
-      'rgba(255, 206, 86, 0.7)',
-      'rgba(75, 192, 192, 0.7)',
-      'rgba(153, 102, 255, 0.7)',
-      'rgba(255, 159, 64, 0.7)',
-      'rgba(199, 199, 199, 0.7)',
-      'rgba(83, 102, 255, 0.7)',
-      'rgba(255, 99, 255, 0.7)',
-      'rgba(99, 255, 132, 0.7)'
-    ];
-
-    categories.forEach((category, index) => {
-      const categoryData = {!! json_encode($categorySummary->toArray()) !!}[category];
-      const budgetData = [];
-      const revenueData = [];
-
-      @foreach($financialYears as $fy)
-        budgetData.push(categoryData.year_wise_data[{{ $fy->id }}] ? categoryData.year_wise_data[{{ $fy->id }}].budget : 0);
-        revenueData.push(categoryData.year_wise_data[{{ $fy->id }}] ? categoryData.year_wise_data[{{ $fy->id }}].revenue : 0);
-      @endforeach
-
-      datasets.push({
-        label: category + ' - Budget',
-        data: budgetData,
-        backgroundColor: colors[index % colors.length],
-        borderColor: colors[index % colors.length].replace('0.7', '1'),
-        borderWidth: 1
-      });
-
-      datasets.push({
-        label: category + ' - Revenue',
-        data: revenueData,
-        backgroundColor: colors[index % colors.length].replace('0.7', '0.4'),
-        borderColor: colors[index % colors.length].replace('0.7', '1'),
-        borderWidth: 1,
-        borderDash: [5, 5]
-      });
-    });
-
-    new Chart(categoryYearWiseCtx, {
-      type: 'bar',
-      data: {
-        labels: yearLabels,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Amount (Lakhs)'
-            }
-          },
-          x: {
-            title: {
-              display: true,
-              text: 'Financial Year'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            labels: {
-              boxWidth: 12,
-              font: {
-                size: 10
-              }
-            }
-          },
-          title: {
-            display: true,
-            text: 'Category-wise Budget and Revenue Across Financial Years'
-          }
-        }
-      }
-    });
-  }
-
 
      const ctx2 = document.getElementById('projectChart');
     new Chart(ctx2, {
@@ -483,18 +318,14 @@ $users = \App\Models\User::role('Project Investigator')
 
     {{-- Filters --}}
     <form method="GET" class="mb-3 row">
-
       <div class="col">
-        <label class="form-label">Project Start Date</label>
         <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control">
       </div>
       <div class="col">
-        <label class="form-label">Project End Date</label>
         <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
       </div>
 
       <div class="col">
-        <label class="form-label">Categories</label>
         <select name="category_id" class="form-control select2">
           <option value="">All Categories</option>
           @foreach(\App\Models\ProjectCategory::all() as $cat)
@@ -508,7 +339,6 @@ $users = \App\Models\User::role('Project Investigator')
       @if(Auth::user()->hasRole('director') || Auth::user()->hasRole('Project Report') ||
       Auth::user()->hasRole('finance') || Auth::user()->hasRole('Project Investigator') )
       <div class="col">
-        <label class="form-label">Principal Investigator</label>
         <select name="investigator_id" class="form-control select2">
           <option value="">All Investigators</option>
           @foreach($users as $user)
@@ -519,17 +349,6 @@ $users = \App\Models\User::role('Project Investigator')
         </select>
       </div>
       @endif
-      <div class="col">
-        <label class="form-label">Financial Years</label>
-        <select name="financial_year_ids[]" class="form-control select2" multiple>
-          <option value="">All Years</option>
-          @foreach($allFinancialYearsForFilter as $fy)
-          <option value="{{ $fy->id }}" {{ in_array($fy->id, $selectedFinancialYearIds) ? 'selected' : '' }}>
-            {{ $fy->name }}
-          </option>
-          @endforeach
-        </select>
-      </div>
       <div class="col">
         <button class="btn btn-primary">Filter</button>
       </div>
@@ -611,9 +430,6 @@ $users = \App\Models\User::role('Project Investigator')
                 <th rowspan="2">Category</th>
                 <th rowspan="2">Budget (Lakhs)</th>
                 <th rowspan="2">Gross Income (Lakhs)</th>
-                @foreach($financialYears as $fy)
-                <th colspan="2">{{ $fy->name }}</th>
-                @endforeach
                 <th colspan="3"><span class="badge bg-label-primary">Invoice Raised (Lakhs)</span></th>
                 <th rowspan="2"><span class="badge bg-label-success">Invoice Paid (Lakhs)</span></th>
                 <th rowspan="2"><span class="badge bg-label-danger">Balance (Lakhs)</span></th>
@@ -625,10 +441,6 @@ $users = \App\Models\User::role('Project Investigator')
 
               </tr>
               <tr>
-                @foreach($financialYears as $fy)
-                <th>Budget</th>
-                <th>Revenue</th>
-                @endforeach
                 <th>Tax</th>
                 <th>Proforma</th>
                 <th>Total</th>
@@ -639,11 +451,6 @@ $users = \App\Models\User::role('Project Investigator')
               $totalBudget = $totalRevenue = $totalInvoiceRaised = $totalInvoicePaid = $totalBalance = 0;
               $totalInitiated = $totalOngoing = $totalCompleted = $totalArchived = $totalDelayed = 0;
               $totalInvoiceRaisedTax = $totalInvoiceRaisedProforma = 0;
-              // Initialize year-wise totals
-              $yearWiseTotals = [];
-              foreach($financialYears as $fy) {
-              $yearWiseTotals[$fy->id] = ['budget' => 0, 'revenue' => 0];
-              }
               @endphp
               @foreach($categorySummary as $cat => $data)
               <tr>
@@ -651,10 +458,6 @@ $users = \App\Models\User::role('Project Investigator')
                   </span>{{ $cat }}</td>
                 <td>{{ number_format($data['total_budget'], 2) }}</td>
                 <td>{{ number_format($data['total_revenue'], 2) }}</td>
-                @foreach($financialYears as $fy)
-                <td>{{ number_format($data['year_wise_data'][$fy->id]['budget'] ?? 0, 2) }}</td>
-                <td>{{ number_format($data['year_wise_data'][$fy->id]['revenue'] ?? 0, 2) }}</td>
-                @endforeach
 
                 <td>{{ number_format($data['total_invoice_raised_tax'], 2) }}</td>
                 <td>{{ number_format($data['total_invoice_raised_proforma'], 2) }}</td>
@@ -672,11 +475,6 @@ $users = \App\Models\User::role('Project Investigator')
               @php
               $totalBudget += $data['total_budget'];
               $totalRevenue += $data['total_revenue'];
-              // Accumulate year-wise totals
-              foreach($financialYears as $fy) {
-              $yearWiseTotals[$fy->id]['budget'] += $data['year_wise_data'][$fy->id]['budget'] ?? 0;
-              $yearWiseTotals[$fy->id]['revenue'] += $data['year_wise_data'][$fy->id]['revenue'] ?? 0;
-              }
               $totalInvoiceRaised += $data['total_invoice_raised'];
               $totalInvoiceRaisedTax += $data['total_invoice_raised_tax'];
               $totalInvoiceRaisedProforma += $data['total_invoice_raised_proforma'];
@@ -693,10 +491,6 @@ $users = \App\Models\User::role('Project Investigator')
                 <td class="text-end">Grand Total</td>
                 <td>{{ number_format($totalBudget, 2) }}</td>
                 <td>{{ number_format($totalRevenue, 2) }}</td>
-                @foreach($financialYears as $fy)
-                <td>{{ number_format($yearWiseTotals[$fy->id]['budget'], 2) }}</td>
-                <td>{{ number_format($yearWiseTotals[$fy->id]['revenue'], 2) }}</td>
-                @endforeach
 
                 <td>{{ number_format($totalInvoiceRaisedTax, 2) }}</td>
                 <td>{{ number_format($totalInvoiceRaisedProforma, 2) }}</td>
@@ -834,31 +628,11 @@ $users = \App\Models\User::role('Project Investigator')
               <td>{{ $totalApprovedPI }}</td>
               <td>{{ $totalCreatedPI + $totalSubmittedPI + $totalUnderPacPI + $totalRejectedPI + $totalApprovedPI }}
               </td>
-              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {{-- Year-wise Budget and Revenue Chart --}}
-      <div class="card mt-4">
-        <div class="card-header">
-          <h5 class="card-title mb-0">Year-wise Budget and Revenue Analysis</h5>
-        </div>
-        <div class="card-body">
-          <canvas id="yearWiseChart" height="80"></canvas>
-        </div>
-      </div>
-
-      {{-- Category-wise Year-wise Chart --}}
-      <div class="card mt-4">
-        <div class="card-header">
-          <h5 class="card-title mb-0">Category-wise Year-wise Budget and Revenue</h5>
-        </div>
-        <div class="card-body">
-          <canvas id="categoryYearWiseChart" height="100"></canvas>
-        </div>
-      </div>
 
     </div>
 
@@ -935,11 +709,6 @@ $users = \App\Models\User::role('Project Investigator')
       'initiated' => 0,
       'archived' => 0,
       ];
-      // Initialize year-wise grand totals
-      $yearWiseGrandTotals = [];
-      foreach($financialYears as $fy) {
-      $yearWiseGrandTotals[$fy->id] = ['budget' => 0, 'revenue' => 0];
-      }
       @endphp
 
       @foreach($investigatorCategoryWise as $investigator => $categories)
@@ -960,11 +729,6 @@ $users = \App\Models\User::role('Project Investigator')
       'initiated' => 0,
       'archived' => 0,
       ];
-      // Initialize year-wise subtotals
-      $yearWiseSubTotals = [];
-      foreach($financialYears as $fy) {
-      $yearWiseSubTotals[$fy->id] = ['budget' => 0, 'revenue' => 0];
-      }
       @endphp
 
       <table border="1" cellpadding="6" cellspacing="0"
@@ -974,9 +738,6 @@ $users = \App\Models\User::role('Project Investigator')
             <th rowspan="2">Category</th>
             <th rowspan="2">Budget (Lakhs)</th>
             <th rowspan="2">Gross Income (Lakhs)</th>
-            @foreach($financialYears as $fy)
-            <th colspan="2">{{ $fy->name }}</th>
-            @endforeach
             <th colspan="3">Invoice Raised (Lakhs)</th>
             <th rowspan="2">Invoice Paid (Lakhs)</th>
             <th rowspan="2">Balance (Lakhs)</th>
@@ -988,10 +749,6 @@ $users = \App\Models\User::role('Project Investigator')
 
           </tr>
           <tr>
-            @foreach($financialYears as $fy)
-            <th>Budget</th>
-            <th>Revenue</th>
-            @endforeach
             <th>Tax</th>
             <th>Proforma</th>
             <th>Total</th>
@@ -1003,10 +760,6 @@ $users = \App\Models\User::role('Project Investigator')
             <td>{{ $category }}</td>
             <td>{{ number_format($data['total_budget'], 2) }}</td>
             <td>{{ number_format($data['total_revenue'], 2) }}</td>
-            @foreach($financialYears as $fy)
-            <td>{{ number_format($data['year_wise_data'][$fy->id]['budget'] ?? 0, 2) }}</td>
-            <td>{{ number_format($data['year_wise_data'][$fy->id]['revenue'] ?? 0, 2) }}</td>
-            @endforeach
             <td>{{ number_format($data['total_invoice_raised_tax'], 2) }}</td>
             <td>{{ number_format($data['total_invoice_raised_proforma'], 2) }}</td>
             <td>{{ number_format($data['total_invoice_raised'], 2) }}</td>
@@ -1024,11 +777,6 @@ $users = \App\Models\User::role('Project Investigator')
           // Update investigator subtotals
           $subTotals['budget'] += $data['total_budget'];
           $subTotals['revenue'] += $data['total_revenue'];
-          // Accumulate year-wise subtotals
-          foreach($financialYears as $fy) {
-          $yearWiseSubTotals[$fy->id]['budget'] += $data['year_wise_data'][$fy->id]['budget'] ?? 0;
-          $yearWiseSubTotals[$fy->id]['revenue'] += $data['year_wise_data'][$fy->id]['revenue'] ?? 0;
-          }
           $subTotals['invoice_raised'] += $data['total_invoice_raised'];
           $subTotals['invoice_raised_tax'] += $data['total_invoice_raised_tax'];
           $subTotals['invoice_raised_proforma'] += $data['total_invoice_raised_proforma'];
@@ -1047,10 +795,6 @@ $users = \App\Models\User::role('Project Investigator')
             <td>Total ({{ $investigator }})</td>
             <td>{{ number_format($subTotals['budget'], 2) }}</td>
             <td>{{ number_format($subTotals['revenue'], 2) }}</td>
-            @foreach($financialYears as $fy)
-            <td>{{ number_format($yearWiseSubTotals[$fy->id]['budget'], 2) }}</td>
-            <td>{{ number_format($yearWiseSubTotals[$fy->id]['revenue'], 2) }}</td>
-            @endforeach
             <td>{{ number_format($subTotals['invoice_raised_tax'], 2) }}</td>
             <td>{{ number_format($subTotals['invoice_raised_proforma'], 2) }}</td>
             <td>{{ number_format($subTotals['invoice_raised'], 2) }}</td>
@@ -1071,11 +815,6 @@ $users = \App\Models\User::role('Project Investigator')
       foreach($subTotals as $key => $val) {
       $grandTotals[$key] += $val;
       }
-      // Accumulate year-wise grand totals
-      foreach($financialYears as $fy) {
-      $yearWiseGrandTotals[$fy->id]['budget'] += $yearWiseSubTotals[$fy->id]['budget'];
-      $yearWiseGrandTotals[$fy->id]['revenue'] += $yearWiseSubTotals[$fy->id]['revenue'];
-      }
       @endphp
       @endforeach
 
@@ -1087,9 +826,6 @@ $users = \App\Models\User::role('Project Investigator')
           <tr>
             <th rowspan="2">Budget (Lakhs)</th>
             <th rowspan="2">Gross Income (Lakhs)</th>
-            @foreach($financialYears as $fy)
-            <th colspan="2">{{ $fy->name }}</th>
-            @endforeach
             <th colspan="3">Invoice Raised (Lakhs)</th>
             <th rowspan="2">Invoice Paid (Lakhs)</th>
             <th rowspan="2">Balance (Lakhs)</th>
@@ -1100,10 +836,6 @@ $users = \App\Models\User::role('Project Investigator')
             <th rowspan="2"><span class="badge bg-label-dark">Archived</span></th>
           </tr>
           <tr>
-            @foreach($financialYears as $fy)
-            <th>Budget</th>
-            <th>Revenue</th>
-            @endforeach
             <th>Tax</th>
             <th>Proforma</th>
             <th>Total</th>
@@ -1113,10 +845,6 @@ $users = \App\Models\User::role('Project Investigator')
           <tr>
             <td>{{ number_format($grandTotals['budget'], 2) }}</td>
             <td>{{ number_format($grandTotals['revenue'], 2) }}</td>
-            @foreach($financialYears as $fy)
-            <td>{{ number_format($yearWiseGrandTotals[$fy->id]['budget'], 2) }}</td>
-            <td>{{ number_format($yearWiseGrandTotals[$fy->id]['revenue'], 2) }}</td>
-            @endforeach
             <td>{{ number_format($grandTotals['invoice_raised_tax'], 2) }}</td>
             <td>{{ number_format($grandTotals['invoice_raised_proforma'], 2) }}</td>
             <td>{{ number_format($grandTotals['invoice_raised'], 2) }}</td>

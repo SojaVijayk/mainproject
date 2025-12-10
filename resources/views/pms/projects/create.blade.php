@@ -10,9 +10,7 @@
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/animate-css/animate.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css')}}" />
-<link rel="stylesheet" href="{{asset('assets/vendor/libs/spinkit/spinkit.css')}}" />
 <link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}">
-
 @endsection
 
 @section('vendor-script')
@@ -22,547 +20,683 @@
 <script src="{{asset('assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/sweetalert2/sweetalert2.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js')}}"></script>
-<script src="{{asset('assets/vendor/libs/block-ui/block-ui.js')}}"></script>
 <script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
-
 @endsection
 
 @section('page-script')
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize select2 for team members
-    {{--  $('#team_members').select2({
-        placeholder: 'Select team members',
-        width: '100%'
-    });  --}}
+  // Pass PHP Data to JS
+    const proposalData = @json($proposalData);
+    const expenseCategories = @json($expenseCategories);
+    const financialYears = @json($financialYears);
 
-    // Set end date minimum based on start date
-    const startDateInput = document.getElementById('start_date');
-    const endDateInput = document.getElementById('end_date');
+    // Main Vue-like Logic (Vanilla JS)
+    const App = {
+        state: {
+            yearlyBudgetCount: 0,
+            budgetedComponentCount: 0,
+            yearlyComponentCounts: {}, // Track component index per year
+            teamMembers: [],
+            initialized: false
+        },
 
-    startDateInput.addEventListener('change', function() {
-        endDateInput.min = this.value;
+        init() {
+            this.bindEvents();
+            this.renderBudgetedSection(); // Load initial budgeted items
+            this.checkAndInitProject();
+        },
 
-        // If end date is before start date, reset it
-        if (endDateInput.value && endDateInput.value < this.value) {
-            endDateInput.value = '';
+        bindEvents() {
+            // Add Financial Year Button
+            const addYearlyBtn = document.getElementById('add-yearly-budget-btn');
+            if(addYearlyBtn) addYearlyBtn.addEventListener('click', () => this.addYearlySection());
+
+            // Add Budgeted Component Button
+            const addBudgetBtn = document.getElementById('add-budgeted-component-btn');
+            if(addBudgetBtn) addBudgetBtn.addEventListener('click', () => this.addBudgetedComponent());
+
+            // Team Member Logic
+            $('#user_selector').on('change', (e) => this.addTeamMember($(e.target).val(), $(e.target).find('option:selected').text()));
+
+            // Watch Start Date for Auto-Init
+            const startDateInput = document.getElementById('start_date');
+            if(startDateInput) {
+                startDateInput.addEventListener('change', () => {
+                    this.state.initialized = false;
+                    this.checkAndInitProject();
+                    this.updateFYDisabledStates();
+                });
+            }
+
+            // Global Event Delegation for Dynamic Elements
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+
+                if (target.closest('.remove-yearly-section')) {
+                    target.closest('.yearly-section-card').remove();
+                    // Do NOT decrement yearlyBudgetCount to avoid index collision on hidden inputs
+                    this.calculateTotals();
+                    this.updateFYDisabledStates(); // Re-enable year that was removed
+                }
+                if (target.closest('.remove-component')) {
+                    if(target.closest('.remove-component').disabled) return;
+                    target.closest('.component-row').remove();
+                    this.calculateTotals();
+                }
+                if (target.closest('.remove-budget-component')) {
+                    target.closest('.budget-component-row').remove();
+                    this.calculateTotals();
+                }
+                if (target.closest('.add-yearly-component-btn')) {
+                    const btn = target.closest('.add-yearly-component-btn');
+                    const yearIndex = btn.getAttribute('data-year-index');
+                    this.addYearlyComponent(yearIndex);
+                }
+                if (target.closest('.copy-proposal-btn')) {
+                    const btn = target.closest('.copy-proposal-btn');
+                    const yearIndex = btn.getAttribute('data-year-index');
+                    this.copyProposalEstimates(yearIndex);
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-check me-1"></i> Copied';
+                }
+                if (target.closest('.remove-team-member')) {
+                    const idx = target.closest('.remove-team-member').getAttribute('data-index');
+                    this.removeTeamMember(idx);
+                }
+            });
+
+            // Change delegation for FY Selects
+            document.addEventListener('change', (e) => {
+                if(e.target.classList.contains('fy-select')) {
+                    this.updateFYDisabledStates();
+                }
+            });
+
+            // Input Change Delegation for Totals
+            document.addEventListener('input', (e) => {
+                if (e.target.matches('.amount-input') || e.target.matches('.yearly-budget-input')) {
+                    this.calculateTotals();
+                }
+            });
+        },
+
+        // --- Helper: Reactive FY Disabling ---
+        updateFYDisabledStates() {
+            const selects = document.querySelectorAll('.fy-select');
+            const selectedValues = Array.from(selects).map(s => s.value).filter(v => v);
+
+            selects.forEach(select => {
+                const currentVal = select.value;
+                Array.from(select.options).forEach(option => {
+                    // Skip placeholder
+                    if(!option.value) return;
+
+                    // Disable if selected elsewhere AND not self
+                    if (selectedValues.includes(option.value) && option.value !== currentVal) {
+                        option.disabled = true;
+                        option.style.color = '#ccc';
+                    } else {
+                        option.disabled = false;
+                        option.style.color = '';
+                    }
+                });
+            });
+        },
+
+        // --- Helper: Get Valid FYs based on Dates ---
+        getValidFinancialYears() {
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+
+            if (!startDate || !endDate) return financialYears; // Return all if no dates selected
+
+            return financialYears.filter(fy => {
+                // Check overlap: (StartA <= EndB) and (EndA >= StartB)
+                return (fy.start_date <= endDate && fy.end_date >= startDate);
+            });
+        },
+
+        // --- Auto Initialization Logic ---
+        checkAndInitProject() {
+            const startDate = document.getElementById('start_date').value;
+            // Check active sections count in DOM for accuracy
+            const activeSections = document.querySelectorAll('.yearly-section-card').length;
+
+            if (startDate && activeSections === 0) {
+                 // The addYearlySection now handles the smart selection logic internally
+                 // We just need to trigger it once.
+
+                 // Wait slightly for DOM update just in case, though sync is fine
+                 const yearIndex = this.addYearlySection();
+
+                 // Pre-fill Proposal Budget (for the first year)
+                 // We only do this on fresh init
+                 if(!this.state.initialized) {
+                     const budgetInput = document.querySelector(`input[name="yearly_estimates[${yearIndex}][amount]"]`);
+                     if(budgetInput && proposalData.budget) {
+                         budgetInput.value = proposalData.budget;
+                     }
+
+                     // Copy Estimates
+                     this.copyProposalEstimates(yearIndex);
+
+                     // Update button UI
+                     const copyBtn = document.querySelector(`.copy-proposal-btn[data-year-index="${yearIndex}"]`);
+                     if(copyBtn) {
+                         copyBtn.innerHTML = '<i class="fas fa-check me-1"></i> Auto-Loaded';
+                         copyBtn.disabled = true;
+                     }
+
+                     this.state.initialized = true;
+                     this.calculateTotals();
+                 }
+            }
+        },
+
+        // --- Yearly Estimates Logic ---
+
+        addYearlySection() {
+            const index = this.state.yearlyBudgetCount; // Current Count (0-based index for next item)
+
+            // 1. Get List of Already Used Financial Years
+            const usedFyIds = Array.from(document.querySelectorAll('select[name^="yearly_estimates"]'))
+                                   .map(select => select.value)
+                                   .filter(val => val);
+
+            // 2. Generate Valid Options
+            const validFYs = this.getValidFinancialYears();
+
+            // 3. Auto-Select Logic:
+            let selectedFyId = '';
+            const nextAvailable = validFYs.find(y => !usedFyIds.includes(String(y.id)));
+            if (nextAvailable) {
+                selectedFyId = nextAvailable.id;
+            }
+
+            // 4. Create Options HTML (initial render)
+            const optionsHtml = validFYs.map(y => {
+                const isSelected = y.id == selectedFyId ? 'selected' : '';
+                return `<option value="${y.id}" ${isSelected}>${y.display_name || y.name} (${y.start_date} - ${y.end_date})</option>`;
+            }).join('');
+
+            const finalOptions = optionsHtml || '<option value="">No available years match project dates</option>';
+
+            this.state.yearlyComponentCounts[index] = 0;
+            this.state.yearlyBudgetCount++;
+
+            const html = `
+                <div class="card mb-3 yearly-section-card border border-primary shadow-sm" id="yearly-section-${index}">
+                    <div class="card-header bg-label-primary d-flex justify-content-between align-items-center py-2">
+                        <h6 class="mb-0 text-primary">Financial Year Allocation</h6>
+                        <button type="button" class="btn btn-sm btn-label-danger remove-yearly-section">
+                            <i class="fas fa-trash me-1"></i> Remove Year
+                        </button>
+                    </div>
+                    <div class="card-body pt-3">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Select Financial Year *</label>
+                                <select name="yearly_estimates[${index}][financial_year_id]" class="form-select fy-select" required>
+                                    <option value="">Choose Year</option>
+                                    ${finalOptions}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Total Budget for This Year (₹) *</label>
+                                <input type="number" step="0.01" name="yearly_estimates[${index}][amount]" class="form-control yearly-budget-input" required placeholder="0.00">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Notes</label>
+                                <input type="text" name="yearly_estimates[${index}][notes]" class="form-control" placeholder="Optional notes">
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 text-secondary">Estimated Expense Components</h6>
+                            <div>
+                                <button type="button" class="btn btn-xs btn-outline-info copy-proposal-btn" data-year-index="${index}">
+                                    <i class="fas fa-copy me-1"></i> Copy Proposal Defaults
+                                </button>
+                                <button type="button" class="btn btn-xs btn-outline-primary add-yearly-component-btn" data-year-index="${index}">
+                                    <i class="fas fa-plus me-1"></i> Add Component
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="yearly-components-container" id="yearly-components-${index}">
+                            <!-- Dynamic Components Go Here -->
+                        </div>
+                    </div>
+                    <!-- Year Footer Highlights -->
+                    <div class="card-footer bg-lighter py-2 border-top">
+                        <div class="d-flex justify-content-around text-small fw-bold">
+                            <span>Budget: ₹<span class="year-budget-display" id="year-budget-${index}">0.00</span></span>
+                            <span>Expenses: ₹<span class="year-expense-display text-warning" id="year-expense-${index}">0.00</span></span>
+                            <span>Revenue: ₹<span class="year-revenue-display text-success" id="year-revenue-${index}">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('yearly-sections-container').insertAdjacentHTML('beforeend', html);
+
+            // Trigger reactive disable check immediately to ensure state is consistent
+            this.updateFYDisabledStates();
+
+            return index;
+        },
+
+        addYearlyComponent(yearIndex, data = null) {
+            const compIndex = this.state.yearlyComponentCounts[yearIndex]++;
+            const isCustom = !data;
+            const prefix = `yearly_estimates[${yearIndex}][components][${compIndex}]`;
+
+            const group = data ? data.group : '';
+            const component = data ? data.component : '';
+            const amount = data ? data.amount : '';
+            const categoryId = data ? data.category_id : '';
+
+            // Mandatory Logic
+            const mandatoryGroups = ['HR', 'Travel', 'Others'];
+            const isMandatory = mandatoryGroups.includes(group);
+            const defaultGroup = isCustom ? 'Custom' : group;
+
+            const categoryOptions = expenseCategories.map(c =>
+                `<option value="${c.id}" ${c.id == categoryId ? 'selected' : ''}>${c.name}</option>`
+            ).join('');
+
+            const removeBtnHtml = isMandatory
+                ? `<button type="button" class="btn btn-sm btn-icon btn-secondary" disabled title="Mandatory Component"><i class="fas fa-lock"></i></button>`
+                : `<button type="button" class="btn btn-sm btn-icon btn-label-danger remove-component"><i class="fas fa-times"></i></button>`;
+
+            const html = `
+                <div class="row g-2 mb-2 align-items-end component-row bg-light p-2 rounded">
+                    <div class="col-md-3">
+                        <label class="form-label small">Group</label>
+                        <input type="text" name="${prefix}[group]" class="form-control form-control-sm" value="${defaultGroup}" required ${isMandatory ? 'readonly' : ''}>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Component Name</label>
+                        <input type="text" name="${prefix}[component]" class="form-control form-control-sm" value="${component}" required placeholder="e.g. Travel Cost" ${isMandatory ? 'readonly' : ''}>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Category</label>
+                        <select name="${prefix}[category_id]" class="form-select form-select-sm">
+                            <option value="">Select</option>
+                            ${categoryOptions}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Amount (₹)</label>
+                        <input type="number" step="0.01" name="${prefix}[amount]" class="form-control form-control-sm amount-input" value="${amount}" required>
+                    </div>
+                    <div class="col-md-1 text-center">
+                        ${removeBtnHtml}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById(`yearly-components-${yearIndex}`).insertAdjacentHTML('beforeend', html);
+            this.calculateTotals();
+        },
+
+        copyProposalEstimates(yearIndex) {
+            if(proposalData.components.estimated) {
+                proposalData.components.estimated.forEach(comp => {
+                    this.addYearlyComponent(yearIndex, comp);
+                });
+            }
+        },
+
+        // --- Budgeted Expenses Logic ---
+
+        renderBudgetedSection() {
+            // Auto-load proposal budgeted components
+            if(proposalData.components.budgeted && proposalData.components.budgeted.length > 0) {
+                proposalData.components.budgeted.forEach(comp => {
+                    this.addBudgetedComponent(comp);
+                });
+            }
+        },
+
+        addBudgetedComponent(data = null) {
+            const index = this.state.budgetedComponentCount++;
+            const prefix = `budgeted_components[${index}]`;
+
+            const group = data ? data.group : '';
+            const component = data ? data.component : '';
+            const amount = data ? data.amount : '';
+            const categoryId = data ? data.category_id : '';
+
+            // Mandatory Logic
+            const mandatoryGroups = ['HR', 'Travel', 'Others'];
+            const isMandatory = mandatoryGroups.includes(group);
+            const defaultGroup = !data ? 'Custom' : group; // If adding empty, default to Custom (editable)
+
+            const categoryOptions = expenseCategories.map(c =>
+                `<option value="${c.id}" ${c.id == categoryId ? 'selected' : ''}>${c.name}</option>`
+            ).join('');
+
+            const removeBtnHtml = isMandatory
+                ? `<button type="button" class="btn btn-sm btn-icon btn-secondary" disabled title="Mandatory Component"><i class="fas fa-lock"></i></button>`
+                : `<button type="button" class="btn btn-sm btn-icon btn-label-danger remove-budget-component"><i class="fas fa-times"></i></button>`;
+
+            const html = `
+                <div class="row g-2 mb-2 align-items-end budget-component-row border-bottom pb-2">
+                    <div class="col-md-3">
+                        <label class="form-label small">Group</label>
+                        <input type="text" name="${prefix}[group]" class="form-control form-control-sm" value="${defaultGroup}" required ${isMandatory ? 'readonly' : ''}>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Component</label>
+                        <input type="text" name="${prefix}[component]" class="form-control form-control-sm" value="${component}" required ${isMandatory ? 'readonly' : ''}>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Category</label>
+                        <select name="${prefix}[category_id]" class="form-select form-select-sm">
+                            <option value="">Select</option>
+                            ${categoryOptions}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Amount (₹)</label>
+                        <input type="number" step="0.01" name="${prefix}[amount]" class="form-control form-control-sm amount-input budget-amount-input" value="${amount}" required>
+                    </div>
+                    <div class="col-md-1 text-center">
+                        ${removeBtnHtml}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('budgeted-components-container').insertAdjacentHTML('beforeend', html);
+            this.calculateTotals();
+        },
+
+        // --- Totals Logic ---
+
+        calculateTotals() {
+            let totalYearlyBudget = 0;
+            let totalEstimated = 0;
+            let totalBudgeted = 0;
+
+            // Iterate through each Yearly Section to calc local totals
+            const sections = document.querySelectorAll('.yearly-section-card');
+            sections.forEach(section => {
+                const yearIndex = section.id.replace('yearly-section-', '');
+
+                // Local Totals
+                const budgetInput = section.querySelector('.yearly-budget-input');
+                const localBudget = parseFloat(budgetInput.value) || 0;
+
+                let localExpense = 0;
+                section.querySelectorAll('.yearly-components-container .amount-input').forEach(input => {
+                    localExpense += parseFloat(input.value) || 0;
+                });
+
+                const localRevenue = localBudget - localExpense;
+
+                // Update Local Highlights
+                const elLocalBudget = document.getElementById(`year-budget-${yearIndex}`);
+                const elLocalExpense = document.getElementById(`year-expense-${yearIndex}`);
+                const elLocalRevenue = document.getElementById(`year-revenue-${yearIndex}`);
+
+                if(elLocalBudget) elLocalBudget.textContent = localBudget.toFixed(2);
+                if(elLocalExpense) elLocalExpense.textContent = localExpense.toFixed(2);
+                if(elLocalRevenue) {
+                     elLocalRevenue.textContent = localRevenue.toFixed(2);
+                     elLocalRevenue.className = `year-revenue-display ${localRevenue < 0 ? 'text-danger' : 'text-success'}`;
+                }
+
+                // Add to Global Totals
+                totalYearlyBudget += localBudget;
+                totalEstimated += localExpense;
+            });
+
+            // Budgeted Total
+            document.querySelectorAll('.budget-amount-input').forEach(input => {
+                totalBudgeted += parseFloat(input.value) || 0;
+            });
+
+            // Update Budgeted Section Footer
+            const elBudgetedSectionTotal = document.getElementById('budgeted-section-total');
+            if(elBudgetedSectionTotal) elBudgetedSectionTotal.textContent = totalBudgeted.toFixed(2);
+
+            // Update Global Summary Sidebar
+            const elTotalBudget = document.getElementById('display-total-budget');
+            if(elTotalBudget) elTotalBudget.textContent = totalYearlyBudget.toFixed(2);
+
+            const elTotalEstimated = document.getElementById('display-total-estimated');
+            if(elTotalEstimated) elTotalEstimated.textContent = totalEstimated.toFixed(2);
+
+            const elTotalBudgeted = document.getElementById('display-total-budgeted');
+            if(elTotalBudgeted) elTotalBudgeted.textContent = totalBudgeted.toFixed(2);
+
+            const revenue = totalYearlyBudget - totalEstimated;
+
+            const elRevenue = document.getElementById('display-revenue');
+            if(elRevenue) elRevenue.textContent = revenue.toFixed(2);
+
+            const elRevenueInput = document.getElementById('revenue_input');
+            if(elRevenueInput) elRevenueInput.value = revenue.toFixed(2); // Allow negative for validation passing (if rule relaxed)
+
+            const elBudgetInput = document.getElementById('budget_input');
+            if(elBudgetInput) elBudgetInput.value = totalYearlyBudget.toFixed(2);
+        },
+
+        // --- Team Member Logic ---
+        addTeamMember(userId, userName) {
+            if(!userId) return;
+            if(this.state.teamMembers.some(m => m.user_id == userId)) return;
+
+            this.state.teamMembers.push({
+                user_id: userId,
+                name: userName,
+                role: 'member',
+                expected_time: 0
+            });
+            this.renderTeamList();
+            $('#user_selector').val(null).trigger('change');
+        },
+
+        removeTeamMember(index) {
+            this.state.teamMembers.splice(index, 1);
+            this.renderTeamList();
+        },
+
+        renderTeamList() {
+            const html = this.state.teamMembers.map((member, idx) => `
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-lighter rounded">
+                    <div>
+                        <strong>${member.name}</strong>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm" onchange="App.updateMember(${idx}, 'role', this.value)">
+                            <option value="lead" ${member.role == 'lead' ? 'selected' : ''}>Lead</option>
+                            <option value="member" ${member.role == 'member' ? 'selected' : ''}>Member</option>
+                        </select>
+                        <input type="number" class="form-control form-control-sm" style="width: 80px" placeholder="Hours"
+                            value="${member.expected_time}" onchange="App.updateMember(${idx}, 'expected_time', this.value)">
+                        <button type="button" class="btn btn-sm btn-icon btn-danger remove-team-member" data-index="${idx}">&times;</button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('team-list-container').innerHTML = html;
+            document.getElementById('team_members_json').value = JSON.stringify(this.state.teamMembers);
+        },
+
+        updateMember(index, field, value) {
+            this.state.teamMembers[index][field] = value;
+            document.getElementById('team_members_json').value = JSON.stringify(this.state.teamMembers);
         }
-    });
-
-
-    // Expense Components Management
-    const container = document.getElementById('expense-components-container');
-    const addButton = document.getElementById('add-component');
-    const totalExpenseSpan = document.getElementById('total-expense');
-    const estimatedExpenseInput = document.getElementById('estimated_expense');
-    {{--  let componentCount = {{ $proposal->expenseComponents->count() }};  --}}
-     let componentCount = 1;
-    // Add new component row
-    // ✅ Add Custom Component Row
-  addButton.addEventListener('click', function () {
-    const template = document.getElementById('custom-component-template');
-    const newRow = template.cloneNode(true);
-    newRow.id = '';
-    newRow.classList.remove('d-none');
-
-    // Update names with new index
-    newRow.querySelectorAll('input, select').forEach(el => {
-      el.name = el.name.replace('[0]', `[custom_${componentCount}]`);
-      el.value = '';
-    });
-
-    // Add remove button event
-    const removeBtn = newRow.querySelector('.remove-component');
-    if (removeBtn) {
-      removeBtn.style.display = 'block';
-      removeBtn.addEventListener('click', function () {
-        newRow.remove();
-        calculateTotalExpense();
-      });
-    }
-
-    // Add amount change listener
-    newRow.querySelector('.expense-amount').addEventListener('input', calculateTotalExpense);
-
-    // Append new row
-    container.appendChild(newRow);
-    componentCount++;
-  });
-
-    // ✅ Prevent removal of non-Custom components
-  document.querySelectorAll('.expense-component').forEach(row => {
-    const group = row.querySelector('input[name*="[group]"]')?.value;
-    const removeBtn = row.querySelector('.remove-component');
-    if (group !== 'Custom' && removeBtn) removeBtn.style.display = 'none';
-  });
-
-    // Calculate total expense
-    function calculateTotalExpense() {
-        let total = 0;
-        document.querySelectorAll('.expense-amount').forEach(input => {
-            total += parseFloat(input.value) || 0;
-        });
-
-        totalExpenseSpan.textContent = total.toFixed(2);
-        estimatedExpenseInput.value = total.toFixed(2);
-
-        // Update revenue calculation
-        calculateRevenue();
-    }
-
-    // Add event listeners to all amount inputs
-    document.querySelectorAll('.expense-amount').forEach(input => {
-        input.addEventListener('input', calculateTotalExpense);
-    });
-     {{--  document.querySelectorAll('.mandays-input').forEach(input => {
-        input.addEventListener('input', calculateTotalExpense);
-    });  --}}
-
-
-    document.querySelectorAll('.mandays-input').forEach(input => {
-  input.addEventListener('input', function() {
-    const target = this.dataset.target;
-    const rateField = document.querySelector(`.rate-input[data-target="${target}"]`);
-    const amountField = document.getElementById(`amount_${target}`);
-    const rate = parseFloat(rateField.value) || 0;
-    const mandays = parseFloat(this.value) || 0;
-    const amount = mandays * rate;
-    amountField.value = amount.toFixed(2);
-    calculateTotalExpense();
-  });
-
-});
-
-// Disable remove button for non-Custom
-document.querySelectorAll('.expense-component').forEach(row => {
-  const group = row.querySelector('input[name*="[group]"]').value;
-  if (group !== 'Custom') {
-    const removeBtn = row.querySelector('.remove-component');
-    if (removeBtn) removeBtn.style.display = 'none';
-  }
-});
-
-
-
-
-
-    // Update revenue calculation to use component total
-    function calculateRevenue() {
-        const budget = parseFloat(document.getElementById('budget').value) || 0;
-        const expense = parseFloat(estimatedExpenseInput.value) || 0;
-        const revenue = budget - expense;
-        document.getElementById('revenue').value = revenue >= 0 ? revenue.toFixed(2) : 0;
-    }
-
-    // Update existing revenue calculation to use component total
-    const budgetInput = document.getElementById('budget');
-    if (budgetInput) {
-        budgetInput.addEventListener('input', calculateRevenue);
-    }
-
-    // Initial calculation
-    calculateTotalExpense();
-
-    {{--  const expenseInput = document.getElementById('estimated_expense');
-    const revenueInput = document.getElementById('revenue');
-    function calculateRevenue() {
-      const budget = parseFloat(budgetInput.value) || 0;
-      const expense = parseFloat(expenseInput.value) || 0;
-      const revenue = budget - expense;
-      revenueInput.value = revenue >= 0 ? revenue.toFixed(2) : 0;
-    }
-
-    budgetInput.addEventListener('input', calculateRevenue);
-    expenseInput.addEventListener('input', calculateRevenue);  --}}
-
-
-});
-
-let teamMembers = [];
-
-$('#user_selector').on('change', function () {
-    const userId = $(this).val();
-    const userName = $(this).find('option:selected').text();
-
-    if (!userId || teamMembers.some(m => m.user_id == userId)) return;
-
-    const newMember = {
-        user_id: userId,
-        name: userName,
-        role: 'member',
-        expected_time: 0
     };
 
-    teamMembers.push(newMember);
-    renderTeamList();
-    $(this).val('');
-});
-
-function renderTeamList() {
-    let html = '';
-    teamMembers.forEach((member, index) => {
-        html += `
-            <div class="row align-items-center mb-2" data-index="${index}">
-                <div class="col-md-4">${member.name}</div>
-                <div class="col-md-3">
-                    <select class="form-select role-select">
-                      <option value="lead" ${member.role == 'lead' ? 'selected' : ''}>Lead</option>
-                       <option value="leadMember" ${member.role == 'leadMember' ? 'selected' : ''}>Lead Member (Data Entry Enabled Memebr)</option>
-                        <option value="member" ${member.role == 'member' ? 'selected' : ''}>Member</option>
-
-
-                    </select>
-                </div>
-                <div class="col-md-3">
-                   <label for="project_investigator_id" class="form-label">Time Investment (Hours)</label>
-                    <input type="number" step="0.1" min="0" class="form-control time-input" value="${member.expected_time}">
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-danger btn-sm remove-member">X</button>
-                </div>
-            </div>
-        `;
-    });
-
-    $('#selected_users_list').html(html);
-    updateTeamJson();
-}
-
-$(document).on('change', '.role-select, .time-input', function () {
-    const row = $(this).closest('.row');
-    const index = row.data('index');
-    const newRole = row.find('.role-select').val();
-    const newTime = parseFloat(row.find('.time-input').val()) || 0;
-
-    teamMembers[index].role = newRole;
-    teamMembers[index].expected_time = newTime;
-    updateTeamJson();
-});
-
-$(document).on('click', '.remove-member', function () {
-    const index = $(this).closest('.row').data('index');
-    teamMembers.splice(index, 1);
-    renderTeamList();
-});
-
-function updateTeamJson() {
-    $('#team_members_json').val(JSON.stringify(teamMembers));
-}
- $('.select2').select2({ width: 'resolve' });
+    // Initialize on Load
+    document.addEventListener('DOMContentLoaded', () => App.init());
 </script>
 @endsection
 
 @section('content')
 <div class="row">
-  <div class="col-md-8">
-    <div class="card">
-      <div class="card-header">
-        @if ($errors->any())
-        <div class="alert alert-danger">
-          <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-          </ul>
-        </div>
-        @endif
-        <h5 class="card-title">From Proposal: {{ $proposal->requirement->temp_no }}</h5>
-      </div>
-      <div class="card-body">
-        {{-- Hidden Template for New Custom Components --}}
-        <div class="expense-component row g-3 mb-2 d-none" id="custom-component-template">
-          <input type="hidden" name="expense_components[0][group]" value="Custom">
-          <div class="col-md-3">
-            <label class="form-label">Category</label>
-            <select name="expense_components[0][category_id]" class="form-select expense-category">
-              <option value="">Select Category</option>
-              @foreach($expenseCategories as $category)
-              <option value="{{ $category->id }}">{{ $category->name }}</option>
-              @endforeach
-            </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Component</label>
-            <input type="text" name="expense_components[0][component]" class="form-control"
-              placeholder="Component name">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Amount (₹)</label>
-            <input type="number" step="0.01" min="0" name="expense_components[0][amount]"
-              class="form-control expense-amount" placeholder="0.00">
-          </div>
-          <div class="col-md-1 d-flex align-items-end">
-            <button type="button" class="btn btn-danger remove-component">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
-        <form action="{{ route('pms.projects.store', $proposal->id) }}" method="POST">
-          @csrf
+  <div class="col-md-9">
+    @if ($errors->any())
+    <div class="alert alert-danger">
+      <ul>
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+    @endif
+    <form action="{{ route('pms.projects.store', $proposal->id) }}" method="POST" enctype="multipart/form-data">
+      @csrf
 
-          <div class="row mb-3">
+      <!-- Project Header -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Create Project: {{ $proposal->requirement->project_title }}</h5>
+
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
             <div class="col-md-6">
-              <label for="title" class="form-label">Project Title *</label>
-              {{-- <input type="text" name="title" id="title" class="form-control"
-                value="{{ old('title', $proposal->requirement->client->client_name . ' - ' . $proposal->requirement->category->name) }}"
-                required> --}}
-              <input type="text" name="title" id="title" class="form-control"
+              <label class="form-label">Project Title *</label>
+              <input type="text" name="title" class="form-control"
                 value="{{ old('title', $proposal->requirement->project_title) }}" required>
-              @error('title')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
             </div>
             <div class="col-md-6">
-              <label for="project_investigator_id" class="form-label">Principal investigator</label>
-              <select name="project_investigator_id" id="project_investigator_id" class="form-select"
-                style="pointer-events: none; background-color: #e9ecef;" tabindex="-1" required>
-                <option value="">Select Investigator *</option>
+              <label class="form-label">Principal Investigator *</label>
+              <select name="project_investigator_id" class="form-select"
+                style="pointer-events: none; background-color: #e9ecef;">
                 @foreach($faculty as $user)
-                <option value="{{ $user->id }}" @if($proposal->requirement->allocated_to == $user->id) Selected
-                  @endif
-                  {{ old('project_investigator_id')==$user->id ? 'selected' : '' }}>{{
-                  $user->name }}</option>
+                <option value="{{ $user->id }}" {{ $proposal->requirement->allocated_to == $user->id ? 'selected' : ''
+                  }}>{{ $user->name }}</option>
                 @endforeach
               </select>
-              @error('project_investigator_id')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
-              <div class="mb-3">
-                <label class="form-label">Principal investigator Expected Time (in hours)</label>
-                <input type="number" step="0.1" min="0" name="pi_expected_time" class="form-control" required>
+              <div class="mt-2">
+                <label class="form-label small">PI Expected Time (Hours) *</label>
+                <input type="number" step="0.1" name="pi_expected_time" class="form-control form-control-sm" required
+                  min="0">
               </div>
             </div>
-          </div>
-
-          <div class="row mb-3">
             <div class="col-md-6">
-              <label for="start_date" class="form-label">Start Date *</label>
+              <label class="form-label">Start Date *</label>
               <input type="date" name="start_date" id="start_date" class="form-control"
-                value="{{ old('start_date', $proposal->expected_start_date ? $proposal->expected_start_date->format('Y-m-d') : '') }}"
-                required>
-              @error('start_date')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
+                value="{{ old('start_date', $proposalData['start_date']) }}" required>
             </div>
             <div class="col-md-6">
-              <label for="end_date" class="form-label">End Date *</label>
+              <label class="form-label">End Date *</label>
               <input type="date" name="end_date" id="end_date" class="form-control"
-                value="{{ old('end_date', $proposal->expected_end_date ? $proposal->expected_end_date->format('Y-m-d') : '') }}"
-                required>
-              @error('end_date')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
+                value="{{ old('end_date', $proposalData['end_date']) }}" required>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <label for="budget" class="form-label">Budget (₹ Without Tax) *</label>
-              <input type="number" step="0.01" min="0" name="budget" id="budget" class="form-control"
-                value="{{ old('budget', $proposal->budget) }}" required>
-              @error('budget')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
-            </div>
-            <!-- Expense Components Section -->
-            <div class="row mb-3">
-              <div class="col-md-12">
-                <label class="form-label">Estimated Expense Components *</label>
-                <div id="expense-components-container">
+      <!-- Yearly Estimates & Budgets -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Yearly Estimates & Budgets</h5>
+          <button type="button" class="btn btn-primary" id="add-yearly-budget-btn">
+            <i class="fas fa-plus me-1"></i> Add Financial Year
+          </button>
+        </div>
 
-                  @php
-                  $groupedComponents = $proposal->expenseComponents->groupBy('group_name');
-                  @endphp
+        <div id="yearly-sections-container">
+          <!-- Dynamic Yearly Sections will appear here -->
+        </div>
+        <div class="alert alert-info small">
+          <i class="fas fa-info-circle me-1"></i> Add a section for each Financial Year covered by the project.
+        </div>
+      </div>
 
-                  @foreach($groupedComponents as $groupName => $components)
-                  <h6 class="mt-3 mb-2 text-primary fw-bold border-bottom pb-1">{{ $groupName }}</h6>
-
-                  @foreach($components as $index => $component)
-                  <div class="expense-component row g-3 mb-2">
-                    <input type="hidden" name="expense_components[{{ $groupName }}_{{ $index }}][category_id]"
-                      value="{{ $component->expense_category_id }}">
-                    <input type="hidden" name="expense_components[{{ $groupName }}_{{ $index }}][group]"
-                      value="{{ $groupName }}">
-                    <input type="hidden" name="expense_components[{{ $groupName }}_{{ $index }}][component]"
-                      value="{{ $component->component }}">
-
-                    {{-- Readonly Component Name --}}
-                    <div class="col-md-3">
-                      <label class="form-label">Component</label>
-                      <input type="text" class="form-control" value="{{ $component->component }}" readonly>
-                    </div>
-
-                    {{-- HR Group: show Mandays & Rate --}}
-                    @if($groupName === 'HR')
-                    <div class="col-md-2">
-                      <label class="form-label">Persondays</label>
-                      <input type="number" name="expense_components[{{ $groupName }}_{{ $index }}][mandays]"
-                        class="form-control mandays-input" value="{{ $component->mandays }}" min="0" step="0.1"
-                        data-target="{{ $groupName }}_{{ $index }}">
-                    </div>
-
-                    <div class="col-md-2">
-                      <label class="form-label">Rate (₹)</label>
-                      <input type="number" name="expense_components[{{ $groupName }}_{{ $index }}][rate]"
-                        class="form-control rate-input" value="{{ $component->rate }}"
-                        data-target="{{ $groupName }}_{{ $index }}" readonly>
-                    </div>
-                    @endif
-
-                    {{-- Amount --}}
-                    <div class="col-md-2">
-                      <label class="form-label">Amount (₹)</label>
-                      <input type="number" step="0.01" min="0"
-                        name="expense_components[{{ $groupName }}_{{ $index }}][amount]"
-                        class="form-control expense-amount" id="amount_{{ $groupName }}_{{ $index }}"
-                        value="{{ $component->amount }}">
-                    </div>
-
-                    {{-- Remove button only for Custom --}}
-                    <div class="col-md-1 d-flex align-items-end">
-                      @if($groupName === 'Custom')
-                      <button type="button" class="btn btn-danger remove-component"><i
-                          class="fas fa-trash"></i></button>
-                      @endif
-                    </div>
-                  </div>
-                  @endforeach
-                  @endforeach
-
-                </div>
-
-                {{-- Add button only for Custom group --}}
-                <button type="button" id="add-component" class="btn btn-secondary btn-sm mt-2">
-                  <i class="fas fa-plus"></i> Add Custom Component
-                </button>
-
-                <div class="mt-3">
-                  <strong>Total Estimated Expense: ₹<span id="total-expense">{{
-                      number_format($proposal->estimated_expense, 2) }}</span></strong>
-                </div>
-
-                <input type="hidden" name="estimated_expense" id="estimated_expense"
-                  value="{{ $proposal->estimated_expense }}">
-              </div>
-            </div>
-            {{-- <div class="col-md-4">
-              <label for="estimated_expense" class="form-label">Estimated Expense (₹ Without Tax)</label>
-              <input type="number" step="0.01" min="0" name="estimated_expense" id="estimated_expense"
-                class="form-control" value="{{ old('estimated_expense', $proposal->estimated_expense) }}" required>
-              @error('estimated_expense')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
-            </div> --}}
-            <div class="col-md-4">
-              <label for="revenue" class="form-label">Expected Revenue (₹ Without Tax) </label>
-              <input type="number" step="0.01" min="0" name="revenue" id="revenue" class="form-control"
-                value="{{ old('revenue', $proposal->revenue) }}" required>
-              @error('revenue')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
-            </div>
+      <!-- Budgeted Expenses (Overall) -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Approved Budget Breakdown (Overall)</h5>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="add-budgeted-component-btn">
+            <i class="fas fa-plus me-1"></i> Add Item
+          </button>
+        </div>
+        <div class="card-body">
+          <div id="budgeted-components-container">
+            <!-- Dynamic Budgeted Components -->
           </div>
-
-          <div class="row mb-3">
-            <div class="col-md-12">
-              <label for="description" class="form-label">Description *</label>
-              <textarea name="description" id="description" class="form-control"
-                rows="3">{{ old('description', $proposal->technical_details) }}</textarea>
-              @error('description')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
-            </div>
+          <div class="d-flex justify-content-end mt-3 pt-2 border-top">
+            <h6 class="mb-0">Total Budgeted: <span class="text-primary">₹<span
+                  id="budgeted-section-total">0.00</span></span></h6>
           </div>
+        </div>
+      </div>
 
-          {{-- <div class="row mb-3">
-            <div class="col-md-12">
-              <label for="team_members" class="form-label">Team Members</label>
-              <select name="team_members[]" id="team_members" class="form-select" multiple>
-                @php
-                use App\Models\User;
-                @endphp
-                @foreach(User::where('id', '!=', auth()->id())->get() as $user)
-                <option value="{{ $user->id }}" {{ in_array($user->id, old('team_members', [])) ? 'selected' : '' }}>{{
-                  $user->name }}</option>
-                @endforeach
-              </select>
-              @error('team_members')
-              <div class="invalid-feedback d-block">{{ $message }}</div>
-              @enderror
-            </div>
-          </div> --}}
+      <!-- Description & Team -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Description / Technical Details</label>
+            <textarea name="description" class="form-control"
+              rows="3">{{ old('description', $proposal->technical_details) }}</textarea>
+          </div>
           @php
           use App\Models\User;
           @endphp
           <div class="mb-3">
-            <label class="form-label">Add Team Member *</label>
+            <label class="form-label">Add Team Members</label>
             <select id="user_selector" class="form-select select2">
-              <option value="">Select a user</option>
-              @foreach(User::where('id', '!=', auth()->id())->where('active',1)->orderBy('name', 'asc')->get() as $user)
-              <option value="{{ $user->id }}">{{ $user->name }}</option>
+              <option value="">Search User...</option>
+              @foreach(User::where('id', '!=', auth()->id())->where('active', 1)->orderBy('name')->get() as $u)
+              <option value="{{ $u->id }}">{{ $u->name }}</option>
               @endforeach
             </select>
+            <div id="team-list-container" class="mt-2"></div>
+            <input type="hidden" name="team_members_json" id="team_members_json">
           </div>
-
-          <div id="selected_users_list">
-            <!-- Dynamic list will be appended here -->
-          </div>
-          <input type="hidden" name="team_members_json" id="team_members_json">
-
-
-
-          <div class="mt-4">
-            <button type="submit" class="btn btn-primary me-2">Create Project</button>
-            <a href="{{ route('pms.proposals.show', $proposal->id) }}" class="btn btn-secondary">Cancel</a>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
+
+      <!-- Hidden Totals for Submission -->
+      <input type="hidden" name="budget" id="budget_input" value="0">
+      <input type="hidden" name="revenue" id="revenue_input" value="0">
+
+      <div class="d-flex justify-content-end mb-5">
+        <a href="{{ route('pms.proposals.show', $proposal->id) }}" class="btn btn-label-secondary me-3">Cancel</a>
+        <button type="submit" class="btn btn-primary btn-lg">Create Project</button>
+      </div>
+    </form>
   </div>
 
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="card-title">Proposal Details </h5>
+  <!-- Right Sidebar Summary -->
+  <div class="col-md-3">
+    <div class="card mb-3 sticky-top" style="top: 20px; z-index: 100;">
+      <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0 text-white">Project Summary</h5>
       </div>
-      <div class="card-body">
-        <p><strong>Client:</strong> {{ $proposal->requirement->client->client_name }}</p>
-        <p><strong>Budget:</strong> ₹{{ number_format($proposal->budget, 2) }}</p>
-        <p><strong>Duration:</strong> From: @if(!is_null($proposal->expected_start_date))
-          {{$proposal->expected_start_date->format('d M Y') }}@endif to:
-          @if(!is_null($proposal->expected_end_date)) {{ $proposal->expected_end_date->format('d M Y') }} @endif</p>
-        <p><strong>Work Order:</strong>
-          @if($proposal->workOrderDocuments->count() > 0)
-          <span class="badge bg-success">Uploaded</span>
-          @else
-          <span class="badge bg-danger">Missing</span>
-          @endif
-        </p>
-      </div>
-    </div>
-
-    <div class="card mt-4">
-      <div class="card-header">
-        <h5 class="card-title">Work Order Documents</h5>
-      </div>
-      <div class="card-body">
-        @if($proposal->workOrderDocuments->count() > 0)
-        <div class="list-group">
-          @foreach($proposal->workOrderDocuments as $document)
-          <div class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <i class="fas fa-file-contract me-2"></i>
-              {{ $document->name }}
-            </div>
-            <a href="{{ Storage::url($document->path) }}" target="_blank" class="btn btn-sm btn-primary">
-              <i class="fas fa-download"></i>
-            </a>
-          </div>
-          @endforeach
+      <div class="card-body pt-3">
+        <div class="mb-2 d-flex justify-content-between">
+          <span>Total Budget:</span>
+          <strong class="text-primary">₹<span id="display-total-budget">0.00</span></strong>
         </div>
-        @else
-        <div class="alert alert-warning">No work order documents uploaded yet.</div>
-        @endif
+        <div class="mb-2 d-flex justify-content-between">
+          <span>Est. Expenses:</span>
+          <strong class="text-warning">₹<span id="display-total-estimated">0.00</span></strong>
+        </div>
+        <hr>
+        <div class="mb-2 d-flex justify-content-between">
+          <span>Revenue:</span>
+          <strong class="text-success">₹<span id="display-revenue">0.00</span></strong>
+        </div>
+
+        <div class="mt-4 pt-4 border-top">
+          <small class="text-muted d-block mb-1">Budgeted Breakdown Total:</small>
+          <strong>₹<span id="display-total-budgeted">0.00</span></strong>
+        </div>
+
+        <div class="mt-3">
+          <div class="alert alert-secondary fs-tiny p-2">
+            <strong>Note:</strong> Revenue is calculated as (Total Yearly Budgets - Total Estimated Expenses).
+          </div>
+        </div>
       </div>
     </div>
   </div>
