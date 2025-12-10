@@ -100,7 +100,7 @@
                     if(!confirm('Are you sure you want to remove this financial year and all its estimates?')) return;
                     target.closest('.yearly-section-card').remove();
                     this.calculateTotals();
-                    this.updateFYDisabledStates(); 
+                    this.updateFYDisabledStates();
                 }
                 if (target.closest('.remove-component')) {
                     if(target.closest('.remove-component').disabled) return;
@@ -439,7 +439,7 @@
             if(elRevenue) elRevenue.textContent = revenue.toFixed(2);
 
             const elRevenueInput = document.getElementById('revenue_input');
-            if(elRevenueInput) elRevenueInput.value = revenue.toFixed(2); 
+            if(elRevenueInput) elRevenueInput.value = revenue.toFixed(2);
 
             const elBudgetInput = document.getElementById('budget_input');
             if(elBudgetInput) elBudgetInput.value = totalYearlyBudget.toFixed(2);
@@ -474,6 +474,7 @@
                     <div class="d-flex gap-2">
                         <select class="form-select form-select-sm" onchange="App.updateMember(${idx}, 'role', this.value)">
                             <option value="lead" ${member.role == 'lead' ? 'selected' : ''}>Lead</option>
+                                <option value="leadMember" ${member.role == 'leadMember' ? 'selected' : ''}>leadMember (Data Entry Enabled Memebr)</option>
                             <option value="member" ${member.role == 'member' ? 'selected' : ''}>Member</option>
                         </select>
                         <input type="number" class="form-control form-control-sm" style="width: 80px" placeholder="Hours"
@@ -522,8 +523,7 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Project Title *</label>
-              <input type="text" name="title" class="form-control"
-                value="{{ old('title', $project->title) }}" required>
+              <input type="text" name="title" class="form-control" value="{{ old('title', $project->title) }}" required>
             </div>
             <div class="col-md-6">
               <label class="form-label">Principal Investigator *</label>

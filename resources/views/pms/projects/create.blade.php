@@ -514,6 +514,7 @@
                     <div class="d-flex gap-2">
                         <select class="form-select form-select-sm" onchange="App.updateMember(${idx}, 'role', this.value)">
                             <option value="lead" ${member.role == 'lead' ? 'selected' : ''}>Lead</option>
+                             <option value="leadMember" ${member.role == 'leadMember' ? 'selected' : ''}>leadMember (Data Entry Enabled Memebr)</option>
                             <option value="member" ${member.role == 'member' ? 'selected' : ''}>Member</option>
                         </select>
                         <input type="number" class="form-control form-control-sm" style="width: 80px" placeholder="Hours"
