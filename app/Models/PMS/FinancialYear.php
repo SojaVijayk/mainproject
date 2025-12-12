@@ -72,6 +72,15 @@ class FinancialYear extends Model
             ->get();
     }
 
+    // Get the current financial year (contains today's date)
+    public static function getCurrentFinancialYear()
+    {
+        return self::active()
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->first();
+    }
+
     // Format display
     public function getDisplayNameAttribute()
     {

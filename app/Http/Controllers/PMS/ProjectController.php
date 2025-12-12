@@ -599,7 +599,28 @@ class ProjectController extends Controller
             'pi_expected_time' => $project->teamMembers()->where('user_id', $project->project_investigator_id)->first()->expected_time_investment_minutes / 60 ?? 0,
 
             // Yearly Data
-            'yearly_estimates' => $project->yearlyBudgets->map(function($yb) use ($project) {
+            'yearly_estimates' => [],
+
+            // Budgeted (Overall) Components
+            'budgeted_components' => $project->expenseComponents
+                ->where('type', ProjectExpenseComponent::TYPE_BUDGETED)
+                ->values()
+                ->map(function($c) {
+                    return [
+                        'group' => $c->group_name,
+                        'component' => $c->component,
+                        'rate' => $c->rate,
+                        'mandays' => $c->mandays,
+                        'amount' => $c->amount,
+                        'category_id' => $c->expense_category_id
+                    ];
+                })
+        ];
+
+        // Check if project has yearly budgets
+        if ($project->yearlyBudgets->count() > 0) {
+            // Project has yearly budgets - use existing data
+            $projectData['yearly_estimates'] = $project->yearlyBudgets->map(function($yb) use ($project) {
                 // Get components for this specific year
                 $yearComponents = $project->expenseComponents
                     ->where('financial_year_id', $yb->financial_year_id)
@@ -622,23 +643,86 @@ class ProjectController extends Controller
                     'notes' => $yb->notes,
                     'components' => $yearComponents
                 ];
-            })->values(),
+            })->values();
+        } else {
+            // No yearly budgets exist - auto-populate from estimated components without year assignment
+            // Get current financial year or first available FY for project period
+            $currentFY = FinancialYear::getCurrentFinancialYear();
 
-            // Budgeted (Overall) Components
-            'budgeted_components' => $project->expenseComponents
-                ->where('type', ProjectExpenseComponent::TYPE_BUDGETED)
-                ->values()
-                ->map(function($c) {
-                    return [
-                        'group' => $c->group_name,
-                        'component' => $c->component,
-                        'rate' => $c->rate,
-                        'mandays' => $c->mandays,
-                        'amount' => $c->amount,
-                        'category_id' => $c->expense_category_id
-                    ];
-                })
-        ];
+            // If current FY doesn't overlap with project dates, use first FY from project period
+            if (!$currentFY || !$financialYears->contains('id', $currentFY->id)) {
+                $currentFY = $financialYears->first();
+            }
+
+            \Log::info('Auto-populate check', [
+                'project_id' => $project->id,
+                'current_fy' => $currentFY ? $currentFY->id : null,
+                'total_estimated_components' => $project->expenseComponents->where('type', ProjectExpenseComponent::TYPE_ESTIMATED)->count(),
+            ]);
+
+            // Debug: Check all expense components
+            $allEstimated = $project->expenseComponents->where('type', ProjectExpenseComponent::TYPE_ESTIMATED);
+            // dd([
+            //     'all_components_count' => $project->expenseComponents->count(),
+            //     'all_estimated_count' => $allEstimated->count(),
+            //     'all_estimated' => $allEstimated->map(function($c) {
+            //         return [
+            //             'id' => $c->id,
+            //             'component' => $c->component,
+            //             'type' => $c->type,
+            //             'financial_year_id' => $c->financial_year_id,
+            //         ];
+            //     })->toArray()
+            // ]);
+
+            // Get estimated components that don't have a financial_year_id (legacy/unassigned)
+            $unassignedEstimatedComponents = $project->expenseComponents
+                ->where('type', ProjectExpenseComponent::TYPE_ESTIMATED)
+                ->filter(function($c) {
+                    // return is_null($c->financial_year_id);
+                      return !$c->financial_year_id;
+                });
+                //  dd($unassignedEstimatedComponents);exit;
+
+            \Log::info('Unassigned components', [
+                'count' => $unassignedEstimatedComponents->count(),
+                'components' => $unassignedEstimatedComponents->pluck('component', 'id')->toArray()
+            ]);
+
+            // Only auto-populate if we have a valid FY and unassigned estimated components exist
+            if ($currentFY && $unassignedEstimatedComponents->count() > 0) {
+                // Load unassigned estimated components into current year (UI display only)
+                $estimatedComponents = $unassignedEstimatedComponents
+                    ->values()
+                    ->map(function($c) {
+                        return [
+                            'group' => $c->group_name,
+                            'component' => $c->component,
+                            'rate' => $c->rate,
+                            'mandays' => $c->mandays,
+                            'amount' => $c->amount,
+                            'category_id' => $c->expense_category_id
+                        ];
+                    });
+
+                $projectData['yearly_estimates'] = [[
+                    'financial_year_id' => $currentFY->id,
+                    'amount' => $project->budget ?? 0,
+                    'notes' => 'Auto-populated from existing project data',
+                    'components' => $estimatedComponents
+                ]];
+
+                \Log::info('Auto-populated data', [
+                    'fy_id' => $currentFY->id,
+                    'component_count' => $estimatedComponents->count()
+                ]);
+            } else {
+                \Log::warning('Auto-populate skipped', [
+                    'has_current_fy' => !is_null($currentFY),
+                    'unassigned_count' => $unassignedEstimatedComponents->count()
+                ]);
+            }
+        }
 
         return view('pms.projects.edit', compact(
             'project', 'faculty', 'teamMemberIds', 'teamMembersData',
@@ -676,7 +760,7 @@ class ProjectController extends Controller
             // --- 2. Sync Yearly Budgets & Estimates ---
             // Strategy: Delete existing and recreate to ensure clean sync of complex nested structures.
             $project->yearlyBudgets()->delete();
-            $project->expenseComponents()->where('type', ProjectExpenseComponent::TYPE_ESTIMATED)->delete();
+            $project->expenseComponents()->delete(); // Delete ALL expense components (estimated AND budgeted)
 
             if ($request->has('yearly_estimates')) {
                 foreach ($request->yearly_estimates as $yearData) {
@@ -720,7 +804,7 @@ class ProjectController extends Controller
             }
 
             // --- 3. Sync Budgeted Components (Overall) ---
-            $project->expenseComponents()->where('type', ProjectExpenseComponent::TYPE_BUDGETED)->delete();
+            // (Already deleted above with all components)
 
             if ($request->has('budgeted_components')) {
                 foreach ($request->budgeted_components as $comp) {

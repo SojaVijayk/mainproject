@@ -27,6 +27,7 @@
 <script>
   // Pass PHP Data to JS
     const projectData = @json($projectData);
+    console.log(projectData);
     const expenseCategories = @json($expenseCategories);
     const financialYears = @json($financialYears);
     const teamMembersInitial = @json($teamMembersData);
@@ -262,6 +263,34 @@
             // Trigger reactive disable check immediately to ensure state is consistent
             this.updateFYDisabledStates();
 
+            // If this is a new year being added manually (not during initialization with preselectedFyId)
+            // and there are no components being passed, add default components
+            if (!preselectedFyId) {
+                // Add comprehensive default components for new year
+                const defaultComponents = [
+                    // HR Components with correct rates
+                    { group: 'HR', component: 'Manpower-Faculty Cost', mandays: 0.5, rate: 14000, amount: 7000 },
+                    { group: 'HR', component: 'Manpower-Sr Faculty Associate Cost', mandays: 0, rate: 8000, amount: 0 },
+                    { group: 'HR', component: 'Manpower-Faculty Associate Cost', mandays: 0, rate: 6000, amount: 0 },
+                    { group: 'HR', component: 'Manpower-Project Staff', mandays: 0, rate: 3200, amount: 0 },
+                    { group: 'HR', component: 'Manpower-Consultants', mandays: 0, rate: 8000, amount: 0 },
+
+                    // Travel Components
+                    { group: 'Travel', component: 'Domestic Travel', amount: 0 },
+                    { group: 'Travel', component: 'International Travel', amount: 0 },
+                    { group: 'Travel', component: 'Local Conveyance', amount: 0 },
+
+                    // Others Components
+                    { group: 'Others', component: 'Consumables', amount: 0 },
+                    { group: 'Others', component: 'Contingency', amount: 0 },
+                    { group: 'Others', component: 'Equipment', amount: 0 },
+                    { group: 'Others', component: 'Overhead', amount: 0 }
+                ];
+                defaultComponents.forEach(comp => {
+                    this.addYearlyComponent(index, comp);
+                });
+            }
+
             return index;
         },
 
@@ -274,6 +303,32 @@
             const component = data ? data.component : '';
             const amount = data ? data.amount : '';
             const categoryId = data ? data.category_id : '';
+            // Use data.mandays if it exists (including 0), otherwise default to 0
+            // Handle both numeric and string values from database
+            let mandays = 0;
+            if (data && data.mandays !== undefined && data.mandays !== null) {
+                mandays = parseFloat(data.mandays) || 0;
+            }
+            console.log('Component:', component, 'Data mandays:', data?.mandays, 'Final mandays:', mandays);
+
+            // Default rates for HR components
+            const defaultRates = {
+                'Manpower-Faculty Cost': 14000,
+                'Manpower-Sr Faculty Associate Cost': 8000,
+                'Manpower-Faculty Associate Cost': 6000,
+                'Manpower-Project Staff': 3200,
+                'Manpower-Consultants': 8000
+            };
+
+            // Use data rate if provided, otherwise lookup default rate by component name
+            let rate = '';
+            if (data && data.rate !== undefined && data.rate !== null && data.rate !== '') {
+                rate = data.rate;
+            } else if (component && defaultRates[component]) {
+                rate = defaultRates[component];
+            } else {
+                rate = data ? (data.rate || '') : '';
+            }
 
             // Mandatory Logic
             const mandatoryGroups = ['HR', 'Travel', 'Others'];
@@ -288,27 +343,69 @@
                 ? `<button type="button" class="btn btn-sm btn-icon btn-secondary" disabled title="Mandatory Component"><i class="fas fa-lock"></i></button>`
                 : `<button type="button" class="btn btn-sm btn-icon btn-label-danger remove-component"><i class="fas fa-times"></i></button>`;
 
+            // For HR components, show mandays and rate fields
+            const isHRComponent = group === 'HR';
+
+            let componentFieldsHtml = '';
+            if (isHRComponent) {
+                // HR components: mandays (editable) + rate (editable) = amount (readonly, calculated)
+                componentFieldsHtml = `
+                    <div class="col-md-2">
+                        <label class="form-label small">Mandays</label>
+                        <input type="number" step="0.01" name="${prefix}[mandays]"
+                               class="form-control form-control-sm mandays-input"
+                               value="${mandays}"
+                               data-prefix="${prefix}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Rate (₹)</label>
+                        <input type="number" step="0.01" name="${prefix}[rate]"
+                               class="form-control form-control-sm rate-input"
+                               value="${rate}"
+                               data-prefix="${prefix}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Amount (₹)</label>
+                        <input type="number" step="0.01" name="${prefix}[amount]"
+                               class="form-control form-control-sm amount-input"
+                               value="${amount}"
+                               readonly
+                               style="background-color: #e9ecef;">
+                    </div>
+                `;
+            } else {
+                // Non-HR components: only amount field (editable)
+                componentFieldsHtml = `
+                    <input type="hidden" name="${prefix}[mandays]" value="">
+                    <input type="hidden" name="${prefix}[rate]" value="">
+                    <div class="col-md-2">
+                        <label class="form-label small">Amount (₹)</label>
+                        <input type="number" step="0.01" name="${prefix}[amount]"
+                               class="form-control form-control-sm amount-input"
+                               value="${amount}"
+                               required>
+                    </div>
+                `;
+            }
+
             const html = `
                 <div class="row g-2 mb-2 align-items-end component-row bg-light p-2 rounded">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small">Group</label>
                         <input type="text" name="${prefix}[group]" class="form-control form-control-sm" value="${defaultGroup}" required ${isMandatory ? 'readonly' : ''}>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small">Component Name</label>
-                        <input type="text" name="${prefix}[component]" class="form-control form-control-sm" value="${component}" required placeholder="e.g. Travel Cost" ${isMandatory ? 'readonly' : ''}>
+                        <input type="text" name="${prefix}[component]" class="form-control form-control-sm" value="${component}" required placeholder="e.g. Faculty" ${isMandatory ? 'readonly' : ''}>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small">Category</label>
                         <select name="${prefix}[category_id]" class="form-select form-select-sm">
                             <option value="">Select</option>
                             ${categoryOptions}
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label small">Amount (₹)</label>
-                        <input type="number" step="0.01" name="${prefix}[amount]" class="form-control form-control-sm amount-input" value="${amount}" required>
-                    </div>
+                    ${componentFieldsHtml}
                     <div class="col-md-1 text-center">
                         ${removeBtnHtml}
                     </div>
@@ -316,6 +413,26 @@
             `;
 
             document.getElementById(`yearly-components-${yearIndex}`).insertAdjacentHTML('beforeend', html);
+
+            // Add event listeners for auto-calculation (for HR components)
+            if (isHRComponent) {
+                const lastRow = document.getElementById(`yearly-components-${yearIndex}`).lastElementChild;
+                const mandaysInput = lastRow.querySelector('.mandays-input');
+                const rateInput = lastRow.querySelector('.rate-input');
+                const amountInput = lastRow.querySelector('.amount-input');
+
+                const calculateAmount = () => {
+                    const mandays = parseFloat(mandaysInput.value) || 0;
+                    const rate = parseFloat(rateInput.value) || 0;
+                    const amount = mandays * rate;
+                    amountInput.value = amount.toFixed(2);
+                    this.calculateTotals();
+                };
+
+                mandaysInput.addEventListener('input', calculateAmount);
+                rateInput.addEventListener('input', calculateAmount);
+            }
+
             this.calculateTotals();
         },
 
@@ -329,6 +446,32 @@
             const component = data ? data.component : '';
             const amount = data ? data.amount : '';
             const categoryId = data ? data.category_id : '';
+            // Use data.mandays if it exists (including 0), otherwise default to 0
+            // Handle both numeric and string values from database
+            let mandays = 0;
+            if (data && data.mandays !== undefined && data.mandays !== null) {
+                mandays = parseFloat(data.mandays) || 0;
+            }
+            console.log('Budgeted Component:', component, 'Data mandays:', data?.mandays, 'Final mandays:', mandays);
+
+            // Default rates for HR components
+            const defaultRates = {
+                'Manpower-Faculty Cost': 14000,
+                'Manpower-Sr Faculty Associate Cost': 8000,
+                'Manpower-Faculty Associate Cost': 6000,
+                'Manpower-Project Staff': 3200,
+                'Manpower-Consultants': 8000
+            };
+
+            // Use data rate if provided, otherwise lookup default rate by component name
+            let rate = '';
+            if (data && data.rate !== undefined && data.rate !== null && data.rate !== '') {
+                rate = data.rate;
+            } else if (component && defaultRates[component]) {
+                rate = defaultRates[component];
+            } else {
+                rate = data ? (data.rate || '') : '';
+            }
 
             // Mandatory Logic
             const mandatoryGroups = ['HR', 'Travel', 'Others'];
@@ -343,27 +486,69 @@
                 ? `<button type="button" class="btn btn-sm btn-icon btn-secondary" disabled title="Mandatory Component"><i class="fas fa-lock"></i></button>`
                 : `<button type="button" class="btn btn-sm btn-icon btn-label-danger remove-budget-component"><i class="fas fa-times"></i></button>`;
 
+            // For HR components, show mandays and rate fields
+            const isHRComponent = group === 'HR';
+
+            let componentFieldsHtml = '';
+            if (isHRComponent) {
+                // HR components: mandays (editable) + rate (editable) = amount (readonly, calculated)
+                componentFieldsHtml = `
+                    <div class="col-md-2">
+                        <label class="form-label small">Mandays</label>
+                        <input type="number" step="0.01" name="${prefix}[mandays]"
+                               class="form-control form-control-sm budget-mandays-input"
+                               value="${mandays}"
+                               data-prefix="${prefix}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Rate (₹)</label>
+                        <input type="number" step="0.01" name="${prefix}[rate]"
+                               class="form-control form-control-sm budget-rate-input"
+                               value="${rate}"
+                               data-prefix="${prefix}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Amount (₹)</label>
+                        <input type="number" step="0.01" name="${prefix}[amount]"
+                               class="form-control form-control-sm amount-input budget-amount-input"
+                               value="${amount}"
+                               readonly
+                               style="background-color: #e9ecef;">
+                    </div>
+                `;
+            } else {
+                // Non-HR components: only amount field (editable)
+                componentFieldsHtml = `
+                    <input type="hidden" name="${prefix}[mandays]" value="">
+                    <input type="hidden" name="${prefix}[rate]" value="">
+                    <div class="col-md-2">
+                        <label class="form-label small">Amount (₹)</label>
+                        <input type="number" step="0.01" name="${prefix}[amount]"
+                               class="form-control form-control-sm amount-input budget-amount-input"
+                               value="${amount}"
+                               required>
+                    </div>
+                `;
+            }
+
             const html = `
                 <div class="row g-2 mb-2 align-items-end budget-component-row border-bottom pb-2">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small">Group</label>
                         <input type="text" name="${prefix}[group]" class="form-control form-control-sm" value="${defaultGroup}" required ${isMandatory ? 'readonly' : ''}>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small">Component</label>
                         <input type="text" name="${prefix}[component]" class="form-control form-control-sm" value="${component}" required ${isMandatory ? 'readonly' : ''}>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small">Category</label>
                         <select name="${prefix}[category_id]" class="form-select form-select-sm">
                             <option value="">Select</option>
                             ${categoryOptions}
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label small">Amount (₹)</label>
-                        <input type="number" step="0.01" name="${prefix}[amount]" class="form-control form-control-sm amount-input budget-amount-input" value="${amount}" required>
-                    </div>
+                    ${componentFieldsHtml}
                     <div class="col-md-1 text-center">
                         ${removeBtnHtml}
                     </div>
@@ -371,6 +556,26 @@
             `;
 
             document.getElementById('budgeted-components-container').insertAdjacentHTML('beforeend', html);
+
+            // Add event listeners for auto-calculation (for HR components)
+            if (isHRComponent) {
+                const lastRow = document.getElementById('budgeted-components-container').lastElementChild;
+                const mandaysInput = lastRow.querySelector('.budget-mandays-input');
+                const rateInput = lastRow.querySelector('.budget-rate-input');
+                const amountInput = lastRow.querySelector('.budget-amount-input');
+
+                const calculateAmount = () => {
+                    const mandays = parseFloat(mandaysInput.value) || 0;
+                    const rate = parseFloat(rateInput.value) || 0;
+                    const amount = mandays * rate;
+                    amountInput.value = amount.toFixed(2);
+                    this.calculateTotals();
+                };
+
+                mandaysInput.addEventListener('input', calculateAmount);
+                rateInput.addEventListener('input', calculateAmount);
+            }
+
             this.calculateTotals();
         },
 
