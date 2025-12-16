@@ -27,14 +27,14 @@ class ProjectStoreRequest extends FormRequest
             'methodology' => 'nullable|string',
 
             // Team Members (Optional)
-            'team_members_json' => 'nullable|json',
+            'team_members_json' => 'nullable|sometimes|json',
 
             // Yearly Estimates Structure (The Core of the New Logic)
             'yearly_estimates' => 'required|array',
             'yearly_estimates.*.financial_year_id' => 'required|exists:financial_years,id',
             'yearly_estimates.*.amount' => 'required|numeric|min:0', // Yearly Budget Amount
             'yearly_estimates.*.notes' => 'nullable|string',
-            
+
             // Yearly Estimated Components
             'yearly_estimates.*.components' => 'nullable|array',
             'yearly_estimates.*.components.*.group' => 'required|string', // HR, Travel, etc.
@@ -56,7 +56,7 @@ class ProjectStoreRequest extends FormRequest
             // Documents
             'documents' => 'nullable|array',
             'documents.*' => 'file|max:10240', // 10MB max
-            
+
             // Flags
             'copy_estimated_expenses' => 'sometimes|boolean',
             'copy_budgeted_expenses' => 'sometimes|boolean',

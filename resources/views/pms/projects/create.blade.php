@@ -365,8 +365,8 @@
             } else {
                 // Non-HR components: only amount field (editable)
                 componentFieldsHtml = `
-                    <input type="hidden" name="${prefix}[mandays]" value="">
-                    <input type="hidden" name="${prefix}[rate]" value="">
+                    <input type="hidden" name="${prefix}[mandays]" value="0">
+                    <input type="hidden" name="${prefix}[rate]" value="0">
                     <div class="col-md-2">
                         <label class="form-label small">Amount (₹)</label>
                         <input type="number" step="0.01" name="${prefix}[amount]"
@@ -725,13 +725,18 @@
 @section('content')
 <div class="row">
   <div class="col-md-9">
-    @if ($errors->any())
+    {{-- @if ($errors->any())
     <div class="alert alert-danger">
       <ul>
         @foreach ($errors->all() as $error)
         <li>{{ $error }}</li>
         @endforeach
       </ul>
+    </div>
+    @endif --}}
+    @if(session('error'))
+    <div class="alert alert-danger">
+      {{ session('error') }}
     </div>
     @endif
     <form action="{{ route('pms.projects.store', $proposal->id) }}" method="POST" enctype="multipart/form-data">

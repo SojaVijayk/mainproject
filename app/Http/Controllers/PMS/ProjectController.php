@@ -356,6 +356,7 @@ class ProjectController extends Controller
                 ->with('error', 'Project cannot be created for this proposal.');
         }
 
+         $data = $request->validated();
         try {
             DB::beginTransaction();
 
@@ -376,7 +377,7 @@ class ProjectController extends Controller
             $projectCode = "{$clientCode}/{$categoryCode}/{$year}/{$newSequence}";
 
             // 1. Create Project
-            $data = $request->validated();
+
             $data['project_code'] = $projectCode;
             $data['requirement_id'] = $proposal->requirement_id;
             $data['proposal_id'] = $proposal->id;

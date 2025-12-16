@@ -107,10 +107,10 @@
             var $endTime = full['end_time'];
             var $location = full['location'];
             var $description = full['description'];
-            return '<span class="fw-semibold text-gray"> Title :</span> <span class="text-nowrap">' + $name + '</span><br>'+
-            '<span class="fw-semibold text-gray"> From :</span> <span class="text-nowrap">' + $startDate + ' '+$startTime+'</span><br>'+
-            '<span class="fw-semibold text-gray"> To :</span> <span class="text-nowrap">' + $endDate + ' '+$endTime+'</span><br>'+
-            '<span class=" text-gray fw-semibold"> Location :</span><span class="text-nowrap"> ' + $location + '</span><br>'+
+            return '<span class="fw-semibold text-gray"> Title :</span> <span class="text-wrap">' + $name + '</span><br>'+
+            '<span class="fw-semibold text-gray"> From :</span> <span class="text-wrap">' + $startDate + ' '+$startTime+'</span><br>'+
+            '<span class="fw-semibold text-gray"> To :</span> <span class="text-wrap">' + $endDate + ' '+$endTime+'</span><br>'+
+            '<span class=" text-gray fw-semibold"> Location :</span><span class="text-wrap"> ' + $location + '</span><br>'+
             '<span class="fw-semibold text-gray"> Des :</span><span class=""> ' + $description + '</span>';
           }
         },
