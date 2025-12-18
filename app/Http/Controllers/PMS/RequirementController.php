@@ -168,7 +168,8 @@ class RequirementController extends Controller
         $contacts = ClientContactPerson::where('client_id', $requirement->client_id)->get();
         $types = [
             Requirement::TYPE_REQUIREMENT => 'Requirement',
-            Requirement::TYPE_DIRECT_PROPOSAL => 'Direct Proposal'
+            Requirement::TYPE_DIRECT_PROPOSAL => 'Direct Proposal',
+             Requirement::TYPE_TENDER => 'Tender'
         ];
 
         return view('pms.requirements.edit', compact('requirement', 'categories', 'subcategories', 'clients', 'contacts', 'types'),['pageConfigs'=> $pageConfigs]);
