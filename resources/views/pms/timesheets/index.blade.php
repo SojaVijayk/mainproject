@@ -371,7 +371,7 @@ function unblockUI() {
 </div> --}}
 <div id="floatingCategoryTotals" style="
         position:fixed;
-        top:150px;
+        bottom:10px;
         left:20px;
         padding:14px 16px;
         min-width:220px;
