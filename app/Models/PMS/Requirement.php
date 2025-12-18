@@ -45,6 +45,7 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
     // Requirement types
     const TYPE_REQUIREMENT = 1;
     const TYPE_DIRECT_PROPOSAL = 2;
+    const TYPE_TENDER = 3;
 
     // Status constants
     const STATUS_INITIATED = 0;
@@ -109,6 +110,7 @@ protected static $recordEvents = ['created', 'updated', 'deleted'];
         return [
             self::TYPE_REQUIREMENT => 'Requirement',
             self::TYPE_DIRECT_PROPOSAL => 'Direct Proposal',
+              self::TYPE_TENDER => 'Tender',
         ][$this->type_id] ?? 'Unknown';
     }
 

@@ -14,7 +14,7 @@ class RequirementStoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'type_id' => 'required|in:1,2',
+            'type_id' => 'required|in:1,2,3',
             'project_category_id' => 'required|exists:project_categories,id',
             'project_subcategory_id' => 'nullable|exists:project_subcategories,id',
              'project_title' => 'required|string',

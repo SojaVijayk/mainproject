@@ -61,7 +61,8 @@ class RequirementController extends Controller
         $clients = Client::all();
         $types = [
             Requirement::TYPE_REQUIREMENT => 'Requirement',
-            Requirement::TYPE_DIRECT_PROPOSAL => 'Direct Proposal'
+            Requirement::TYPE_DIRECT_PROPOSAL => 'Direct Proposal',
+            Requirement::TYPE_TENDER => 'Tender'
         ];
 
         return view('pms.requirements.create', compact('categories', 'clients', 'types'),['pageConfigs'=> $pageConfigs]);
