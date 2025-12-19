@@ -45,8 +45,8 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" " src="https://lottie.host/ba97c031-5f47-4ac8-a78a-30e38da11a45/Fg7GMZaUw0.json"
-                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              <dotlottie-player style=" " src="{{asset('assets/json/calendar-lottie.json')}}" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
 
@@ -71,9 +71,8 @@ use App\Models\PMS\Proposal;
                 </div>
               </div>
               <div class="col-md-4">
-                <dotlottie-player style=" "
-                  src="https://lottie.host/ba97c031-5f47-4ac8-a78a-30e38da11a45/Fg7GMZaUw0.json"
-                  background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+                <dotlottie-player style=" " src="{{asset('assets/json/calendar-lottie.json')}}" background="transparent"
+                  speed="1" style="width: 150px; height: 150px;" loop autoplay>
                 </dotlottie-player>
               </div>
 
@@ -98,8 +97,8 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" " src="https://lottie.host/573302e1-7a3c-4844-b6e8-00e9c20c9367/O43rezaDwA.json"
-                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              <dotlottie-player style=" " src="{{asset('assets/json/movement-lottie.json')}}" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
           </div>
@@ -123,7 +122,7 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4 p-2">
-              <dotlottie-player style=" " src="https://lottie.host/fc6e3aa0-e598-47cb-8686-67d91384f81b/PwYH2kXBIh.json"
+              <dotlottie-player style=" " src="{{asset('assets/json/fingerprint-lottie.json')}}"
                 background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
@@ -150,8 +149,8 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" " src="https://lottie.host/573302e1-7a3c-4844-b6e8-00e9c20c9367/O43rezaDwA.json"
-                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              <dotlottie-player style=" " src="{{asset('assets/json/movement-lottie.json')}}" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
           </div>
@@ -423,7 +422,7 @@ use App\Models\PMS\Proposal;
         <div class="card mb-1">
           <div class="row g-0">
             <div class="col-md-1">
-              <dotlottie-player style=" " src="https://lottie.host/7858dc1a-462f-4889-9b54-17cb488ca895/ywSVghJfw8.json"
+              <dotlottie-player style=" " src="{{asset('assets/json/news-updates-lottie.json')}}"
                 background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
@@ -444,8 +443,8 @@ use App\Models\PMS\Proposal;
 
     <!--/ NEWS -->
 
-    <dotlottie-player style=" " src="https://lottie.host/560f4f0c-e80e-4e77-8793-40f896753469/Y14w0uZqv9.json"
-      background="transparent" speed="1" style="width: 300px; height: 300px;" loop autoplay></dotlottie-player>
+    <dotlottie-player style=" " src="{{asset('assets/json/dashboard-lottie.json')}}" background="transparent" speed="1"
+      style="width: 300px; height: 300px;" loop autoplay></dotlottie-player>
 
   </div>
 </div>
