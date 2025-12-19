@@ -951,10 +951,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
               </div>
               <div class="col-md-4">
-                <dotlottie-player style=" "
+                {{-- <dotlottie-player style=" "
                   src="https://lottie.host/cfe10c8b-0c45-4e09-bc58-25917c3521b8/lwtYYeGqnK.lottie"
                   background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+                </dotlottie-player> --}}
+                <dotlottie-player style=" " src="{{asset('assets/json/time-lottie.json')}}" background="transparent"
+                  speed="1" style="width: 150px; height: 150px;" loop autoplay>
                 </dotlottie-player>
+
               </div>
 
             </div>

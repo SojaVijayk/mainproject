@@ -216,8 +216,7 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" "
-                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
+              <dotlottie-player style=" " src="{{asset('assets/json/working-project-lottie.json')}}"
                 background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
@@ -299,10 +298,10 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" "
-                src="https://lottie.host/1f4b12ab-1df8-46bb-a19c-b3c705cde0bc/o1fHfqtk7r.lottie"
+              <dotlottie-player style=" " src="{{asset('assets/json/calendar-booking-lottie.json')}}"
                 background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
+
             </div>
           </div>
         </div>
@@ -352,8 +351,7 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" "
-                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
+              <dotlottie-player style=" " src="{{asset('assets/json/working-project-lottie.json')}}"
                 background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
