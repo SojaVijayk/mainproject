@@ -240,9 +240,8 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" "
-                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
-                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              <dotlottie-player style=" " src="{{asset('assets/json/invoice-lottie.json')}}" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
           </div>
@@ -265,9 +264,8 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" "
-                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
-                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              <dotlottie-player style=" " src="{{asset('assets/json/expense-lottie.json')}}" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
           </div>
@@ -325,8 +323,8 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" " src="https://lottie.host/ba97c031-5f47-4ac8-a78a-30e38da11a45/Fg7GMZaUw0.json"
-                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              <dotlottie-player style=" " src="{{asset('assets/json/calendar-lottie.json')}}" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
 
@@ -375,9 +373,8 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" "
-                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
-                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              <dotlottie-player style=" " src="{{asset('assets/json/invoice-lottie.json')}}" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
           </div>
@@ -400,9 +397,8 @@ use App\Models\PMS\Proposal;
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" "
-                src="https://lottie.host/0ff80b37-dd0e-4304-8fb5-6ce520f1547c/VC0cHUYVry.lottie"
-                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              <dotlottie-player style=" " src="{{asset('assets/json/expense-lottie.json')}}" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
           </div>
