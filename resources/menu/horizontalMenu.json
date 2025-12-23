@@ -204,6 +204,13 @@
       ]
     },
     {
+      "name": "Project Management",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "slug": "pms-dashboard",
+      "url": "/pms/dashboard",
+      "permission": 1
+    },
+    {
       "name": "Tapals",
       "icon": "menu-icon tf-icons ti ti-comment",
       "slug": "tapals",

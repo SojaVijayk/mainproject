@@ -839,7 +839,7 @@ $('.duty-assignment-entry').each(function () {
         <select name="duty_assignments[${assignmentIndex}][user_id]" class="form-select" >
           <option value="">Select User</option>
            @php
-              $users = DB::table('users')->where('active',1)->get();
+              $users = DB::table('users')->where('active',1)->orderBy('name')->get();
               @endphp
           @foreach($users as $user)
             @if($user->id != Auth::id())
