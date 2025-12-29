@@ -25,6 +25,22 @@
               <option data-label="info" value="Official" selected>Official</option>
             </select>
           </div>
+
+           <div class="mb-3">
+            <label class="form-label" for="referenceType">Reference Type (Optional)</label>
+            <select class="select2 form-select" id="referenceType" name="referenceType">
+              <option value="">Select Reference Type</option>
+              <option value="Requirement">Requirement</option>
+              <option value="Proposal">Proposal</option>
+              <option value="Project">Project</option>
+            </select>
+          </div>
+          <div class="mb-3" id="referenceIdDiv" style="display:none;">
+              <label class="form-label" for="referenceId">Reference Item</label>
+              <select class="select2 form-select" id="referenceId" name="referenceId">
+                  <option value="">Select Item</option>
+              </select>
+          </div>
           <div class="row">
           <div class="mb-3 col-6">
             <label for="fromDate" class="form-label">From</label>

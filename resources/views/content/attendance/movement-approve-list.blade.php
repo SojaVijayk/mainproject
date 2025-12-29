@@ -52,6 +52,7 @@
         { data: '' },
         { data: 'designation' },
         { data: 'title' },
+        { data: 'title' },
 
         { data: 'start_date' },
         {{--  { data: 'end_date' },  --}}
@@ -130,9 +131,22 @@
         },
 
         {
-          // Name
+          // Reference
           targets: 3,
-
+          title: 'Reference',
+          render: function (data, type, full, meta) {
+             var $refTitle = full['ref_title'];
+            var $refCode = full['ref_code'];
+            var $refType = full['ref_type_label'];
+            if($refTitle) {
+                 return '<span class="text-nowrap">' + $refType + ': ' + $refCode + '</span><br><span class="text-muted" style="font-size:0.85em;">' + $refTitle + '</span>';
+            }
+            return '<span class="text-nowrap">-</span>';
+          }
+        },
+        {
+          // Name
+          targets: 4,
           render: function (data, type, full, meta) {
             var $name = full['formatted_start_date'];
             var $time = full['start_time'];
@@ -155,7 +169,7 @@
 
         {
           // User Role
-          targets: 4,
+          targets: 5,
           render: function (data, type, full, meta) {
             var $status = full['status'];
             $out = ($status==1 ? '<a><span class="badge bg-label-success m-1">Approved</span></a>' : ($status==2 ? '<a><span class="badge bg-label-danger m-1">Rejected</span></a>' : '<a><span class="badge bg-label-warning m-1">Pending</span></a>')  )
@@ -165,7 +179,7 @@
 
          {
           // report
-          targets: 5,
+          targets: 6,
           render: function (data, type, full, meta) {
             if(full['type'] == 'Official' && new Date(full['start_date']) >= new Date('2025-06-01')){
                   if(full['report'] == '' || full['report'] == null){
@@ -550,6 +564,7 @@
           <th></th>
           <th>User</th>
           <th>Movement Details</th>
+          <th>Reference</th>
           <th>TIME</th>
           {{-- <th>To</th> --}}
           <th>Status</th>

@@ -122,7 +122,8 @@
             return '<span class="text-nowrap">' + $name + '</span>';
           }
         },
-        {{--  {
+
+       {{--  {
           // Name
           targets: 4,
           render: function (data, type, full, meta) {
@@ -130,21 +131,25 @@
             var $time = full['start_time'];
             return '<span class="text-nowrap">' + $name + '-'+$time+'</span>';
           }
-        },
-        {
-          // Name
-          targets: 5,
-          render: function (data, type, full, meta) {
-            var $name = full['end_date'];
-            var $time = full['end_time'];
-            return '<span class="text-nowrap">' + $name + '-'+$time+'</span>';
-          }
         },  --}}
 
-
         {
-          // Name
+          // Reference
           targets: 3,
+          title: 'Reference', // Added title for the column
+          render: function (data, type, full, meta) {
+            var $refTitle = full['ref_title'];
+            var $refCode = full['ref_code'];
+            var $refType = full['ref_type_label'];
+            if($refTitle) {
+                 return '<span class="text-nowrap">' + $refType + ': ' + $refCode + '</span><br><span class="text-muted" style="font-size:0.85em;">' + $refTitle + '</span>';
+            }
+            return '<span class="text-nowrap">-</span>';
+          }
+        },
+        {
+          // Requested At
+          targets: 4,
           render: function (data, type, full, meta) {
             var $name = full['formatted_requested_at'];
             return '<span class="text-nowrap">' + $name + '</span>';
@@ -152,7 +157,7 @@
         },
         {
           // User Role
-          targets: 4,
+          targets: 5,
           render: function (data, type, full, meta) {
             var $status = full['status'];
             $out = ($status==1 ? '<a><span class="badge bg-label-success m-1">Approved</span></a>' : ($status==2 ? '<a><span class="badge bg-label-danger m-1">Rejected</span></a>' : '<a><span class="badge bg-label-warning m-1">Pending</span></a>')  )
@@ -161,7 +166,7 @@
         },
         {
           // action
-          targets: 5,
+          targets: 6,
           render: function (data, type, full, meta) {
             var $name = (full['action_by_name'] == null ? '' : full['action_by_name']);
             var $action_at = (full['formatted_action_at'] == null ? '' :full['formatted_action_at']);
@@ -172,7 +177,7 @@
         },
         {
           // report
-          targets: 6,
+          targets: 7,
           render: function (data, type, full, meta) {
             if(full['type'] == 'Official' && new Date(full['start_date']) >= new Date('2025-06-01')){
                   if(full['report'] == '' || full['report'] == null){
@@ -332,15 +337,42 @@ document.addEventListener('DOMContentLoaded', function (e) {
      statusReportSubmit = document.querySelector('.submit-report'),
     designationTitle = document.querySelector('.designation-title');
 
-    $('#DesignationModal').on('hidden.bs.modal', function (e) {
-      $(this)
-        .find("input,textarea,select")
-           .val('')
-           .end()
-        .find("input[type=checkbox], input[type=radio]")
-           .prop("checked", "")
-           .end();
-    })
+    $('#DesignationModal').on('hidden.bs.modal', function () {
+      // Clear form fields
+      $('#designationForm').trigger('reset');
+      // Clear validation messages
+      $('.fv-plugins-message-container').empty();
+      // Reset reference fields
+      $('#referenceIdDiv').hide();
+      $('#referenceId').empty().append('<option value="">Select Item</option>');
+      $('#referenceType').val('');
+    });
+
+    function loadReferences(type, selectedId = null) {
+      if(!type) {
+          $('#referenceIdDiv').hide();
+          $('#referenceId').empty().append('<option value="">Select Item</option>');
+          return;
+      }
+      $('#referenceIdDiv').show();
+      $.ajax({
+        url: '/movement/get-references',
+        data: {type: type},
+        success: function(data) {
+             var select = $('#referenceId');
+             select.empty();
+             select.append('<option value="">Select Item</option>');
+             $.each(data, function(key, value) {
+                 var selected = (selectedId && selectedId == value.id) ? 'selected' : '';
+                 select.append('<option value="'+value.id+'" '+selected+'>'+value.text+'</option>');
+             });
+        }
+      });
+    }
+
+    $("#referenceType").change(function () {
+        loadReferences($(this).val());
+    });
 
 
 $("#eventLabel").change(function () {
@@ -417,6 +449,8 @@ $("#eventLabel").change(function () {
       var  location =  $("#eventLocation").val();
       var  description =  $("#eventDescription").val();
        var  report =  $("#eventReport").val();
+      var referenceType = $("#referenceType").val();
+      var referenceId = $("#referenceId").val();
       var request_type =   $("#submit_designation").data('type');
       var desig_id =   $("#submit_designation").data('id');
 
@@ -435,6 +469,8 @@ $("#eventLabel").change(function () {
               location:location,
               description:description,
                report:report,
+              reference_type: referenceType,
+              reference_id: referenceId,
               "_token": "{{ csrf_token() }}",
           },
             url: `${baseUrl}movement/store`,
@@ -482,6 +518,8 @@ $("#eventLabel").change(function () {
               location:location,
               description:description,
                report:report,
+               reference_type: referenceType,
+                reference_id: referenceId,
 
               "_token": "{{ csrf_token() }}",
 
@@ -630,7 +668,15 @@ $("#eventLabel").change(function () {
           $("#toTime").val(data.designation.end_time);
           $("#eventLocation").val(data.designation.location);
           $("#eventDescription").val(data.designation.description);
+          $("#eventDescription").val(data.designation.description);
           $("#eventReport").val(data.designation.report);
+
+          $("#referenceType").val(data.designation.reference_type);
+          if(data.designation.reference_type){
+              loadReferences(data.designation.reference_type, data.designation.reference_id);
+          } else {
+              loadReferences(null);
+          }
 
           $("#submit_designation").data('id',data.designation.id);
 
@@ -711,6 +757,7 @@ $("#eventLabel").change(function () {
 
           <th>Movement Details</th>
           <th>Type</th>
+          <th>Reference</th>
           {{-- <th>From</th>
           <th>To</th> --}}
           <th>Requested_at</th>

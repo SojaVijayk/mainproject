@@ -336,6 +336,9 @@ Route::group(['middleware' => 'auth'], function () {
   Route::POST('/movement/downloadBulk', $controller_path . '\Attendance\MovementController@downloadBulk')->name(
     'attendance-download-bulk'
   );
+  Route::get('/movement/get-references', $controller_path . '\Attendance\MovementController@getReferenceList')->name(
+    'attendance-movement-get-references'
+  );
 
   Route::get('/leave/request', $controller_path . '\Leave\LeaveRequestController@index')->name(
     'attendance-leave-request'
