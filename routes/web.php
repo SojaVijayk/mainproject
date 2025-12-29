@@ -667,6 +667,9 @@ Route::group(['middleware' => 'auth'], function () {
       Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
       // Requirements
+      Route::get('requirements/master-list', [RequirementController::class, 'masterList'])->name(
+        'requirements.master-list'
+      );
       Route::resource('requirements', RequirementController::class);
       Route::get('requirements-proposals', [RequirementController::class, 'proposalsList'])->name(
         'requirements.proposals'
