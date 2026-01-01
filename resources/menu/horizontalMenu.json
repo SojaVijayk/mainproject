@@ -254,13 +254,6 @@
       "permission": 1,
       "submenu": [
         {
-          "url": "/documents",
-          "icon": "menu-icon tf-icons ti ti-home",
-          "name": "Generate Number",
-          "slug": "documents",
-          "permission": 1
-        },
-        {
           "url": "/document/tracking",
           "icon": "menu-icon tf-icons ti ti-search",
           "name": "Document Tracking",
