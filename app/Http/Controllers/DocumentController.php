@@ -113,10 +113,10 @@ class DocumentController extends Controller
         }
         else{
           if($request->number_type === 'DS'){
-             $nextSequence = 960 + 1;
+             $nextSequence = 1;
           }
           if($request->number_type === 'General'){
-             $nextSequence = 1443 + 1;
+             $nextSequence = 1;
           }
         }
 
@@ -165,10 +165,10 @@ class DocumentController extends Controller
         }
         else{
           if($validated['number_type'] === 'DS'){
-             $nextSequence = 960 + 1;
+             $nextSequence =  1;
           }
           if($validated['number_type'] === 'General'){
-             $nextSequence = 1443 + 1;
+             $nextSequence =  1;
           }
         }
 
