@@ -77,7 +77,7 @@ class TapalController extends Controller
     public function create()
     {
       $pageConfigs = ['myLayout' => 'horizontal'];
-        $users = User::where('id', '!=', Auth::id())->where('active', 1)->orderBy('name')->get();
+        $users = User::where('active', 1)->orderBy('name')->get();
         return view('tapals.create', compact('users'),['pageConfigs'=> $pageConfigs]);
     }
 
