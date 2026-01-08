@@ -190,9 +190,9 @@
             <select name="assigned_user_id[]" id="assigned_user_id" class="form-control select2" multiple required>
               <option value="">Select User</option>
               @foreach($users as $user)
-              @if($user->id != Auth::id())
+              {{-- @if($user->id != Auth::id()) --}}
               <option value="{{ $user->id }}">{{ $user->name }}</option>
-              @endif
+              {{-- @endif --}}
               @endforeach
             </select>
           </div>
