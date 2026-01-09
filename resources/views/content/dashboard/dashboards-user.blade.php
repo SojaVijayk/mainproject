@@ -229,7 +229,7 @@ use App\Models\PMS\Proposal;
           <div class="row g-0">
             <div class="col-md-8">
               <div class="card-header header-elements">
-                <span class=" me-2">Requirement Master List</span>
+                <span class=" me-2">Project Master List</span>
                 <div class="card-header-elements">
                   {{-- <span class="badge "></span> --}}
                 </div>
