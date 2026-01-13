@@ -187,12 +187,12 @@ use App\Models\Tapal;
                 </div>
               </div>
               <div class="card-body">
-                <a href="/pms/dashboard" class="btn btn-primary">Start</a>
+                <a href="/tapals" class="btn btn-primary">Start</a>
 
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" " src="{{asset('assets/json/working-project-lottie.json')}}"
+              <dotlottie-player style=" " src="{{asset('assets/json/contact-mail-lottie.json')}}"
                 background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
