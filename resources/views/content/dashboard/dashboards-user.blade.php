@@ -13,6 +13,7 @@
 $user = Auth::user();
 use App\Models\PMS\Requirement;
 use App\Models\PMS\Proposal;
+use App\Models\Tapal;
 @endphp
 @section('content')
 
@@ -27,6 +28,7 @@ use App\Models\PMS\Proposal;
     @can('leave-request-approve')
     <h5 class="pb-1 mb-4">Notification</h5>
     <div class="row mb-5">
+
       <div class="col-md">
         <div class="card mb-3">
           <div class="row g-0">
@@ -79,6 +81,8 @@ use App\Models\PMS\Proposal;
             </div>
           </div>
         </div>
+
+
       </div>
       <div class="col-md">
         <div class="card mb-3">
@@ -156,6 +160,47 @@ use App\Models\PMS\Proposal;
           </div>
         </div>
       </div>
+
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
+                <span class=" me-2">Tapals</span>
+                <div class="card-header-elements">
+                  {{-- <span class="badge "></span> --}}
+
+                  @php
+                  $tapal_count=Tapal::whereHas('movements', function($query) use ($user) {
+                  $query->where('to_user_id', $user->id)
+                  ->where(function($q) {
+                  $q->where('status', 'like', '%Pending%')
+                  ->orWhere('status', 'like', '%Accepted%');
+                  });
+                  })->count();
+                  @endphp
+
+
+                  @if($tapal_count > 0 ) <span
+                    class="badge  rounded-pill {{ $tapal_count  > 0 ? 'bg-danger' : 'bg-secondary'}}">Pending
+                    -{{ $tapal_count}} </span>@endif
+                </div>
+              </div>
+              <div class="card-body">
+                <a href="/pms/dashboard" class="btn btn-primary">Start</a>
+
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" " src="{{asset('assets/json/working-project-lottie.json')}}"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
 
 
       <div class="col-md-4">
@@ -364,6 +409,45 @@ use App\Models\PMS\Proposal;
           <div class="row g-0">
             <div class="col-md-8">
               <div class="card-header header-elements">
+                <span class=" me-2">Tapals</span>
+                <div class="card-header-elements">
+                  {{-- <span class="badge "></span> --}}
+
+                  @php
+                  $tapal_count=Tapal::whereHas('movements', function($query) use ($user) {
+                  $query->where('to_user_id', $user->id)
+                  ->where(function($q) {
+                  $q->where('status', 'like', '%Pending%')
+                  ->orWhere('status', 'like', '%Accepted%');
+                  });
+                  })->count();
+                  @endphp
+
+
+                  @if($tapal_count > 0 ) <span
+                    class="badge  rounded-pill {{ $tapal_count  > 0 ? 'bg-danger' : 'bg-secondary'}}">Pending
+                    -{{ $tapal_count}} </span>@endif
+                </div>
+              </div>
+              <div class="card-body">
+                <a href="/pms/dashboard" class="btn btn-primary">Start</a>
+
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" " src="{{asset('assets/json/working-project-lottie.json')}}"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
                 <span class=" me-2">Project Management BETA</span>
                 <div class="card-header-elements">
                   {{-- <span class="badge "></span> --}}
@@ -382,6 +466,7 @@ use App\Models\PMS\Proposal;
           </div>
         </div>
       </div>
+
 
       @if($user->hasRole('finance'))
       <div class="col-md-4">
