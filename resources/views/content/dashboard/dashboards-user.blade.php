@@ -182,7 +182,7 @@ use App\Models\Tapal;
 
 
                   @if($tapal_count > 0 ) <span
-                    class="badge  rounded-pill {{ $tapal_count  > 0 ? 'bg-danger' : 'bg-secondary'}}">Pending
+                    class="badge  rounded-pill {{ $tapal_count  > 0 ? 'bg-danger' : 'bg-secondary'}}">
                     -{{ $tapal_count}} </span>@endif
                 </div>
               </div>
