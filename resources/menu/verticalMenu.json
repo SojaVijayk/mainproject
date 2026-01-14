@@ -96,6 +96,69 @@
       ]
     },
     {
+      "menuHeader": "Asset Management"
+    },
+    {
+      "name": "Assets",
+      "icon": "menu-icon tf-icons ti ti-box",
+      "slug": "asset",
+      "submenu": [
+        {
+          "url": "asset/departments",
+          "name": "Departments",
+          "slug": "asset-departments"
+        },
+        {
+          "url": "asset/categories",
+          "name": "Categories",
+          "slug": "asset-categories"
+        },
+        {
+          "url": "asset/vendors",
+          "name": "Vendors",
+          "slug": "asset-vendors"
+        },
+        {
+          "url": "asset/brands",
+          "name": "Brands",
+          "slug": "asset-brands"
+        },
+        {
+          "url": "asset/masters",
+          "name": "Department Assets",
+          "slug": "asset-masters"
+        },
+        {
+          "url": "asset/my-assets",
+          "name": "My Assets",
+          "slug": "asset-my-assets"
+        },
+        {
+          "url": "asset/reports/register",
+          "name": "Reports",
+          "slug": "asset-reports"
+        },
+        {
+          "url": "asset/locations",
+          "name": "Locations",
+          "slug": "asset-locations",
+          "permission": 1
+        },
+        {
+          "url": "asset/floors",
+          "name": "Floors",
+          "slug": "asset-floors",
+          "permission": 1
+        },
+        {
+          "url": "asset/rooms",
+          "name": "Rooms",
+          "slug": "asset-rooms",
+          "permission": 1
+        }
+      ]
+    },
+    {
       "menuHeader": "Help"
     },
     {

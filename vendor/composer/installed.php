@@ -5,11 +5,20 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '720d2898b74e78bdec3c45c03d77d51c156188a6',
+        'reference' => 'a36421db1805805552a5ce384f71ddb47480eee8',
         'name' => 'laravel/laravel',
         'dev' => true,
     ),
     'versions' => array(
+        'bacon/bacon-qr-code' => array(
+            'pretty_version' => '2.0.8',
+            'version' => '2.0.8.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../bacon/bacon-qr-code',
+            'aliases' => array(),
+            'reference' => '8674e51bb65af933a5ffaf1c308a660387c35c22',
+            'dev_requirement' => false,
+        ),
         'barryvdh/laravel-dompdf' => array(
             'pretty_version' => 'v2.0.1',
             'version' => '2.0.1.0',
@@ -42,6 +51,15 @@
             'replaced' => array(
                 0 => '*',
             ),
+        ),
+        'dasprid/enum' => array(
+            'pretty_version' => '1.0.7',
+            'version' => '1.0.7.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../dasprid/enum',
+            'aliases' => array(),
+            'reference' => 'b5874fa9ed0043116c72162ec7f4fb50e02e7cce',
+            'dev_requirement' => false,
         ),
         'davedevelopment/hamcrest-php' => array(
             'dev_requirement' => true,
@@ -439,7 +457,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '720d2898b74e78bdec3c45c03d77d51c156188a6',
+            'reference' => 'a36421db1805805552a5ce384f71ddb47480eee8',
             'dev_requirement' => false,
         ),
         'laravel/passport' => array(
@@ -1204,6 +1222,15 @@
             'aliases' => array(),
             'reference' => 'c51fa83a5d8f43f1402e3f32a005e6262244ef17',
             'dev_requirement' => true,
+        ),
+        'simplesoftwareio/simple-qrcode' => array(
+            'pretty_version' => '4.2.0',
+            'version' => '4.2.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../simplesoftwareio/simple-qrcode',
+            'aliases' => array(),
+            'reference' => '916db7948ca6772d54bb617259c768c9cdc8d537',
+            'dev_requirement' => false,
         ),
         'spatie/backtrace' => array(
             'pretty_version' => '1.4.1',

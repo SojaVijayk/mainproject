@@ -211,6 +211,63 @@
       "permission": 1
     },
     {
+      "name": "Assets",
+      "icon": "menu-icon tf-icons ti ti-box",
+      "slug": "assets",
+      "permission": "asset-management",
+      "submenu": [
+        {
+          "url": "asset/my-assets",
+          "name": "My Assets",
+          "icon": "menu-icon tf-icons ti ti-user-check",
+          "slug": "asset-my-assets",
+          "permission": 1
+        },
+        {
+          "url": "asset/masters",
+          "name": "Asset Master",
+          "icon": "menu-icon tf-icons ti ti-building",
+          "slug": "asset-masters",
+          "permission": "asset-management"
+        },
+        {
+          "url": "asset/categories",
+          "name": "Category",
+          "icon": "menu-icon tf-icons ti ti-category",
+          "slug": "asset-categories",
+          "permission": "asset-management"
+        },
+        {
+          "url": "asset/vendors",
+          "name": "Vendor",
+          "icon": "menu-icon tf-icons ti ti-truck",
+          "slug": "asset-vendors",
+          "permission": "asset-management"
+        },
+        {
+          "url": "asset/brands",
+          "name": "Maker",
+          "icon": "menu-icon tf-icons ti ti-tag",
+          "slug": "asset-brands",
+          "permission": "asset-management"
+        },
+        {
+          "url": "asset/allocations/create",
+          "name": "Asset Issue",
+          "icon": "menu-icon tf-icons ti ti-share",
+          "slug": "asset-issue",
+          "permission": "asset-management"
+        },
+        {
+          "url": "asset/reports/register",
+          "name": "Asset Register",
+          "icon": "menu-icon tf-icons ti ti-file-text",
+          "slug": "asset-register-report",
+          "permission": "asset-management"
+        }
+      ]
+    },
+    {
       "name": "Tapals",
       "icon": "menu-icon tf-icons ti ti-comment",
       "slug": "tapals",
