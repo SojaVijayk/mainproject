@@ -404,6 +404,7 @@ use App\Models\Tapal;
         </div>
       </div>
       @endif
+
       <div class="col-md-4">
         <div class="card mb-3">
           <div class="row g-0">
@@ -425,17 +426,17 @@ use App\Models\Tapal;
 
 
                   @if($tapal_count > 0 ) <span
-                    class="badge  rounded-pill {{ $tapal_count  > 0 ? 'bg-danger' : 'bg-secondary'}}">Pending
+                    class="badge  rounded-pill {{ $tapal_count  > 0 ? 'bg-danger' : 'bg-secondary'}}">
                     -{{ $tapal_count}} </span>@endif
                 </div>
               </div>
               <div class="card-body">
-                <a href="/pms/dashboard" class="btn btn-primary">Start</a>
+                <a href="/tapals" class="btn btn-primary">Start</a>
 
               </div>
             </div>
             <div class="col-md-4">
-              <dotlottie-player style=" " src="{{asset('assets/json/working-project-lottie.json')}}"
+              <dotlottie-player style=" " src="{{asset('assets/json/contact-mail-lottie.json')}}"
                 background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
               </dotlottie-player>
             </div>
