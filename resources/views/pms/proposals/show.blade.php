@@ -87,11 +87,14 @@
     const workorderField = document.getElementById("workorder_field");
     const workorderInput = document.getElementById("documents");
 
+
     function toggleWorkorder() {
       if (clientStatus.value === "accepted") {
         workorderField.style.display = "block";
+         workorderInput.required = true;
       } else {
         workorderField.style.display = "none";
+        workorderInput.required = false;
       }
     }
 
@@ -102,7 +105,7 @@
 
     function toggleRequired() {
     const hasSelectedFiles = document.querySelectorAll('input[name="selected_files[]"]').length > 0;
-    workorderInput.required = !hasSelectedFiles;
+    workorderInput.required =  clientStatus.value === 'accepted' && !hasSelectedFiles;
   }
 
 
