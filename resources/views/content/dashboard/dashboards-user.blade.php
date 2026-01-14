@@ -274,6 +274,30 @@ use App\Models\Tapal;
           <div class="row g-0">
             <div class="col-md-8">
               <div class="card-header header-elements">
+                <span class=" me-2">Bank Management </span>
+                <div class="card-header-elements">
+                  {{-- <span class="badge "></span> --}}
+                </div>
+              </div>
+              <div class="card-body">
+                <a href="/pms/finance/bank-dashboard" class="btn btn-primary">View</a>
+
+              </div>
+            </div>
+            <div class="col-md-4">
+              <dotlottie-player style=" " src="{{asset('assets/json/saving-money-lottie.json')}}"
+                background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay>
+              </dotlottie-player>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-header header-elements">
                 <span class=" me-2">Project Master List</span>
                 <div class="card-header-elements">
                   {{-- <span class="badge "></span> --}}
@@ -470,6 +494,10 @@ use App\Models\Tapal;
 
 
       @if($user->hasRole('finance'))
+
+
+
+
       <div class="col-md-4">
         <div class="card mb-3">
           <div class="row g-0">

@@ -11,15 +11,22 @@
 @endsection
 
 @section('content')
+@php
+$user = Auth::user();
+
+@endphp
 <div class="row mb-4">
   <div class="col-md-6">
     <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Finance /</span> Bank Dashboard</h4>
   </div>
+
+
   <div class="col-md-6 text-end">
     <!-- Date Filter Form -->
     <form action="{{ route('pms.finance.bank-dashboard') }}" method="GET" class="d-inline-flex align-items-center">
       <input type="date" name="date" class="form-control me-2" value="{{ $date }}" onchange="this.form.submit()">
     </form>
+    @if($user->hasRole('finance'))
     <a href="{{ route('pms.finance.accounts.index') }}" class="btn btn-primary">Bank Account</a>
     <a href="{{ route('pms.finance.transactions.index') }}" class="btn btn-dark">Bank Transaction</a>
 
@@ -27,7 +34,9 @@
     <button type="button" class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#importModal">
       Import Excel
     </button>
+    @endif
   </div>
+
 </div>
 
 <!-- Summary Cards -->
@@ -97,7 +106,9 @@
       </thead>
       <tbody>
         @forelse($balances as $balance)
-        <tr onclick="window.location='{{ route('pms.finance.transactions.index', ['account_id' => $balance->finance_bank_account_id]) }}'" style="cursor: pointer;">
+        <tr
+          onclick="window.location='{{ route('pms.finance.transactions.index', ['account_id' => $balance->finance_bank_account_id]) }}'"
+          style="cursor: pointer;">
           <td>{{ $balance->bankAccount->account_name }}</td>
           <td>{{ $balance->bankAccount->account_number }}</td>
           <td class="text-end">{{ number_format($balance->opening_balance, 2) }}</td>
@@ -140,7 +151,7 @@
               <label for="file" class="form-label">Excel File</label>
               <input type="file" id="file" name="file" class="form-control" accept=".xlsx,.csv" required>
               <div class="form-text">
-                  Format: Date | Account | Opening | Receipts | Payments | Closing
+                Format: Date | Account | Opening | Receipts | Payments | Closing
               </div>
             </div>
           </div>
