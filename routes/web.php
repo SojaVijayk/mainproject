@@ -952,6 +952,41 @@ Route::group(['middleware' => 'auth'], function () {
         });
     });
 
+  // Asset Management
+  Route::group(['prefix' => 'asset', 'as' => 'asset.'], function () {
+    Route::resource('departments', \App\Http\Controllers\Asset\AssetDepartmentController::class);
+    Route::resource('categories', \App\Http\Controllers\Asset\AssetCategoryController::class);
+    Route::resource('vendors', \App\Http\Controllers\Asset\AssetVendorController::class);
+    Route::resource('brands', \App\Http\Controllers\Asset\AssetBrandController::class);
+    Route::resource('locations', \App\Http\Controllers\Asset\LocationController::class);
+    Route::resource('floors', \App\Http\Controllers\Asset\FloorController::class);
+    Route::resource('rooms', \App\Http\Controllers\Asset\RoomController::class);
+    Route::post('masters/{master}/change-status', [
+      \App\Http\Controllers\Asset\AssetMasterController::class,
+      'changeStatus',
+    ])->name('masters.change-status');
+    Route::get('masters/{master}/history', [\App\Http\Controllers\Asset\AssetMasterController::class, 'history'])->name(
+      'masters.history'
+    );
+    Route::resource('masters', \App\Http\Controllers\Asset\AssetMasterController::class);
+    Route::resource('allocations', \App\Http\Controllers\Asset\AssetAllocationController::class);
+    Route::get('my-assets', [\App\Http\Controllers\Asset\AssetMasterController::class, 'myAssets'])->name('my-assets');
+    Route::get('categories/{id}/schema', [
+      \App\Http\Controllers\Asset\AssetMasterController::class,
+      'getCategorySchema',
+    ]);
+
+    // Reports
+    Route::get('reports', [\App\Http\Controllers\Asset\AssetReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/register', [\App\Http\Controllers\Asset\AssetReportController::class, 'assetRegister'])->name(
+      'reports.register'
+    );
+    Route::get('reports/depreciation', [
+      \App\Http\Controllers\Asset\AssetReportController::class,
+      'depreciation',
+    ])->name('reports.depreciation');
+  });
+
   //end
 }); //middlewear end
 
