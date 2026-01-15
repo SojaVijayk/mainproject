@@ -224,5 +224,8 @@ $user = Auth::user();
     chart.render();
   });
 </script>
+@php echo "fjd";
+print_r($chartReceipts);
+@endphp
 @endsection
 @endsection

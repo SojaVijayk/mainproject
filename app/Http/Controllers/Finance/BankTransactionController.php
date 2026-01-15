@@ -7,25 +7,16 @@ use Illuminate\Http\Request;
 
 use App\Models\Finance\BankTransaction;
 use App\Models\Finance\FinanceBankAccount;
-use App\Models\Finance\DailyBankBalance;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class BankTransactionController extends Controller
 {
-  public function index(Request $request)
+  public function index()
   {
     $pageConfigs = ['myLayout' => 'horizontal'];
-
-    $query = BankTransaction::with('bankAccount')->latest();
-
-    // Optional: Filter by Account if provided
-    if ($request->has('account_id')) {
-      $query->where('finance_bank_account_id', $request->account_id);
-    }
-
-    $transactions = $query->paginate(20);
-
+    $transactions = BankTransaction::with('bankAccount')
+      ->latest()
+      ->paginate(20);
     return view('finance.transactions.index', compact('transactions'), [
       'pageConfigs' => $pageConfigs,
     ]);
@@ -44,9 +35,9 @@ class BankTransactionController extends Controller
   {
     $pageConfigs = ['myLayout' => 'horizontal'];
 
-    $date = $request->input('date', Carbon::today()->format('Y-m-d'));
+    $date = $request->input('date', \Carbon\Carbon::today()->format('Y-m-d'));
 
-    $balances = DailyBankBalance::with('bankAccount')
+    $balances = \App\Models\Finance\DailyBankBalance::with('bankAccount')
       ->whereDate('date', $date)
       ->get();
 
@@ -55,16 +46,17 @@ class BankTransactionController extends Controller
     $totalPayments = $balances->sum('payments');
     $totalClosing = $balances->sum('closing_balance');
 
-    // Chart Data: Last 7 Days Trend (Receipts vs Payments)
-    $startDate = Carbon::today()->subDays(6);
-    $endDate = Carbon::today();
+    // Chart Data: Last 7 Days Trend (Receipts vs Payments) ending on the selected date
+    $selectedDate = \Carbon\Carbon::parse($date);
+    $startDate = $selectedDate->copy()->subDays(6);
+    $endDate = $selectedDate;
 
-    $trendData = DailyBankBalance::selectRaw(
-      'DATE(date) as date, SUM(receipts) as total_receipts, SUM(payments) as total_payments'
+    $trendData = \App\Models\Finance\DailyBankBalance::selectRaw(
+      'DATE(date) as grouped_date, SUM(receipts) as total_receipts, SUM(payments) as total_payments'
     )
       ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-      ->groupBy('date')
-      ->orderBy('date')
+      ->groupBy('grouped_date')
+      ->orderBy('grouped_date')
       ->get();
 
     // Prepare chart arrays
@@ -75,11 +67,11 @@ class BankTransactionController extends Controller
     // Fill in missing dates with 0
     for ($d = $startDate->copy(); $d->lte($endDate); $d->addDay()) {
       $dayStr = $d->format('Y-m-d');
-      $dayData = $trendData->firstWhere('date', $dayStr);
+      $dayData = $trendData->firstWhere('grouped_date', $dayStr);
 
       $chartDates[] = $d->format('d M');
-      $chartReceipts[] = $dayData ? $dayData->total_receipts : 0;
-      $chartPayments[] = $dayData ? $dayData->total_payments : 0;
+      $chartReceipts[] = $dayData ? (float) $dayData->total_receipts : 0;
+      $chartPayments[] = $dayData ? (float) $dayData->total_payments : 0;
     }
 
     return view(
@@ -151,7 +143,6 @@ class BankTransactionController extends Controller
         ->route('pms.finance.bank-dashboard')
         ->with('success', 'Daily balances imported successfully.');
     } catch (\Exception $e) {
-      \Illuminate\Support\Facades\Log::error('Import Error: ' . $e->getMessage());
       return redirect()
         ->back()
         ->withErrors(['file' => 'Error importing file: ' . $e->getMessage()]);
