@@ -20,7 +20,15 @@ $user = Auth::user();
     <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Finance /</span> Bank Dashboard</h4>
   </div>
 
-
+  @if ($errors->any())
+  <div class="alert alert-danger">
+    <ul>
+      @foreach ($errors->all() as $error)
+      <li>{{ $error }}</li>
+      @endforeach
+    </ul>
+  </div>
+  @endif
   <div class="col-md-6 text-end">
     <!-- Date Filter Form -->
     <form action="{{ route('pms.finance.bank-dashboard') }}" method="GET" class="d-inline-flex align-items-center">
