@@ -83,19 +83,7 @@ $user = Auth::user();
   </div>
 </div>
 
-<!-- Charts Section -->
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="card">
-      <div class="card-header header-elements">
-        <h5 class="card-title mb-0">Receipts vs Payments (Last 7 Days)</h5>
-      </div>
-      <div class="card-body">
-        <div id="receiptsPaymentsChart"></div>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <!-- Detailed Table -->
 <div class="card">
@@ -140,6 +128,19 @@ $user = Auth::user();
         </tr>
       </tfoot>
     </table>
+  </div>
+</div>
+<!-- Charts Section -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header header-elements">
+        <h5 class="card-title mb-0">Receipts vs Payments (Last 7 Days)</h5>
+      </div>
+      <div class="card-body">
+        <div id="receiptsPaymentsChart"></div>
+      </div>
+    </div>
   </div>
 </div>
 
