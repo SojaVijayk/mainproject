@@ -116,13 +116,13 @@ $user = Auth::user();
         </tr>
         @empty
         <tr>
-          <td colspan="6" class="text-center py-4">No data found for this date.</td>
+          <td colspan="7" class="text-center py-4">No data found for this date.</td>
         </tr>
         @endforelse
       </tbody>
       <tfoot>
         <tr class="table-light fw-bold">
-          <td colspan="2">Total</td>
+          <td colspan="3">Total</td>
           <td class="text-end">{{ number_format($totalOpening, 2) }}</td>
           <td class="text-end text-success">{{ number_format($totalReceipts, 2) }}</td>
           <td class="text-end text-danger">{{ number_format($totalPayments, 2) }}</td>
