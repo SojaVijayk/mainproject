@@ -94,6 +94,7 @@ $user = Auth::user();
         <tr>
           <th>Account Name</th>
           <th>Account Number</th>
+          <th>Bank Name</th>
           <th class="text-end">Opening Balance</th>
           <th class="text-end">Receipts</th>
           <th class="text-end">Payments</th>
@@ -107,6 +108,7 @@ $user = Auth::user();
           style="cursor: pointer;">
           <td>{{ $balance->bankAccount->account_name }}</td>
           <td>{{ $balance->bankAccount->account_number }}</td>
+          <td>{{ $balance->bankAccount->bank_name }}</td>
           <td class="text-end">{{ number_format($balance->opening_balance, 2) }}</td>
           <td class="text-end text-success">{{ number_format($balance->receipts, 2) }}</td>
           <td class="text-end text-danger">{{ number_format($balance->payments, 2) }}</td>
