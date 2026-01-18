@@ -664,7 +664,7 @@ class TapalController extends Controller
 
     $tapals = $query->orderBy('created_at', 'desc')->paginate(25);
 
-    return view('tapals.tracing', compact('tapals', 'stats', 'users'), ['pageConfigs' => $pageConfigs]);
+    return view('tapals.tracing', compact('tapals', 'stats', 'users'),['pageConfigs'=> $pageConfigs]);
 }
 
   protected function getTracingStatistics(Request $request)

@@ -71,6 +71,7 @@ class LoginController extends Controller
               return redirect()->route('dashboard-user')->with('success', 'Successfully Logged in!');;
             }
 
+
         }
         else {
         //     // Search using username

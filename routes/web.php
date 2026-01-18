@@ -87,6 +87,7 @@ Route::group(['middleware' => 'auth'], function () {
   $controller_path = 'App\Http\Controllers';
   //Dashboard
   Route::get('/dashboard', $controller_path . '\dashboard\Analytics@index')->name('dashboard-admin');
+  Route::get('/auditor/dashboard', $controller_path . '\dashboard\Analytics@auditor')->name('dashboard-auditor');
   Route::get('/user/dashboard', $controller_path . '\layouts\Horizontal@index')->name('dashboard-user');
 
   Route::get('/home', $controller_path . '\layouts\Horizontal@index')->name('dashboard-user');
@@ -1257,3 +1258,49 @@ Route::get('/laravel/user-management', [UserManagement::class, 'UserManagement']
   'laravel-example-user-management'
 );
 Route::resource('/user-list', UserManagement::class);
+
+// Audit Module Routes
+Route::prefix('audit')
+  ->name('audit.')
+  ->group(function () {
+    // Login Routes
+    Route::get('/login', [App\Http\Controllers\AuditController::class, 'showLogin'])->name('login');
+    Route::post('/login', [App\Http\Controllers\AuditController::class, 'processLogin'])->name('login.post');
+    Route::post('/logout', [App\Http\Controllers\AuditController::class, 'logout'])->name('logout');
+
+    // Protected Audit Routes
+    Route::middleware('audit.auth')->group(function () {
+      Route::get('/dashboard', [App\Http\Controllers\AuditController::class, 'dashboard'])->name('dashboard');
+
+      // Tapals
+      Route::get('/tapals', [App\Http\Controllers\AuditController::class, 'tapalIndex'])->name('tapals.index');
+      Route::get('/tapals/export', [App\Http\Controllers\AuditController::class, 'exportTapals'])->name(
+        'tapals.export'
+      );
+      Route::get('/tapals/{id}', [App\Http\Controllers\AuditController::class, 'tapalShow'])->name('tapals.show');
+
+      // Documents
+      Route::get('/documents', [App\Http\Controllers\AuditController::class, 'documentIndex'])->name('documents.index');
+      Route::get('/documents/export', [App\Http\Controllers\AuditController::class, 'exportDocuments'])->name(
+        'documents.export'
+      );
+      Route::get('/documents/{id}', [App\Http\Controllers\AuditController::class, 'documentShow'])->name(
+        'documents.show'
+      );
+      Route::get('/documents/attachment/{attachment}/download', [
+        App\Http\Controllers\AuditController::class,
+        'downloadDocumentAttachment',
+      ])->name('documents.download');
+
+      // Projects
+      Route::get('/projects', [App\Http\Controllers\AuditController::class, 'projectIndex'])->name('projects.index');
+      Route::get('/projects/export', [App\Http\Controllers\AuditController::class, 'exportProjects'])->name(
+        'projects.export'
+      );
+      Route::get('/projects/{id}', [App\Http\Controllers\AuditController::class, 'projectShow'])->name('projects.show');
+      Route::get('/projects/{project}/documents/{document}/download', [
+        App\Http\Controllers\AuditController::class,
+        'downloadProjectDocument',
+      ])->name('projects.document.download');
+    });
+  });
