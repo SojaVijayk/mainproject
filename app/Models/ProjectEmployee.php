@@ -8,4 +8,52 @@ use Illuminate\Database\Eloquent\Model;
 class ProjectEmployee extends Model
 {
     use HasFactory;
+
+    protected $table = 'project_employee';
+
+    protected $fillable = [
+        'user_id',
+        'p_id',
+        'empId',
+        'employee_code',
+        'name',
+        'last_name',
+        'email',
+        'mobile',
+        'age',
+        'dob',
+        'address',
+        'designation_id',
+        'date_of_joining',
+        'employment_type',
+        'service_id',
+        'salary_id',
+        'deduction_id',
+        'status',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function service()
+    {
+        return $this->hasOne(Service::class, 'p_id', 'p_id');
+    }
+
+    public function salary()
+    {
+        return $this->hasOne(Salary::class, 'p_id', 'p_id');
+    }
+
+    public function deduction()
+    {
+        return $this->hasOne(Deduction::class, 'p_id', 'p_id');
+    }
+
+    public function designation()
+    {
+        return $this->belongsTo(Designation::class, 'designation_id');
+    }
 }

@@ -23,6 +23,7 @@ use App\Http\Controllers\PMS\ExpenseController;
 use App\Http\Controllers\PMS\ExpenseCategoryController;
 use App\Http\Controllers\PMS\VendorController;
 use App\Http\Controllers\PMS\AttachmentController;
+use App\Http\Controllers\Project\ProjectEmployeeController;
 use App\Http\Controllers\CertificateController;
 
 use App\Exports\ProjectsExport;
@@ -137,6 +138,17 @@ Route::group(['middleware' => 'auth'], function () {
   Route::post('/project/store', $controller_path . '\Client\ProjectController@store')->name('app-permission-store');
   Route::get('/project/edit/{id}', $controller_path . '\Client\ProjectController@editProject')->name('project-edit');
   Route::post('/project/edit/{id}', $controller_path . '\Client\ProjectController@update')->name('project-update');
+  
+  // Project Employee Global Store
+  Route::post('/pms/employees/store', [ProjectEmployeeController::class, 'globalStore'])->name('pms.employees.store');
+  Route::get('/pms/employees/list', [ProjectEmployeeController::class, 'globalList'])->name('pms.employees.list');
+  Route::get('/pms/employees/details/{id}', [ProjectEmployeeController::class, 'globalDetails'])->name('pms.employees.details');
+  Route::get('/pms/employees/edit/{id}', [ProjectEmployeeController::class, 'edit'])->name('pms.employees.edit');
+  
+  Route::post('/pms/employees/update-master/{id}', [ProjectEmployeeController::class, 'updateMaster'])->name('pms.employees.update-master');
+  Route::post('/pms/employees/update-service/{id}', [ProjectEmployeeController::class, 'updateService'])->name('pms.employees.update-service');
+  Route::post('/pms/employees/update-salary/{id}', [ProjectEmployeeController::class, 'updateSalary'])->name('pms.employees.update-salary');
+  Route::post('/pms/employees/update-deduction/{id}', [ProjectEmployeeController::class, 'updateDeduction'])->name('pms.employees.update-deduction');
 
   //Project Managaement
   Route::get('/project/dashboard/{project_id}', $controller_path . '\Client\ProjectController@dashboard')->name(
@@ -666,6 +678,14 @@ Route::group(['middleware' => 'auth'], function () {
       Route::get('/invoices/import/path', [InvoiceController::class, 'importFromPath']);
 
       Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+      Route::get('/employees', [ProjectEmployeeController::class, 'globalIndex'])->name('employees.index');
+      Route::get('/employees/list', [ProjectEmployeeController::class, 'globalList'])->name('employees.list');
+      Route::post('/employees/store', [ProjectEmployeeController::class, 'globalStore'])->name('employees.store');
+      Route::get('/employees/details/{id}', [ProjectEmployeeController::class, 'globalDetails'])->name('employees.details');
+      Route::post('/employees/update-master/{id}', [ProjectEmployeeController::class, 'updateMaster'])->name('employees.update-master');
+      Route::post('/employees/update-service/{p_id}', [ProjectEmployeeController::class, 'updateService'])->name('employees.update-service');
+      Route::post('/employees/update-salary/{p_id}', [ProjectEmployeeController::class, 'updateSalary'])->name('employees.update-salary');
+      Route::post('/employees/update-deduction/{p_id}', [ProjectEmployeeController::class, 'updateDeduction'])->name('employees.update-deduction');
 
       // Requirements
       Route::get('requirements/master-list', [RequirementController::class, 'masterList'])->name(

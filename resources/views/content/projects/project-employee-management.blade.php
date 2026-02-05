@@ -58,10 +58,11 @@ $(function () {
 
   // Variable declaration for table
   var dt_user_table = $('.datatables-users'),userView,select2,statusObj, offCanvasForm = $('#offcanvasAddUser'),
-      usersList = baseUrl + 'project/employees/detail/list',
+      usersList = @if(isset($is_global) && $is_global) baseUrl + 'pms/employees/list' @else baseUrl + 'project/employees/detail/list' @endif,
 
     select2 = $('.select2'),
     userView = baseUrl + 'project/employee/view/account',
+    userDetails = baseUrl + 'pms/employees/details',
 
     statusObj = {
       1: { title: 'Active', class: 'bg-label-success' },
@@ -94,17 +95,19 @@ $(function () {
    var dt_user = dt_user_table.DataTable({
 
       ajax: {
-        url: usersList
+        url: "{{ route('pms.employees.list') }}"
        },
       columns: [
         // columns according to JSON
         { data: '' },
         { data: 'name' },
-        { data: 'gender_name' },
-        { data: 'user_type' },
+        { data: 'email' },
+        { data: 'age' },
+        { data: 'mobile' },
+        { data: 'dob' },
+        { data: 'date_of_joining' },
         { data: 'designation' },
-        { data: 'status' },
-        { data: 'empId' },
+        { data: 'address' },
         { data: 'action' }
       ],
       columnDefs: [
@@ -125,22 +128,17 @@ $(function () {
           responsivePriority: 4,
           render: function (data, type, full, meta) {
             var $name = full['name'],
-              $email = full['email_pri'],
-              $image = full['profile_pic'];
-            if ($image) {
-              // For Avatar image
-              var $output =
-                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
-            } else {
-              // For Avatar badge
-              var stateNum = Math.floor(Math.random() * 6);
-              var states = ['success', 'danger', 'warning', 'info', 'primary', 'secondary'];
-              var $state = states[stateNum],
-                $name = full['name'],
-                $initials = $name.match(/\b\w/g) || [];
-              $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
-            }
+              $email = full['email'],
+              $image = ''; // Removed profile_pic support as column is gone
+            
+            // For Avatar badge
+            var stateNum = Math.floor(Math.random() * 6);
+            var states = ['success', 'danger', 'warning', 'info', 'primary', 'secondary'];
+            var $state = states[stateNum],
+              $initials = $name.match(/\b\w/g) || [];
+            $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
+            var $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+
             // Creates full output for row
             var $row_output =
               '<div class="d-flex justify-content-start align-items-center user-name">' +
@@ -150,11 +148,10 @@ $(function () {
               '</div>' +
               '</div>' +
               '<div class="d-flex flex-column">' +
-              '<a href="' +
-              userView +'/'+full['user_id']+
-              '" class="text-body text-truncate"><span class="fw-semibold">' +
+           
+              '<span class="fw-semibold">' +
               $name +
-              '</span></a>' +
+              '</span>' +
               '<small class="text-muted">' +
               $email +
               '</small>' +
@@ -164,85 +161,22 @@ $(function () {
           }
         },
         {
-          // User Role
-          targets: 2,
-          render: function (data, type, full, meta) {
-            var $role = full['user_type'];
-            var roleBadgeObj = {
-              Contract:
-                '<span class="badge badge-center rounded-pill bg-label-warning w-px-30 h-px-30 me-2"><i class="ti ti-user ti-sm"></i></span>',
-              Consultant:
-                '<span class="badge badge-center rounded-pill bg-label-success w-px-30 h-px-30 me-2"><i class="ti ti-circle-check ti-sm"></i></span>',
-              DailyWage:
-                '<span class="badge badge-center rounded-pill bg-label-primary w-px-30 h-px-30 me-2"><i class="ti ti-chart-pie-2 ti-sm"></i></span>',
-              Editor:
-                '<span class="badge badge-center rounded-pill bg-label-info w-px-30 h-px-30 me-2"><i class="ti ti-edit ti-sm"></i></span>',
-              Admin:
-                '<span class="badge badge-center rounded-pill bg-label-secondary w-px-30 h-px-30 me-2"><i class="ti ti-device-laptop ti-sm"></i></span>'
-            };
-            return "<span class='text-truncate d-flex align-items-center'>" + roleBadgeObj[$role] + $role + '</span>';
-          }
-        },
-        {
-          // Designation
-          targets: 3,
-          render: function (data, type, full, meta) {
-            var $plan = full['designation'];
-
-            return '<span class="fw-semibold">' + $plan + '</span>';
-          }
-        },
-        {
-          // Designation
-          targets: 4,
-          render: function (data, type, full, meta) {
-            var $plan = full['gender_name'];
-
-            return '<span class="fw-semibold">' + $plan + '</span>';
-          }
-        },
-
-        {
-          // User Status
-          targets: 5,
-          render: function (data, type, full, meta) {
-            var $status = full['status'];
-
-            return (
-              '<span class="badge ' +
-              statusObj[$status].class +
-              '" text-capitalized>' +
-              statusObj[$status].title +
-              '</span>'
-            );
-          }
-        },
-        {
-          // Designation
-          targets: 6,
-          render: function (data, type, full, meta) {
-            var $plan = full['empId'];
-
-            return '<span class="fw-semibold">' + $plan + '</span>';
-          }
-        },
-        {
           // Actions
           targets: -1,
           title: 'Actions',
           searchable: false,
           orderable: false,
           render: function (data, type, full, meta) {
+            var detailUrl = "{{ route('pms.employees.details', ':id') }}";
+            detailUrl = detailUrl.replace(':id', full['id']);
+            
             return (
               '<div class="d-flex align-items-center">' +
-              '<a href="javascript:;" class="text-body"><i class="ti ti-edit ti-sm me-2"></i></a>' +
-              '<a href="javascript:;" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
+              '<a href="javascript:;" class="text-body deleted-record"><i class="ti ti-trash ti-sm me-2"></i></a>' +
               '<a href="javascript:;" class="text-body dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical ti-sm mx-1"></i></a>' +
               '<div class="dropdown-menu dropdown-menu-end m-0">' +
-              '<a href="' +
-              userView +
-              '" class="dropdown-item">View</a>' +
-              '<a href="javascript:;" class="dropdown-item">Suspend</a>' +
+              '<a href="javascript:;" class="dropdown-item edit-record" data-id="' + full['id'] + '">Edit</a>' +
+              '<a href="' + detailUrl + '" class="dropdown-item">View Details</a>' +
               '</div>' +
               '</div>'
             );
@@ -414,14 +348,6 @@ $(function () {
             'data-bs-target': '#offcanvasAddUser'
           }
         },  --}}
-        {
-          text: '<i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">Add New User</span>',
-          className: 'add-new btn btn-primary',
-          attr: {
-            'data-bs-toggle': 'modal',
-            'data-bs-target': '#fullscreenModal'
-          }
-        }
       ],
       // For responsive popup
       responsive: {
@@ -547,26 +473,18 @@ $(function () {
 });
 
 // Validation & Phone mask
-(function () {
-  const phoneMaskList = document.querySelectorAll('.phone-mask'),
-    addNewUserForm = document.getElementById('addNewUserForm');
+document.addEventListener('DOMContentLoaded', function () {
+// Validation & Phone mask
 
-  // Phone Number
-  {{--  if (phoneMaskList) {
-    phoneMaskList.forEach(function (phoneMask) {
-      new Cleave(phoneMask, {
-        phone: true,
-        phoneRegionCode: 'US'
-      });
-    });
-  }  --}}
-  // Add New User Form Validation
-  const fv = FormValidation.formValidation(addNewUserForm, {
+  const addGlobalEmployeeForm = document.getElementById('addGlobalEmployeeForm');
+
+  // Add Global Employee Form Validation
+  const fv = FormValidation.formValidation(addGlobalEmployeeForm, {
     fields: {
       name: {
         validators: {
           notEmpty: {
-            message: 'Please enter fullname '
+            message: 'Please enter fullname'
           }
         }
       },
@@ -585,32 +503,47 @@ $(function () {
           notEmpty: {
             message: 'Please enter your contact number'
           },
-          number: {
+          regexp: {
+            regexp: /^[0-9]+$/,
             message: 'The value is not a valid number'
           }
         }
       },
-      {{--  designation: {
+      age: {
         validators: {
           notEmpty: {
-            message: 'Please select designation '
+            message: 'Please enter age'
           }
         }
       },
-      usertype_role: {
+      dob: {
         validators: {
           notEmpty: {
-            message: 'Please select user type '
+            message: 'Please select Date of Birth'
           }
         }
       },
-      roles: {
+      joining_date: {
         validators: {
           notEmpty: {
-            message: 'Please select Roles '
+            message: 'Please select Date of Joining'
           }
         }
-      },  --}}
+      },
+      designation: {
+        validators: {
+          notEmpty: {
+            message: 'Please select designation'
+          }
+        }
+      },
+      address: {
+        validators: {
+          notEmpty: {
+            message: 'Please enter address'
+          }
+        }
+      }
     },
     plugins: {
       trigger: new FormValidation.plugins.Trigger(),
@@ -619,50 +552,97 @@ $(function () {
         eleValidClass: '',
         rowSelector: function (field, ele) {
           // field is the field name & ele is the field element
-          return '.mb-3';
+          return '.col-sm-6, .col-sm-12';
         }
       }),
-      submitButton: new FormValidation.plugins.SubmitButton(),
-      // Submit the form when all fields are valid
-      // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
       autoFocus: new FormValidation.plugins.AutoFocus()
     }
-  }).on('core.form.valid', function () {
-    // adding or updating user when form successfully validate
-    $.ajax({
-      data: $('#addNewUserForm').serialize(),
-      url: `${baseUrl}user/employee/store`,
-      type: 'POST',
-      success: function (status) {
-        {{--  dt_user.draw();  --}}
-        offCanvasForm.offcanvas('hide');
+  });
 
-        // sweetalert
-        Swal.fire({
-          icon: 'success',
-          title: `Successfully ${status}!`,
-          text: `User ${status} Successfully.`,
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        });
-      },
-      error: function (err) {
-        offCanvasForm.offcanvas('hide');
-        Swal.fire({
-          title: 'Duplicate Entry!',
-          text: 'Your email should be unique.',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        });
+  // Manual Submit Handler
+  const submitBtn = document.getElementById('btn-submit-employee');
+  if(submitBtn){
+    submitBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      fv.validate().then(function(status) {
+        if (status === 'Valid') {
+          let formData = $('#addGlobalEmployeeForm').serialize();
+          $.ajax({
+            data: formData,
+            url: `{{ route('pms.employees.store') }}`,
+            type: 'POST',
+            success: function (status) {
+              $('#fullscreenModal').modal('hide');
+              Swal.fire({
+                title: 'Success!',
+                text: 'Employee details submitted successfully',
+                icon: 'success',
+                customClass: {
+                  confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+              }).then(function (result) {
+               
+                  window.location.reload();
+               
+              });
+            },
+            error: function (err) {
+              Swal.fire({
+                title: 'Error!',
+                text: err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Something went wrong.',
+                icon: 'error',
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+            }
+          });
+        }
+      });
+    });
+  }
+
+  // Edit Record
+  $(document).on('click', '.edit-record', function () {
+    var id = $(this).data('id');
+    var editUrl = baseUrl + 'pms/employees/edit/' + id;
+    var updateUrl = baseUrl + 'pms/employees/update-master/' + id;
+
+    // Fetch data
+    $.get(editUrl, function (data) {
+      if (data) {
+        // Populate modal
+        $('#wizard_name').val(data.name);
+        $('#wizard_email').val(data.email);
+        $('#wizard_mobile').val(data.mobile);
+        $('#wizard_age').val(data.age);
+        $('#wizard_dob').val(data.dob);
+        $('#wizard_joining_date').val(data.date_of_joining);
+        $('#wizard_address').val(data.address);
+        $('#wizard_designation').val(data.designation_id);
+
+        // Update form action
+        $('#addGlobalEmployeeForm').attr('action', updateUrl);
+        $('#modalFullTitle').text('Edit User');
+        $('#btn-submit-employee').text('Update');
+
+        // Show modal
+        var myModal = new bootstrap.Modal(document.getElementById('fullscreenModal'));
+        myModal.show();
       }
     });
   });
 
+  // Reset modal on close
+  $('#fullscreenModal').on('hidden.bs.modal', function () {
+      $('#addGlobalEmployeeForm')[0].reset();
+      $('#addGlobalEmployeeForm').attr('action', "{{ route('pms.employees.store') }}");
+      $('#modalFullTitle').text('Add New User');
+      $('#btn-submit-employee').text('Submit');
+  });
 
-})();
+});
 
 </script>
 @endsection
@@ -672,100 +652,25 @@ $(function () {
   <div class="card">
     <div class="card-body">
       <div class="divider">
-        <div class="divider-text text-primary">Employee Details of {{$project_details->project_name}} Project</div>
-        <input type="hidden" name="project_id" value={{$project_details->id}} />
+        <div class="divider-text text-primary">
+          @if(isset($project_details))
+            Employee Details of {{$project_details->project_name}} Project
+            <input type="hidden" name="project_id" value={{$project_details->id}} />
+          @else
+            Employee Management
+          @endif
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="row g-4 mb-4">
-  <div class="col-sm-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex align-items-start justify-content-between">
-          <div class="content-left">
-            <span>Session</span>
-            <div class="d-flex align-items-center my-1">
-              <h4 class="mb-0 me-2">{{$totalEmployee}}</h4>
-              <span class="text-success">(+29%)</span>
-            </div>
-            <span>Total Users</span>
-          </div>
-          <span class="badge bg-label-primary rounded p-2">
-            <i class="ti ti-user ti-sm"></i>
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex align-items-start justify-content-between">
-          <div class="content-left">
-            <span>Contract Employees</span>
-            <div class="d-flex align-items-center my-1">
-              <h4 class="mb-0 me-2">{{$contract}}</h4>
-              <span class="text-success">(+18%)</span>
-            </div>
-            <span>Last week analytics </span>
-          </div>
-          <span class="badge bg-label-danger rounded p-2">
-            <i class="ti ti-user-plus ti-sm"></i>
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex align-items-start justify-content-between">
-          <div class="content-left">
-            <span>Dailywage Employees</span>
-            <div class="d-flex align-items-center my-1">
-              <h4 class="mb-0 me-2">{{$dw}}</h4>
-              <span class="text-danger">(-14%)</span>
-            </div>
-            <span>Last week analytics</span>
-          </div>
-          <span class="badge bg-label-success rounded p-2">
-            <i class="ti ti-user-check ti-sm"></i>
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex align-items-start justify-content-between">
-          <div class="content-left">
-            <span>Consultants </span>
-            <div class="d-flex align-items-center my-1">
-              <h4 class="mb-0 me-2">{{$consultant}}</h4>
-              <span class="text-success">(+42%)</span>
-            </div>
-            <span>Last week analytics</span>
-          </div>
-          <span class="badge bg-label-warning rounded p-2">
-            <i class="ti ti-user-exclamation ti-sm"></i>
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Users List Table -->
 <div class="card">
-  <div class="card-header border-bottom">
-    <h5 class="card-title mb-3">Search Filter</h5>
-    <div class="d-flex justify-content-between align-items-center row pb-2 gap-3 gap-md-0">
-      <div class="col-md-4 user_role"></div>
-      <div class="col-md-4 user_plan"></div>
-      <div class="col-md-4 user_status"></div>
-    </div>
+  <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Employee Management</h5>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fullscreenModal">
+      <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i> Add Employee
+    </button>
   </div>
   <div class="card-datatable table-responsive">
 
@@ -774,12 +679,14 @@ $(function () {
       <thead>
         <tr>
           <th></th>
-          <th>User</th>
-          <th>User Type</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Age</th>
+          <th>Mobile</th>
+          <th>DOB</th>
+          <th>DOJ</th>
           <th>Designation</th>
-          <th>Gender</th>
-          <th>Status</th>
-          <th>Employee ID</th>
+          <th>Address</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -824,7 +731,7 @@ $(function () {
           <label class="form-label" for="usertype_role">User Role</label>
           <select id="usertype_role" name="usertype_role" class="form-select">
             @foreach ($user_types as $usertype)
-            <option value={{$usertype->id}}> {{$usertype->user_type}}</option>
+            <option value="{{$usertype->id}}"> {{$usertype->usertype_role}}</option>
             @endforeach
           </select>
         </div>
@@ -849,335 +756,52 @@ $(function () {
         <div class="modal-body">
           <!-- Vertical Icons Wizard -->
           <div class="col-12 mb-4">
-            <small class="text-light fw-semibold">Vertical Icons</small>
-            <div class="bs-stepper vertical wizard-vertical-icons-example mt-2">
-              <div class="bs-stepper-header">
-                <div class="step" data-target="#personal-info-vertical">
-                  <button type="button" class="step-trigger">
-                    <span class="bs-stepper-circle">
-                      <i class="ti ti-file-description"></i>
-                    </span>
-                    <span class="bs-stepper-label">
-                      <span class="bs-stepper-title">Personal Info</span>
-                      <span class="bs-stepper-subtitle">Add personal info</span>
-                    </span>
-                  </button>
-                </div>
-                <div class="line"></div>
-                <div class="step" data-target="#contact-details-vertical">
-                  <button type="button" class="step-trigger">
-                    <span class="bs-stepper-circle">
-                      <i class="ti ti-user"></i>
-                    </span>
-                    <span class="bs-stepper-label">
-                      <span class="bs-stepper-title">Contact Details</span>
-                      <span class="bs-stepper-subtitle">Add Contact Details</span>
-                    </span>
-                  </button>
-                </div>
-                <div class="line"></div>
-                <div class="step" data-target="#account-details-vertical">
-                  <button type="button" class="step-trigger">
-                    <span class="bs-stepper-circle">
-                      <i class="ti ti-user"></i>
-                    </span>
-                    <span class="bs-stepper-label">
-                      <span class="bs-stepper-title">Employment Details</span>
-                      <span class="bs-stepper-subtitle">Add Employment Details</span>
-                    </span>
-                  </button>
-                </div>
-                <div class="line"></div>
-                <div class="step" data-target="#social-links-vertical">
-                  <button type="button" class="step-trigger">
-                    <span class="bs-stepper-circle"><i class="ti ti-brand-instagram"></i>
-                    </span>
-                    <span class="bs-stepper-label">
-                      <span class="bs-stepper-title">Account Details</span>
-                      <span class="bs-stepper-subtitle">Add Account Details</span>
-                    </span>
-                  </button>
-                </div>
-                <div class="line"></div>
-                <div class="step" data-target="#documents">
-                  <button type="button" class="step-trigger">
-                    <span class="bs-stepper-circle"><i class="ti ti-brand-instagram"></i>
-                    </span>
-                    <span class="bs-stepper-label">
-                      <span class="bs-stepper-title">Documents</span>
-                      <span class="bs-stepper-subtitle">Add Documents</span>
-                    </span>
-                  </button>
-                </div>
-              </div>
-              <div class="bs-stepper-content">
-                <form onSubmit="return false">
-
-                  <!-- Personal Info -->
-                  <div id="personal-info-vertical" class="content">
-                    <div class="content-header mb-3">
-                      <h6 class="mb-0">Personal Info</h6>
-                      <small>Enter Your Personal Info.</small>
-                    </div>
-                    <div class="row g-3">
-                      <div class="col-sm-6">
-                        <label class="form-label" for="country1">Prefix</label>
-                        <select class="select2" id="prefix">
-                          <option label=" "></option>
-                          <option>UK</option>
-                          <option>USA</option>
-                          <option>Spain</option>
-                          <option>France</option>
-                          <option>Italy</option>
-                          <option>Australia</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="first-name1">First Name</label>
-                        <input type="text" id="first-name1" class="form-control" placeholder="John" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="last-name1">Last Name</label>
-                        <input type="text" id="last-name1" class="form-control" placeholder="Doe" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="country1">Gender</label>
-                        <select class="select2" id="gender">
-                          <option label=" "></option>
-                          <option>UK</option>
-                          <option>USA</option>
-                          <option>Spain</option>
-                          <option>France</option>
-                          <option>Italy</option>
-                          <option>Australia</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="first-name1">DOB</label>
-                        <input type="text" id="first-name1" class="form-control" placeholder="John" />
-                      </div>
-
-                      <div class="col-sm-6">
-                        <label class="form-label" for="country1">Country</label>
-                        <select class="select2" id="country1">
-                          <option label=" "></option>
-                          <option>UK</option>
-                          <option>USA</option>
-                          <option>Spain</option>
-                          <option>France</option>
-                          <option>Italy</option>
-                          <option>Australia</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="country1">State</label>
-                        <select class="select2" id="state">
-                          <option label=" "></option>
-                          <option>UK</option>
-                          <option>USA</option>
-                          <option>Spain</option>
-                          <option>France</option>
-                          <option>Italy</option>
-                          <option>Australia</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="country1">District</label>
-                        <select class="select2" id="District">
-                          <option label=" "></option>
-                          <option>UK</option>
-                          <option>USA</option>
-                          <option>Spain</option>
-                          <option>France</option>
-                          <option>Italy</option>
-                          <option>Australia</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="first-name1">Address</label>
-                        <input type="text" id="first-name1" class="form-control" placeholder="John" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="first-name1">Pincode</label>
-                        <input type="text" id="first-name1" class="form-control" placeholder="John" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="language1">Language</label>
-                        <select class="selectpicker w-auto" id="language1" data-style="btn-default" data-icon-base="ti" data-tick-icon="ti-check text-white" multiple>
-                          <option>English</option>
-                          <option>French</option>
-                          <option>Spanish</option>
-                        </select>
-                      </div>
-                      <div class="col-12 d-flex justify-content-between">
-                        {{--  <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
-                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
-                        </button>  --}}
-                        <button class="btn btn-primary btn-next"> <span class="align-middle d-sm-inline-block d-none me-sm-1">Next</span> <i class="ti ti-arrow-right"></i></button>
-                      </div>
-                    </div>
+             <form id="addGlobalEmployeeForm" method="POST" action="{{ route('pms.employees.store') }}" onSubmit="return false">
+                @csrf
+                <div class="row g-3">
+                  <div class="col-sm-6">
+                    <label class="form-label" for="name">Full Name</label>
+                    <input type="text" id="wizard_name" name="name" class="form-control" placeholder="John" required />
                   </div>
-                  <div id="contact-details-vertical" class="content">
-                    <div class="content-header mb-3">
-                      <h6 class="mb-0">Contact Details</h6>
-                      <small>Enter Your Contact Details.</small>
-                    </div>
-                    <div class="row g-3">
-                      <div class="col-sm-6">
-                        <label class="form-label" for="username1">Primary Mobile</label>
-                        <input type="text" id="username1" class="form-control" placeholder="john.doe" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="username1">Secondary Mobile</label>
-                        <input type="text" id="username1" class="form-control" placeholder="john.doe" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="email1">Primary Email</label>
-                        <input type="text" id="email1" class="form-control" placeholder="john.doe" aria-label="john.doe" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="email1">Secondary Email</label>
-                        <input type="text" id="email1" class="form-control" placeholder="john.doe" aria-label="john.doe" />
-                      </div>
-
-                      <div class="col-12 d-flex justify-content-between">
-                        <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
-                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
-                        </button>
-                        <button class="btn btn-primary btn-next"> <span class="align-middle d-sm-inline-block d-none me-sm-1">Next</span> <i class="ti ti-arrow-right"></i></button>
-                      </div>
-                    </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" id="wizard_email" name="email" class="form-control" placeholder="john@example.com" required />
                   </div>
-                  <!-- Account Details -->
-                  <div id="account-details-vertical" class="content">
-                    <div class="content-header mb-3">
-                      <h6 class="mb-0">Employment Details</h6>
-                      <small>Enter Your Employment Details.</small>
-                    </div>
-                    <div class="row g-3">
-                      <div class="col-sm-6">
-                        <label class="form-label" for="username1">Employee ID</label>
-                        <input type="text" id="username1" class="form-control" placeholder="john.doe" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="email1">Date of join</label>
-                        <input type="text" id="email1" class="form-control" placeholder="john.doe" aria-label="john.doe" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="language1">Designation</label>
-                        <select class="selectpicker w-auto" id="language1" data-style="btn-default" data-icon-base="ti" data-tick-icon="ti-check text-white" multiple>
-                          <option>English</option>
-                          <option>French</option>
-                          <option>Spanish</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="language1">Highest Educational Qualification</label>
-                        <select class="selectpicker w-auto" id="language1" data-style="btn-default" data-icon-base="ti" data-tick-icon="ti-check text-white" multiple>
-                          <option>English</option>
-                          <option>French</option>
-                          <option>Spanish</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="language1">Leave Type</label>
-                        <select class="selectpicker w-auto" id="language1" data-style="btn-default" data-icon-base="ti" data-tick-icon="ti-check text-white" multiple>
-                          <option>English</option>
-                          <option>French</option>
-                          <option>Spanish</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="email1">Exit Date</label>
-                        <input type="text" id="email1" class="form-control" placeholder="john.doe" aria-label="john.doe" />
-                      </div>
-                      <div class="col-12 d-flex justify-content-between">
-                        <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
-                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
-                        </button>
-                        <button class="btn btn-primary btn-next"> <span class="align-middle d-sm-inline-block d-none me-sm-1">Next</span> <i class="ti ti-arrow-right"></i></button>
-                      </div>
-                    </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="age">Age</label>
+                    <input type="number" id="wizard_age" name="age" class="form-control" placeholder="25" required />
                   </div>
-                  <!-- Social Links -->
-                  <div id="social-links-vertical" class="content">
-                    <div class="content-header mb-3">
-                      <h6 class="mb-0">Bank Account Details</h6>
-                      <small>Enter Your Bank Account Details.</small>
-                    </div>
-                    <div class="row g-3">
-                      <div class="col-sm-6 form-password-toggle">
-                        <label class="form-label" for="password">Account Number</label>
-                        <div class="input-group input-group-merge">
-                          <input type="password" id="password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password2" />
-                          <span class="input-group-text cursor-pointer" id="password2"><i class="ti ti-eye-off"></i></span>
-                        </div>
-                      </div>
-                      <div class="col-sm-6 form-password-toggle">
-                        <label class="form-label" for="confirm-password">Confirm Account Number</label>
-                        <div class="input-group input-group-merge">
-                          <input type="password" id="confirm-password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="confirm-password2" />
-                          <span class="input-group-text cursor-pointer" id="confirm-password2"><i class="ti ti-eye-off"></i></span>
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="facebook1">IFSC</label>
-                        <input type="text" id="facebook1" class="form-control" placeholder="https://facebook.com/abc" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="google1">Bank Name</label>
-                        <input type="text" id="google1" class="form-control" placeholder="https://plus.google.com/abc" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="linkedin1">Branch</label>
-                        <input type="text" id="linkedin1" class="form-control" placeholder="https://linkedin.com/abc" />
-                      </div>
-                      <div class="col-12 d-flex justify-content-between">
-                        <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
-                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
-                        </button>
-                        <button class="btn btn-primary btn-next"> <span class="align-middle d-sm-inline-block d-none me-sm-1">Next</span> <i class="ti ti-arrow-right"></i></button>
-                      </div>
-                    </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="mobile">Mobile</label>
+                    <input type="text" id="wizard_mobile" name="mobile" class="form-control phone-mask" placeholder="1234567890" required />
                   </div>
-                  <div id="documents" class="content">
-                    <div class="content-header mb-3">
-                      <h6 class="mb-0">Social Links</h6>
-                      <small>Enter Your Social Links.</small>
-                    </div>
-                    <div class="row g-3">
-                      <div class="col-sm-6">
-                        <label class="form-label" for="twitter1">Document Name</label>
-                        <input type="text" id="twitter1" class="form-control" placeholder="https://twitter.com/abc" />
-                      </div>
-                      <div class="col-sm-6">
-                        <label class="form-label" for="facebook1">Document Number</label>
-                        <input type="text" id="facebook1" class="form-control" placeholder="https://facebook.com/abc" />
-                      </div>
-                      <div class="card-body">
-                        <form action="/upload" class="dropzone needsclick" id="dropzone-basic">
-                          <div class="dz-message needsclick">
-                            Drop files here or click to upload
-                            <span class="note needsclick">(This is just a demo dropzone. Selected files are <strong>not</strong> actually uploaded.)</span>
-                          </div>
-                          <div class="fallback">
-                            <input name="file" type="file" />
-                          </div>
-                        </form>
-                      </div>
-                      <div class="col-12 d-flex justify-content-between">
-                        <button class="btn btn-label-secondary btn-prev"> <i class="ti ti-arrow-left me-sm-1"></i>
-                          <span class="align-middle d-sm-inline-block d-none">Previous</span>
-                        </button>
-                        <button class="btn btn-success btn-submit">Submit</button>
-                      </div>
-                    </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="dob">Date of Birth</label>
+                    <input type="date" id="wizard_dob" name="dob" class="form-control" required />
                   </div>
-                </form>
-              </div>
-            </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="joining_date">Date of Joining</label>
+                    <input type="date" id="wizard_joining_date" name="joining_date" class="form-control" required />
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="designation">Designation</label>
+                    <select id="wizard_designation" name="designation" class="form-select" required>
+                      @foreach ($designations as $designation)
+                        <option value="{{$designation->id}}">{{$designation->designation}}</option>
+                      @endforeach
+                    </select>
+                  </div>
+                  <div class="col-sm-12">
+                    <label class="form-label" for="address">Address</label>
+                    <textarea id="wizard_address" name="address" class="form-control" rows="2" placeholder="123 Main St..." required></textarea>
+                  </div>
+                  <div class="col-12 text-center mt-4">
+                    <button type="submit" id="btn-submit-employee" class="btn btn-primary me-sm-3 me-1 btn-submit">Submit</button>
+                    <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                  </div>
+                </div>
+            </form>
           </div>
-          <!-- /Vertical Icons Wizard -->
 
         </div>
         <div class="modal-footer">

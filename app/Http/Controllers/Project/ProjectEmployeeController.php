@@ -6,13 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\ProjectEmployee;
-use App\Models\ProjectDesignation;
+use App\Models\Designation;
 use App\Models\Project;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Service;
+use App\Models\Salary;
+use App\Models\Deduction;
 
 class ProjectEmployeeController extends Controller
 {
@@ -31,9 +34,9 @@ class ProjectEmployeeController extends Controller
     $unique = $employees->unique(['email']);
 
 
-    $designations = ProjectDesignation::where('status',1)->get();
-    $roles = Role::where('name','!=',"Admin")->get();
-    $user_types = DB::table("project_user_types")->where('status',1)->get();
+    $designations = Designation::where('status', 1)->get();
+    $roles = Role::where('name', '!=', "Admin")->get();
+    $user_types = DB::table("usertype_role")->where('status', 1)->get();
     $project = Project::find($id);
 
     $request->session()->put('project', $id);
@@ -50,20 +53,53 @@ class ProjectEmployeeController extends Controller
     ],['pageConfigs'=> $pageConfigs]);
   }
 
+  public function globalIndex(Request $request)
+  {
+    $pageConfigs = ['myLayout' => 'horizontal'];
+    $employees = ProjectEmployee::all();
+    $employeeCount = $employees->count();
+    
+    $designations = Designation::where('status', 1)->get();
+    $roles = Role::where('name', '!=', "Admin")->get();
+    $user_types = DB::table("usertype_role")->where('status', 1)->get();
+
+    return view('content.projects.project-employee-management', [
+      'totalEmployee' => $employeeCount,
+      'contract' => 0, // Placeholder or calculate if needed
+      'dw' => 0,
+      'consultant'=> 0,
+      'designations' => $designations,
+      'user_types' => $user_types,
+      'project_details' => null,
+      'is_global' => true
+    ],['pageConfigs'=> $pageConfigs]);
+  }
+
+  public function globalList(Request $request)
+  {
+    $list = ProjectEmployee::leftJoin("users", "users.id", "=", "project_employee.user_id")
+    ->leftJoin("usertype_role","usertype_role.id","=","users.user_role")
+    ->leftJoin("designations","designations.id","=","project_employee.designation_id")
+    ->select('project_employee.id','project_employee.name','project_employee.last_name',
+      'project_employee.mobile', 'project_employee.email', 'project_employee.status', 
+      'project_employee.employee_code', 'project_employee.age', 'project_employee.dob', 'project_employee.date_of_joining', 'project_employee.address',
+      'usertype_role.usertype_role as user_type','designations.designation')->get();
+
+    return response()->json(['data'=> $list]);
+  }
+
   public function employeeList(Request $request)
   {
 
     // DB::connection()->enableQueryLog();
     $id = $request->session()->get('project');
-    $list = ProjectEmployee::join("project_user_types","project_user_types.id","=","project_employees.user_type")
-    ->leftjoin("project_designations","project_designations.id","=","project_employees.designation_id")
-    ->leftjoin("gender","gender.id","=","project_employees.gender_id")->select('project_employees.id','project_employees.prefix','project_employees.name','project_employees.last_name',
-  'project_employees.profile_pic','project_employees.mobile_pri','project_employees.email_pri','project_employees.status','project_employees.empId',
-'project_user_types.user_type','gender.gender_name','project_designations.designation')->where('project_id',$id)->get();
-      //  $queries = DB::getQueryLog();
-      //   $last_query = end($queries);
-      //   dd($queries);
-      $project = Project::find($id);
+    $list = ProjectEmployee::join("usertype_role","usertype_role.id","=","project_employee.user_type")
+    ->leftjoin("designations","designations.id","=","project_employee.designation_id")
+    ->leftjoin("gender","gender.id","=","project_employee.gender_id")
+    ->select('project_employee.id','project_employee.prefix','project_employee.name','project_employee.last_name',
+      'project_employee.profile_pic','project_employee.mobile_pri','project_employee.email_pri','project_employee.status','project_employee.empId',
+      'usertype_role.usertype_role as user_type','gender.gender_name','designations.designation')
+    ->where('project_id',$id)->get();
 
     return response()->json(['data'=> $list]);
 
@@ -93,6 +129,58 @@ class ProjectEmployeeController extends Controller
 
 
 
+
+  public function globalDetails($id)
+  {
+    $pageConfigs = ['myLayout' => 'horizontal'];
+    $employee = ProjectEmployee::where('id', $id)
+      ->with(['service', 'salary', 'deduction', 'designation'])
+      ->firstOrFail();
+
+    $designations = Designation::where('status', 1)->get();
+    $user_types = DB::table("usertype_role")->where('status', 1)->get();
+
+    return view('content.projects.employee-details', compact('employee', 'pageConfigs', 'designations', 'user_types'));
+  }
+
+  public function updateMaster(Request $request, $id)
+  {
+    $employee = ProjectEmployee::findOrFail($id);
+    $data = $request->except(['joining_date', 'designation']); // Exclude mismatched keys
+    
+    // Map mismatched keys
+    if ($request->has('joining_date')) {
+        $data['date_of_joining'] = $request->joining_date;
+    }
+    if ($request->has('designation')) {
+        $data['designation_id'] = $request->designation;
+    }
+
+    $employee->update($data);
+    return response()->json(['success' => true, 'message' => 'Master info updated successfully']);
+  }
+
+  public function updateService(Request $request, $p_id)
+  {
+    $service = Service::updateOrCreate(['p_id' => $p_id], $request->all());
+    return response()->json(['success' => true, 'message' => 'Service info updated successfully']);
+  }
+
+  public function updateSalary(Request $request, $p_id)
+  {
+    $data = $request->all();
+    $data['gross_salary'] = ($request->basic_pay ?? 0) + ($request->hra ?? 0) + ($request->other_allowance ?? 0);
+    $salary = Salary::updateOrCreate(['p_id' => $p_id], $data);
+    return response()->json(['success' => true, 'message' => 'Salary info updated successfully']);
+  }
+
+  public function updateDeduction(Request $request, $p_id)
+  {
+    $data = $request->all();
+    $data['total_deductions'] = ($request->pf ?? 0) + ($request->esi ?? 0) + ($request->professional_tax ?? 0);
+    $deduction = Deduction::updateOrCreate(['p_id' => $p_id], $data);
+    return response()->json(['success' => true, 'message' => 'Deduction info updated successfully']);
+  }
 
   public function employeeAccountView($id){
     $where = ['id' => $id];
@@ -125,40 +213,76 @@ class ProjectEmployeeController extends Controller
    * @param  \Illuminate\Http\Request  $request
    * @return \Illuminate\Http\Response
    */
-  public function store(Request $request)
+  public function globalStore(Request $request)
   {
 
         $this->validate($request, [
           'name' => 'required',
           'email' => 'required|email|unique:users,email',
-          'mobile' => 'required|numeric|unique:employees,mobile',
-          'empId' => 'required|numeric|unique:employees,empId',
-          // 'password' => 'required|same:confirm-password',
-          'roles' => 'required',
-          'usertype_role' => 'required',
+          'mobile' => 'required|numeric',
           'designation' => 'required',
+          'age' => 'required',
+          'dob' => 'required',
+          'joining_date' => 'required',
+          'address' => 'required',
       ]);
 
         $input = $request->all();
-        $password = Hash::make("Abcd@1234");
+        // Auto-generate defaults
+        $username = $request->email;
+        $password = Hash::make("12345678");
+        $usertype_role = 2; // Employee
+        $p_id = "EMP-" . time() . rand(100, 999);
+        $empId = $p_id; // Same code for now
 
 
         $user = User::create(
           ['name'=>$request->name,
           'email'=>$request->email,
-          'username'=>$request->email,
+          'username'=>$username,
           'password'=>$password,
-          'user_role'=>$request->usertype_role,
+          'user_role'=>$usertype_role,
           ]);
-        $user->assignRole($request->input('roles'));
+        
+        // Default role assignment if needed
+        // $user->assignRole($usertype_role);
 
         $employee = ProjectEmployee::create(
           ['user_id'=>$user->id,
           'name'=>$request->name,
+          'last_name' => '',
           'mobile'=>$request->mobile,
           'email'=>$request->email,
-          'designation'=>$request->designation
-          ,
+          'designation_id'=>$request->designation,
+          'age' => $request->age,
+          'dob' => $request->dob,
+          'date_of_joining' => $request->joining_date,
+          'address' => $request->address,
+          'p_id' => $p_id,
+          'employee_code' => $empId,
+          ]);
+
+          // Store related details
+          Service::create([
+              'p_id' => $p_id,
+              'employment_type' => 'Regular', // Default
+              'start_date' => $request->joining_date,
+          ]);
+
+          Salary::create([
+              'p_id' => $p_id,
+              'basic_pay' => 0,
+              'hra' => 0,
+              'other_allowance' => 0,
+              'gross_salary' => 0,
+          ]);
+
+          Deduction::create([
+              'p_id' => $p_id,
+              'pf' => 0,
+              'esi' => 0,
+              'professional_tax' => 0,
+              'total_deductions' => 0,
           ]);
 
 
@@ -222,11 +346,11 @@ class ProjectEmployeeController extends Controller
    */
   public function edit($id)
   {
-    $where = ['id' => $id];
+    $employee = ProjectEmployee::where('id', $id)
+      ->with(['service', 'salary', 'deduction', 'designation'])
+      ->first();
 
-    $users = User::where($where)->first();
-
-    return response()->json($users);
+    return response()->json($employee);
   }
 
   /**

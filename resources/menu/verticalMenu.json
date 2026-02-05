@@ -54,22 +54,22 @@
       ]
     },
     {
-      "menuHeader": "Employee"
+      "menuHeader": "Employee Management"
     },
     {
-      "name": "Users",
-      "icon": "menu-icon tf-icons ti ti-users",
-      "slug": "user-employee",
+      "name": "Project Management",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "slug": "pms",
+      "permission": 1,
       "submenu": [
         {
-          "url": "user/employee",
+          "url": "pms/employees",
           "name": "Employee Management",
-          "slug": "user-employee"
+          "icon": "menu-icon tf-icons ti ti-users",
+          "slug": "pms-employee-management",
+          "permission": 1
         }
       ]
-    },
-    {
-      "menuHeader": "Projects Management"
     },
     {
       "name": "Clients",
@@ -80,18 +80,6 @@
           "url": "client/list",
           "name": "Client List",
           "slug": "client-list"
-        }
-      ]
-    },
-    {
-      "name": "Projects",
-      "icon": "menu-icon tf-icons ti ti-users",
-      "slug": "client-project",
-      "submenu": [
-        {
-          "url": "projects",
-          "name": "Project List",
-          "slug": "client-projects"
         }
       ]
     },

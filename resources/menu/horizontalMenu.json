@@ -206,9 +206,17 @@
     {
       "name": "Project Management",
       "icon": "menu-icon tf-icons ti ti-smart-home",
-      "slug": "pms-dashboard",
-      "url": "/pms/dashboard",
-      "permission": 1
+      "slug": "pms",
+      "permission": 1,
+      "submenu": [
+        {
+          "url": "pms/employees",
+          "name": "Employee Management",
+          "icon": "menu-icon tf-icons ti ti-users",
+          "slug": "pms-employee-management",
+          "permission": 1
+        }
+      ]
     },
     {
       "name": "Assets",
