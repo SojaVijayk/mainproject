@@ -15,8 +15,12 @@ class Service extends Model
         'p_id',
         'department',
         'employment_type',
+        'role',
+        'pay_type',
         'start_date',
         'end_date',
+        'status',
+        'consolidated_pay',
     ];
 
     public function employee()

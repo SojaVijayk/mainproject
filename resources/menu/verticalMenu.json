@@ -63,7 +63,7 @@
       "permission": 1,
       "submenu": [
         {
-          "url": "pms/employees",
+          "url": "pms/employees/projects",
           "name": "Employee Management",
           "icon": "menu-icon tf-icons ti ti-users",
           "slug": "pms-employee-management",

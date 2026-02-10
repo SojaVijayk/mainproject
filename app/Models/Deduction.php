@@ -14,8 +14,15 @@ class Deduction extends Model
     protected $fillable = [
         'p_id',
         'pf',
+        'epf',
         'esi',
+        'lic',
         'professional_tax',
+        'tds',
+        'loan_deduction',
+        'gdf',
+        'gpf',
+        'others',
         'total_deductions',
     ];
 

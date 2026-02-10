@@ -5,11 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Salary extends Model
+class Payroll extends Model
 {
-    use HasFactory;
-
-    protected $table = 'salary';
+    protected $table = 'employee_payroll';
 
     protected $fillable = [
         'p_id',
@@ -30,7 +28,20 @@ class Salary extends Model
         'total_working_days',
         'days_worked',
         'lop_days',
+        'pf',
+        'epf',
+        'esi',
+        'lic',
+        'professional_tax',
+        'tds',
+        'loan_deduction',
+        'gdf',
+        'gpf',
+        'others',
         'gross_salary',
+        'total_deductions',
+        'net_salary',
+        'is_frozen',
     ];
 
     public function employee()

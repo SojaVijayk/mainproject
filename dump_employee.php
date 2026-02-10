@@ -6,8 +6,5 @@ $kernel->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 
-$data = DB::table('usertype_role')->get();
-echo "Data in usertype_role:\n";
-foreach ($data as $row) {
-    print_r($row);
-}
+$emp = DB::table('project_employee')->first();
+print_r($emp);

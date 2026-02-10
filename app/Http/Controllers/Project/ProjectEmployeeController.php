@@ -14,25 +14,37 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Service;
-use App\Models\Salary;
-use App\Models\Deduction;
+use App\Models\Payroll;
 
 class ProjectEmployeeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display project selection.
      */
-    public function index($id,Request $request)
+    public function projectList()
+    {
+        $pageConfigs = ['myLayout' => 'horizontal'];
+        $projects = Project::all();
+        return view('content.projects.project-selection', compact('projects', 'pageConfigs'));
+    }
+
+    /**
+     * Display a listing of the resource for a specific project.
+     */
+  public function index($id, Request $request)
   {
     $request->session()->forget('project');
     $pageConfigs = ['myLayout' => 'horizontal'];
-    $employees = ProjectEmployee::where('project_id',$id)->get();
+    
+    // Filter by project_id
+    $employees = ProjectEmployee::where('project_id', $id)->get();
     $employeeCount = $employees->count();
-    $contract = ProjectEmployee::where('user_type',1)->get()->count();
-    $consultant = ProjectEmployee::where('user_type',3)->get()->count();
-    $dw = ProjectEmployee::where('user_type',2)->get()->count();
-    $unique = $employees->unique(['email']);
-
+    
+    // Fix: These columns don't exist in project_employee, using join or setting to 0 for now
+    // as per user's note that senior will handle properly later.
+    $contract = 0;
+    $consultant = 0;
+    $dw = 0;
 
     $designations = Designation::where('status', 1)->get();
     $roles = Role::where('name', '!=', "Admin")->get();
@@ -40,17 +52,17 @@ class ProjectEmployeeController extends Controller
     $project = Project::find($id);
 
     $request->session()->put('project', $id);
+    
     return view('content.projects.project-employee-management', [
       'totalEmployee' => $employeeCount,
       'contract' => $contract,
       'dw' => $dw,
-      'contract' => $contract,
-      'consultant'=>$consultant,
+      'consultant' => $consultant,
       'designations' => $designations,
       'user_types' => $user_types,
-      'project_details'=>$project
-
-    ],['pageConfigs'=> $pageConfigs]);
+      'project_details' => $project,
+      'is_global' => false
+    ], ['pageConfigs' => $pageConfigs]);
   }
 
   public function globalIndex(Request $request)
@@ -77,13 +89,21 @@ class ProjectEmployeeController extends Controller
 
   public function globalList(Request $request)
   {
-    $list = ProjectEmployee::leftJoin("users", "users.id", "=", "project_employee.user_id")
+    $query = ProjectEmployee::leftJoin("users", "users.id", "=", "project_employee.user_id")
     ->leftJoin("usertype_role","usertype_role.id","=","users.user_role")
     ->leftJoin("designations","designations.id","=","project_employee.designation_id")
     ->select('project_employee.id','project_employee.name','project_employee.last_name',
       'project_employee.mobile', 'project_employee.email', 'project_employee.status', 
       'project_employee.employee_code', 'project_employee.age', 'project_employee.dob', 'project_employee.date_of_joining', 'project_employee.address',
-      'usertype_role.usertype_role as user_type','designations.designation')->get();
+      'usertype_role.usertype_role as user_type','designations.designation');
+
+    if ($request->has('project_id')) {
+        $query->where('project_employee.project_id', $request->project_id);
+    } elseif ($request->session()->has('project') && !$request->has('is_global')) {
+        $query->where('project_employee.project_id', $request->session()->get('project'));
+    }
+
+    $list = $query->get();
 
     return response()->json(['data'=> $list]);
   }
@@ -134,7 +154,7 @@ class ProjectEmployeeController extends Controller
   {
     $pageConfigs = ['myLayout' => 'horizontal'];
     $employee = ProjectEmployee::where('id', $id)
-      ->with(['service', 'salary', 'deduction', 'designation'])
+    ->with(['services', 'payroll', 'designation', 'project'])
       ->firstOrFail();
 
     $designations = Designation::where('status', 1)->get();
@@ -161,25 +181,87 @@ class ProjectEmployeeController extends Controller
   }
 
   public function updateService(Request $request, $p_id)
-  {
-    $service = Service::updateOrCreate(['p_id' => $p_id], $request->all());
+{
+    // Explicit Validation
+    $request->validate([
+        'department' => 'required',
+        'role' => 'required',
+        'employment_type' => 'required',
+        'pay_type' => 'required',
+        'consolidated_pay' => 'required|numeric',
+        'start_date' => 'required|date',
+    ]);
+
+    if ($request->has('new_record') && $request->new_record == '1') {
+        // Deactivate current active records
+        Service::where('p_id', $p_id)->where('status', 1)->update([
+            'status' => 0,
+            'end_date' => $request->start_date ? date('Y-m-d', strtotime($request->start_date . ' -1 day')) : date('Y-m-d')
+        ]);
+        
+        // Create new record with p_id and status=1
+        $data = $request->all();
+        $data['p_id'] = $p_id;
+        $data['status'] = 1;
+        $service = Service::create($data);
+    } else {
+        // Update current active record
+        $service = Service::updateOrCreate(
+            ['p_id' => $p_id, 'status' => 1],
+            $request->all()
+        );
+    }
+    
+    // Sync status with ProjectEmployee
+    if ($request->has('status')) {
+        $employee = ProjectEmployee::where('p_id', $p_id)->first();
+        if ($employee) {
+            $employee->status = $request->status;
+            $employee->save();
+        }
+    }
+    
     return response()->json(['success' => true, 'message' => 'Service info updated successfully']);
-  }
+}
 
-  public function updateSalary(Request $request, $p_id)
+  public function updatePayroll(Request $request, $p_id)
   {
     $data = $request->all();
-    $data['gross_salary'] = ($request->basic_pay ?? 0) + ($request->hra ?? 0) + ($request->other_allowance ?? 0);
-    $salary = Salary::updateOrCreate(['p_id' => $p_id], $data);
-    return response()->json(['success' => true, 'message' => 'Salary info updated successfully']);
-  }
-
-  public function updateDeduction(Request $request, $p_id)
-  {
-    $data = $request->all();
-    $data['total_deductions'] = ($request->pf ?? 0) + ($request->esi ?? 0) + ($request->professional_tax ?? 0);
-    $deduction = Deduction::updateOrCreate(['p_id' => $p_id], $data);
-    return response()->json(['success' => true, 'message' => 'Deduction info updated successfully']);
+    
+    // Calculate Totals
+    $gross = ($request->basic_pay ?? 0) + 
+             ($request->da ?? 0) + 
+             ($request->hra ?? 0) + 
+             ($request->conveyance_allowance ?? 0) + 
+             ($request->medical_allowance ?? 0) + 
+             ($request->special_allowance ?? 0) + 
+             ($request->other_allowance ?? 0) + 
+             ($request->bonus ?? 0) + 
+             ($request->overtime_pay ?? 0) + 
+             ($request->attendance_bonus ?? 0);
+             
+    $deductions = ($request->pf ?? 0) + 
+                  ($request->epf ?? 0) + 
+                  ($request->esi ?? 0) + 
+                  ($request->lic ?? 0) + 
+                  ($request->professional_tax ?? 0) + 
+                  ($request->tds ?? 0) + 
+                  ($request->loan_deduction ?? 0) + 
+                  ($request->gdf ?? 0) + 
+                  ($request->gpf ?? 0) + 
+                  ($request->others ?? 0);
+                  
+    $data['gross_salary'] = $gross;
+    $data['total_deductions'] = $deductions;
+    $data['net_salary'] = $gross - $deductions;
+    
+    // Use updateOrCreate with p_id, paymonth, and year as keys for monthly uniqueness
+    $payroll = Payroll::updateOrCreate(
+        ['p_id' => $p_id, 'paymonth' => $request->paymonth, 'year' => $request->year],
+        $data
+    );
+    
+    return response()->json(['success' => true, 'message' => 'Payroll info updated successfully']);
   }
 
   public function employeeAccountView($id){
@@ -263,27 +345,36 @@ class ProjectEmployeeController extends Controller
           ]);
 
           // Store related details
-          Service::create([
-              'p_id' => $p_id,
-              'employment_type' => 'Regular', // Default
-              'start_date' => $request->joining_date,
-          ]);
+        Service::create([
+            'p_id' => $p_id,
+            'department' => $request->department,
+            'employment_type' => $request->employment_type, // Default
+            'role' => $request->role,
+            'pay_type' => $request->pay_type,
+            'consolidated_pay' => $request->consolidated_pay,
+            'start_date' => $request->joining_date,
+        ]);
 
-          Salary::create([
-              'p_id' => $p_id,
-              'basic_pay' => 0,
-              'hra' => 0,
-              'other_allowance' => 0,
-              'gross_salary' => 0,
-          ]);
+        // Initialize standard payroll record for current month
+        Payroll::create([
+            'p_id' => $p_id,
+            'paymonth' => date('F'), // e.g., 'February'
+            'year' => date('Y'),      // e.g., '2026'
+            'basic_salary' => 0,
+            'hra' => 0,
+            'other_allowance' => 0,
+            'gross_salary' => 0,
+            'pf' => 0,
+            'esi' => 0,
+            'professional_tax' => 0,
+            'total_deductions' => 0,
+            'net_salary' => 0,
+        ]);
 
-          Deduction::create([
-              'p_id' => $p_id,
-              'pf' => 0,
-              'esi' => 0,
-              'professional_tax' => 0,
-              'total_deductions' => 0,
-          ]);
+          if ($request->has('project_id')) {
+              $employee->project_id = $request->project_id;
+              $employee->save();
+          }
 
 
           if($user && $employee ){

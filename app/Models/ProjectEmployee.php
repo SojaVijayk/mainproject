@@ -30,6 +30,7 @@ class ProjectEmployee extends Model
         'salary_id',
         'deduction_id',
         'status',
+        'project_id',
     ];
 
     public function user()
@@ -39,7 +40,12 @@ class ProjectEmployee extends Model
 
     public function service()
     {
-        return $this->hasOne(Service::class, 'p_id', 'p_id');
+        return $this->hasOne(Service::class, 'p_id', 'p_id')->where('status', 1);
+    }
+
+    public function services()
+    {
+        return $this->hasMany(Service::class, 'p_id', 'p_id')->orderBy('start_date', 'desc');
     }
 
     public function salary()
@@ -55,5 +61,15 @@ class ProjectEmployee extends Model
     public function designation()
     {
         return $this->belongsTo(Designation::class, 'designation_id');
+    }
+
+    public function payroll()
+    {
+        return $this->hasMany(Payroll::class, 'p_id', 'p_id');
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }

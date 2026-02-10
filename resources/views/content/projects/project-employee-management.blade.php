@@ -95,7 +95,12 @@ $(function () {
    var dt_user = dt_user_table.DataTable({
 
       ajax: {
-        url: "{{ route('pms.employees.list') }}"
+        url: "{{ route('pms.employees.list') }}",
+        data: function(d) {
+          @if(isset($project_details))
+            d.project_id = "{{ $project_details->id }}";
+          @endif
+        }
        },
       columns: [
         // columns according to JSON
@@ -642,6 +647,28 @@ document.addEventListener('DOMContentLoaded', function () {
       $('#btn-submit-employee').text('Submit');
   });
 
+  // Pay Type Label Sync
+  function updateWizardPayLabel(payType) {
+    var label = payType ? payType : 'Consolidated Pay';
+    $('#wizard_pay_label').text(label);
+    $('#wizard_consolidated_pay').attr('placeholder', label);
+  }
+
+  $(document).on('change', '#wizard_pay_type', function() {
+    updateWizardPayLabel($(this).val());
+  });
+
+  $('#fullscreenModal').on('shown.bs.modal', function () {
+    updateWizardPayLabel($('#wizard_pay_type').val());
+  });
+
+  // Auto-open modal if ?add=1 is present
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('add')) {
+    var myModal = new bootstrap.Modal(document.getElementById('fullscreenModal'));
+    myModal.show();
+  }
+
 });
 
 </script>
@@ -654,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <div class="divider">
         <div class="divider-text text-primary">
           @if(isset($project_details))
-            Employee Details of {{$project_details->project_name}} Project
+            Employee Details of {{$project_details->name}} Project
             <input type="hidden" name="project_id" value={{$project_details->id}} />
           @else
             Employee Management
@@ -668,9 +695,14 @@ document.addEventListener('DOMContentLoaded', function () {
 <div class="card">
   <div class="card-header border-bottom d-flex justify-content-between align-items-center">
     <h5 class="card-title mb-0">Employee Management</h5>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fullscreenModal">
-      <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i> Add Employee
-    </button>
+    <div class="d-flex gap-2">
+      <a href="{{ route('pms.salary-management.index', $project_details->id ?? '') }}" class="btn btn-label-primary">
+        <i class="ti ti-currency-dollar me-1 ti-xs"></i> Salary Management
+      </a>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fullscreenModal">
+        <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i> Add Employee
+      </button>
+    </div>
   </div>
   <div class="card-datatable table-responsive">
 
@@ -756,8 +788,11 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="modal-body">
           <!-- Vertical Icons Wizard -->
           <div class="col-12 mb-4">
-             <form id="addGlobalEmployeeForm" method="POST" action="{{ route('pms.employees.store') }}" onSubmit="return false">
+              <form id="addGlobalEmployeeForm" method="POST" action="{{ route('pms.employees.store') }}" onSubmit="return false">
                 @csrf
+                @if(isset($project_details))
+                  <input type="hidden" name="project_id" value="{{ $project_details->id }}">
+                @endif
                 <div class="row g-3">
                   <div class="col-sm-6">
                     <label class="form-label" for="name">Full Name</label>
@@ -784,12 +819,52 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="date" id="wizard_joining_date" name="joining_date" class="form-control" required />
                   </div>
                   <div class="col-sm-6">
-                    <label class="form-label" for="designation">Designation</label>
+                    <label class="form-label" for="wizard_designation">Designation</label>
                     <select id="wizard_designation" name="designation" class="form-select" required>
                       @foreach ($designations as $designation)
                         <option value="{{$designation->id}}">{{$designation->designation}}</option>
                       @endforeach
                     </select>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="wizard_department">Department</label>
+                    <input type="text" id="wizard_department" name="department" class="form-control" placeholder="Engineering" required />
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="wizard_role">Role</label>
+                    <input type="text" id="wizard_role" name="role" class="form-control" placeholder="System Administrator" required />
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="wizard_employment_type">Employment Type</label>
+                    <select id="wizard_employment_type" name="employment_type" class="form-select" required>
+                      <option value="Full Time">Full Time</option>
+                      <option value="Daily Wages">Daily Wages</option>
+                      <option value="Interns">Interns</option>
+                      <option value="Contract">Contract</option>
+                      <option value="Part Time">Part Time</option>
+                      <option value="Freelance">Freelance</option>
+                      <option value="Temporary">Temporary</option>
+                      <option value="Permanent">Permanent</option>
+                      <option value="Apprentice">Apprentice</option>
+                    </select>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="wizard_pay_type">Pay Type</label>
+                    <select id="wizard_pay_type" name="pay_type" class="form-select" required>
+                      <option value="Hourly pay">Hourly pay</option>
+                      <option value="Daily wage">Daily wage</option>
+                      <option value="Weekly pay">Weekly pay</option>
+                      <option value="Bi-weekly">Bi-weekly</option>
+                      <option value="Monthly">Monthly</option>
+                      <option value="Annual">Annual</option>
+                      <option value="Per diem">Per diem</option>
+                      <option value="Shift based pay">Shift based pay</option>
+                      <option value="Consolidated pay">Consolidated pay</option>
+                    </select>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="wizard_consolidated_pay" id="wizard_pay_label">Consolidated Pay</label>
+                    <input type="number" step="0.01" id="wizard_consolidated_pay" name="consolidated_pay" class="form-control" placeholder="5000" required />
                   </div>
                   <div class="col-sm-12">
                     <label class="form-label" for="address">Address</label>

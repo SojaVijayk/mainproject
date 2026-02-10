@@ -80,36 +80,39 @@
         }
       });
     });
-    $('.view-service-details').on('click', function() {
-        Swal.fire({
-            title: 'Service Details',
-            html: '<div class="text-start"><strong>Department:</strong> ' + $('#view_dept').text() + 
-                  '<br><strong>Type:</strong> ' + $('#view_type').text() + 
-                  '<br><strong>Start Date:</strong> ' + $('#view_start').text() + '</div>',
-            confirmButtonText: 'Close'
-        });
+
+
+    // Service Status Toggle Logic
+    $(document).on('change', '#edit_service_status_toggle', function() {
+      var isChecked = $(this).is(':checked');
+      var statusValue = isChecked ? 1 : 0;
+      var statusLabel = isChecked ? 'Active' : 'Deactive';
+      
+      $('#edit_service_status').val(statusValue);
+      $('#status_label').text(statusLabel);
+      
+      if (isChecked) {
+        $('#end_date_container').slideUp();
+      } else {
+        $('#end_date_container').slideDown();
+      }
     });
 
-    $('.view-salary-details').on('click', function() {
-        Swal.fire({
-            title: 'Salary Details',
-            html: '<div class="text-start"><strong>Basic Pay:</strong> ' + $('#view_basic').text() + 
-                  '<br><strong>HRA:</strong> ' + $('#view_hra').text() + 
-                  '<br><strong>Other:</strong> ' + $('#view_allow').text() + 
-                  '<br><strong>Gross:</strong> ' + $('#view_gross').text() + '</div>',
-            confirmButtonText: 'Close'
-        });
+
+    // Pay Type Label Sync
+    function updatePayLabel(payType) {
+        var label = payType ? payType : 'Consolidated Pay';
+        $('#pay_label').text(label);
+        $('#edit_consolidated_pay').attr('placeholder', label);
+    }
+
+    $(document).on('change', '#edit_pay_type', function() {
+        updatePayLabel($(this).val());
     });
 
-    $('.view-deduction-details').on('click', function() {
-        Swal.fire({
-            title: 'Deduction Details',
-            html: '<div class="text-start"><strong>PF:</strong> ' + $('#view_pf').text() + 
-                  '<br><strong>ESI:</strong> ' + $('#view_esi').text() + 
-                  '<br><strong>Prof. Tax:</strong> ' + $('#view_pt').text() + 
-                  '<br><strong>Total:</strong> ' + $('#view_total_ded').text() + '</div>',
-            confirmButtonText: 'Close'
-        });
+    // Update main view label if changed (after sync, page reloads anyway, but good for consistency)
+    $('#editServiceModal').on('shown.bs.modal', function() {
+        updatePayLabel($('#edit_pay_type').val());
     });
 
   });
@@ -128,9 +131,8 @@
       <div class="card-body">
         <div class="user-avatar-section">
           <div class="d-flex align-items-center flex-column">
-            <img class="img-fluid rounded mb-3 pt-1 mt-4" src="{{ asset('assets/img/avatars/1.png') }}" height="100" width="100" alt="User avatar" />
             <div class="user-info text-center">
-              <h4 class="mb-2">{{ $employee->name }} {{ $employee->last_name }}</h4>
+              <h4 class="mb-2 mt-4">{{ $employee->name }} {{ $employee->last_name }}</h4>
               <span class="badge bg-label-secondary mt-1">{{ $employee->designation->designation ?? 'N/A' }}</span><br>
               <span class="badge bg-label-success mt-1">{{ $employee->empId }}</span>
             </div>
@@ -154,6 +156,10 @@
             <li class="mb-2 pt-1">
               <span class="fw-semibold me-1">DOB:</span>
               <span>{{ $employee->dob }}</span>
+            </li>
+            <li class="mb-2 pt-1">
+              <span class="fw-semibold me-1">Project:</span>
+              <span>{{ $employee->project->name ?? 'N/A' }}</span>
             </li>
             <li class="mb-2 pt-1">
               <span class="fw-semibold me-1">Joining Date:</span>
@@ -195,92 +201,86 @@
       <div class="card-body">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <span class="fw-semibold d-block">Department:</span>
-            <span id="view_dept">{{ $employee->service->department ?? 'N/A' }}</span>
-          </div>
-          <div class="col-md-6 mb-3">
             <span class="fw-semibold d-block">Employment Type:</span>
             <span id="view_type">{{ $employee->service->employment_type ?? 'N/A' }}</span>
+          </div>
+          <div class="col-md-6 mb-3">
+            <span class="fw-semibold d-block">Department:</span>
+            <span id="view_department">{{ $employee->service->department ?? 'N/A' }}</span>
+          </div>
+          <div class="col-md-6 mb-3">
+            <span class="fw-semibold d-block">Role:</span>
+            <span id="view_role">{{ $employee->service->role ?? 'N/A' }}</span>
+          </div>
+          <div class="col-md-6 mb-3">
+            <span class="fw-semibold d-block">Pay Type:</span>
+            <span id="view_pay_type">{{ $employee->service->pay_type ?? 'N/A' }}</span>
+          </div>
+          <div class="col-md-6 mb-3">
+            <span class="fw-semibold d-block" id="view_pay_label">{{ $employee->service->pay_type ?? 'Consolidated Pay' }}:</span>
+            <span id="view_pay">{{ number_format($employee->service->consolidated_pay ?? 0, 2) }}</span>
+          </div>
+          <div class="col-md-6 mb-3">
+            <span class="fw-semibold d-block">Status:</span>
+            <span id="view_status" class="badge bg-label-{{ ($employee->service->status ?? 1) == 1 ? 'success' : 'danger' }}">
+              {{ ($employee->service->status ?? 1) == 1 ? 'Active' : 'Deactive' }}
+            </span>
           </div>
           <div class="col-md-6 mb-3">
             <span class="fw-semibold d-block">Start Date:</span>
             <span id="view_start">{{ $employee->service->start_date ?? 'N/A' }}</span>
           </div>
+          @if(($employee->service->status ?? 1) == 0)
+          <div class="col-md-6 mb-3" id="view_end_date_container">
+            <span class="fw-semibold d-block">End Date:</span>
+            <span id="view_end">{{ $employee->service->end_date ?? 'N/A' }}</span>
+          </div>
+          @endif
+        </div>
+      </div>
+    </div>
+    
+    <!-- Service History -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Service History</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Type</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Pay</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse($employee->services as $hist)
+              <tr>
+                <td>{{ $hist->start_date }} to {{ $hist->end_date ?? 'Present' }}</td>
+                <td>{{ $hist->employment_type }}</td>
+                <td>{{ $hist->role ?? 'N/A' }}</td>
+                <td>{{ $hist->department }}</td>
+                <td>{{ number_format($hist->consolidated_pay, 2) }} ({{ $hist->pay_type }})</td>
+                <td>
+                  <span class="badge bg-label-{{ $hist->status == 1 ? 'success' : 'secondary' }}">
+                    {{ $hist->status == 1 ? 'Current' : 'Previous' }}
+                  </span>
+                </td>
+              </tr>
+              @empty
+              <tr><td colspan="5" class="text-center">No service history found.</td></tr>
+              @endforelse
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- Salary Details -->
-    <div class="card mb-4">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Salary Details</h5>
-        <div class="dropdown">
-          <button class="btn p-0" type="button" id="salaryOptions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="ti ti-dots-vertical ti-sm"></i>
-          </button>
-          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="salaryOptions">
-            <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#editSalaryModal">Edit Salary Info</a>
-            <a class="dropdown-item view-salary-details" href="javascript:void(0);">View Details</a>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-4 mb-3">
-            <span class="fw-semibold d-block">Basic Pay:</span>
-            <span id="view_basic">{{ number_format($employee->salary->basic_pay ?? 0, 2) }}</span>
-          </div>
-          <div class="col-md-4 mb-3">
-            <span class="fw-semibold d-block">HRA:</span>
-            <span id="view_hra">{{ number_format($employee->salary->hra ?? 0, 2) }}</span>
-          </div>
-          <div class="col-md-4 mb-3">
-            <span class="fw-semibold d-block">Other Allowance:</span>
-            <span id="view_allow">{{ number_format($employee->salary->other_allowance ?? 0, 2) }}</span>
-          </div>
-          <div class="col-md-4 mb-3">
-            <span class="fw-semibold d-block">Gross Salary:</span>
-            <span class="text-success fw-bold" id="view_gross">{{ number_format($employee->salary->gross_salary ?? 0, 2) }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Deduction Details -->
-    <div class="card mb-4">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Deduction Details</h5>
-        <div class="dropdown">
-          <button class="btn p-0" type="button" id="deductionOptions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="ti ti-dots-vertical ti-sm"></i>
-          </button>
-          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="deductionOptions">
-            <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#editDeductionModal">Edit Deduction Info</a>
-            <a class="dropdown-item view-deduction-details" href="javascript:void(0);">View Details</a>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-4 mb-3">
-            <span class="fw-semibold d-block">PF:</span>
-            <span id="view_pf">{{ number_format($employee->deduction->pf ?? 0, 2) }}</span>
-          </div>
-          <div class="col-md-4 mb-3">
-            <span class="fw-semibold d-block">ESI:</span>
-            <span id="view_esi">{{ number_format($employee->deduction->esi ?? 0, 2) }}</span>
-          </div>
-          <div class="col-md-4 mb-3">
-            <span class="fw-semibold d-block">Professional Tax:</span>
-            <span id="view_pt">{{ number_format($employee->deduction->professional_tax ?? 0, 2) }}</span>
-          </div>
-          <div class="col-md-4 mb-3">
-            <span class="fw-semibold d-block">Total Deductions:</span>
-            <span class="text-danger fw-bold" id="view_total_ded">{{ number_format($employee->deduction->total_deductions ?? 0, 2) }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -358,20 +358,68 @@
         <form id="editServiceForm" class="row g-3" action="{{ route('pms.employees.update-service', $employee->p_id) }}" onsubmit="return false">
           @csrf
           <div class="col-12 col-md-6">
-            <label class="form-label" for="edit_department">Department</label>
-            <input type="text" id="edit_department" name="department" class="form-control" value="{{ $employee->service->department ?? '' }}" />
-          </div>
-          <div class="col-12 col-md-6">
             <label class="form-label" for="edit_employment_type">Employment Type</label>
             <select id="edit_employment_type" name="employment_type" class="form-select">
-              <option value="Regular" {{ ($employee->service->employment_type ?? '') == 'Regular' ? 'selected' : '' }}>Regular</option>
+              <option value="Full Time" {{ ($employee->service->employment_type ?? '') == 'Full Time' ? 'selected' : '' }}>Full Time</option>
+              <option value="Daily Wages" {{ ($employee->service->employment_type ?? '') == 'Daily Wages' ? 'selected' : '' }}>Daily Wages</option>
+              <option value="Interns" {{ ($employee->service->employment_type ?? '') == 'Interns' ? 'selected' : '' }}>Interns</option>
               <option value="Contract" {{ ($employee->service->employment_type ?? '') == 'Contract' ? 'selected' : '' }}>Contract</option>
-              <option value="Intern" {{ ($employee->service->employment_type ?? '') == 'Intern' ? 'selected' : '' }}>Intern</option>
+              <option value="Part Time" {{ ($employee->service->employment_type ?? '') == 'Part Time' ? 'selected' : '' }}>Part Time</option>
+              <option value="Freelance" {{ ($employee->service->employment_type ?? '') == 'Freelance' ? 'selected' : '' }}>Freelance</option>
+              <option value="Temporary" {{ ($employee->service->employment_type ?? '') == 'Temporary' ? 'selected' : '' }}>Temporary</option>
+              <option value="Permanent" {{ ($employee->service->employment_type ?? '') == 'Permanent' ? 'selected' : '' }}>Permanent</option>
+              <option value="Apprentice" {{ ($employee->service->employment_type ?? '') == 'Apprentice' ? 'selected' : '' }}>Apprentice</option>
             </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="edit_department">Department</label>
+            <input type="text" id="edit_department" name="department" class="form-control" value="{{ $employee->service->department ?? '' }}" placeholder="Engineering" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="edit_role">Role</label>
+            <input type="text" id="edit_role" name="role" class="form-control" value="{{ $employee->service->role ?? '' }}" placeholder="System Administrator" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="edit_pay_type">Pay Type</label>
+            <select id="edit_pay_type" name="pay_type" class="form-select">
+              <option value="Hourly pay" {{ ($employee->service->pay_type ?? '') == 'Hourly pay' ? 'selected' : '' }}>Hourly pay</option>
+              <option value="Daily wage" {{ ($employee->service->pay_type ?? '') == 'Daily wage' ? 'selected' : '' }}>Daily wage</option>
+              <option value="Weekly pay" {{ ($employee->service->pay_type ?? '') == 'Weekly pay' ? 'selected' : '' }}>Weekly pay</option>
+              <option value="Bi-weekly" {{ ($employee->service->pay_type ?? '') == 'Bi-weekly' ? 'selected' : '' }}>Bi-weekly</option>
+              <option value="Monthly" {{ ($employee->service->pay_type ?? '') == 'Monthly' ? 'selected' : '' }}>Monthly</option>
+              <option value="Annual" {{ ($employee->service->pay_type ?? '') == 'Annual' ? 'selected' : '' }}>Annual</option>
+              <option value="Per diem" {{ ($employee->service->pay_type ?? '') == 'Per diem' ? 'selected' : '' }}>Per diem</option>
+              <option value="Shift based pay" {{ ($employee->service->pay_type ?? '') == 'Shift based pay' ? 'selected' : '' }}>Shift based pay</option>
+              <option value="Consolidated pay" {{ ($employee->service->pay_type ?? '') == 'Consolidated pay' ? 'selected' : '' }}>Consolidated pay</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="edit_consolidated_pay" id="pay_label">Consolidated Pay</label>
+            <input type="number" step="0.01" id="edit_consolidated_pay" name="consolidated_pay" class="form-control" value="{{ $employee->service->consolidated_pay ?? '' }}" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label d-block">Status</label>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="edit_service_status_toggle" {{ ($employee->service->status ?? 1) == 1 ? 'checked' : '' }}>
+              <label class="form-check-label" for="edit_service_status_toggle" id="status_label">{{ ($employee->service->status ?? 1) == 1 ? 'Active' : 'Deactive' }}</label>
+            </div>
+            <input type="hidden" name="status" id="edit_service_status" value="{{ $employee->service->status ?? 1 }}">
           </div>
           <div class="col-12 col-md-6">
             <label class="form-label" for="edit_start_date">Start Date</label>
             <input type="date" id="edit_start_date" name="start_date" class="form-control" value="{{ $employee->service->start_date ?? '' }}" />
+          </div>
+          <div class="col-12 col-md-6" id="end_date_container" style="{{ ($employee->service->status ?? 1) == 1 ? 'display: none;' : '' }}">
+            <label class="form-label" for="edit_end_date">End Date</label>
+            <input type="date" id="edit_end_date" name="end_date" class="form-control" value="{{ $employee->service->end_date ?? '' }}" />
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="new_record" value="1" id="check_new_record">
+              <label class="form-check-label" for="check_new_record">
+                Create as new service record? (Select this for promotions or role changes to preserve history)
+              </label>
+            </div>
           </div>
           <div class="col-12 text-center">
             <button type="submit" class="btn btn-primary me-sm-3 me-1 btn-submit-edit" data-form="editServiceForm">Submit</button>
@@ -383,71 +431,6 @@
   </div>
 </div>
 
-<!-- Edit Salary Modal -->
-<div class="modal fade" id="editSalaryModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-simple">
-    <div class="modal-content p-3 p-md-5">
-      <div class="modal-body">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        <div class="text-center mb-4">
-          <h3 class="mb-2">Edit Salary Information</h3>
-        </div>
-        <form id="editSalaryForm" class="row g-3" action="{{ route('pms.employees.update-salary', $employee->p_id) }}" onsubmit="return false">
-          @csrf
-          <div class="col-12 col-md-4">
-            <label class="form-label" for="edit_basic_pay">Basic Pay</label>
-            <input type="number" id="edit_basic_pay" name="basic_pay" class="form-control" value="{{ $employee->salary->basic_pay ?? 0 }}" />
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label" for="edit_hra">HRA</label>
-            <input type="number" id="edit_hra" name="hra" class="form-control" value="{{ $employee->salary->hra ?? 0 }}" />
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label" for="edit_other_allowance">Other Allowance</label>
-            <input type="number" id="edit_other_allowance" name="other_allowance" class="form-control" value="{{ $employee->salary->other_allowance ?? 0 }}" />
-          </div>
-          <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary me-sm-3 me-1 btn-submit-edit" data-form="editSalaryForm">Submit</button>
-            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Edit Deduction Modal -->
-<div class="modal fade" id="editDeductionModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-simple">
-    <div class="modal-content p-3 p-md-5">
-      <div class="modal-body">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        <div class="text-center mb-4">
-          <h3 class="mb-2">Edit Deduction Information</h3>
-        </div>
-        <form id="editDeductionForm" class="row g-3" action="{{ route('pms.employees.update-deduction', $employee->p_id) }}" onsubmit="return false">
-          @csrf
-          <div class="col-12 col-md-4">
-            <label class="form-label" for="edit_pf">PF</label>
-            <input type="number" id="edit_pf" name="pf" class="form-control" value="{{ $employee->deduction->pf ?? 0 }}" />
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label" for="edit_esi">ESI</label>
-            <input type="number" id="edit_esi" name="esi" class="form-control" value="{{ $employee->deduction->esi ?? 0 }}" />
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label" for="edit_professional_tax">Professional Tax</label>
-            <input type="number" id="edit_professional_tax" name="professional_tax" class="form-control" value="{{ $employee->deduction->professional_tax ?? 0 }}" />
-          </div>
-          <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary me-sm-3 me-1 btn-submit-edit" data-form="editDeductionForm">Submit</button>
-            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
 
 @endsection
 
@@ -457,34 +440,23 @@ $(function() {
     $('.view-service-details').on('click', function() {
         Swal.fire({
             title: 'Service Details',
-            html: '<div class="text-start"><strong>Department:</strong> ' + $('#view_dept').text() + 
-                  '<br><strong>Type:</strong> ' + $('#view_type').text() + 
-                  '<br><strong>Start Date:</strong> ' + $('#view_start').text() + '</div>',
+            html: '<div class="text-start"><strong>Project:</strong> {{ $employee->project->name ?? 'N/A' }}' +
+                  '<br><strong>Department:</strong> {{ $employee->service->department ?? 'N/A' }}' +
+                  '<br><strong>Role:</strong> {{ $employee->service->role ?? 'N/A' }}' +
+                  '<br><strong>Type:</strong> {{ $employee->service->employment_type ?? 'N/A' }}' + 
+                  '<br><strong>Pay Type:</strong> {{ $employee->service->pay_type ?? 'N/A' }}' + 
+                  '<br><strong>Pay:</strong> {{ number_format($employee->service->consolidated_pay ?? 0, 2) }}' + 
+                  '<br><strong>Status:</strong> {{ ($employee->service->status ?? 1) == 1 ? 'Active' : 'Deactive' }}' + 
+                  '<br><strong>Start Date:</strong> {{ $employee->service->start_date ?? 'N/A' }}' + 
+                  '{{ ($employee->service->status ?? 1) == 0 ? '<br><strong>End Date:</strong> ' . ($employee->service->end_date ?? 'N/A') : '' }}</div>',
             confirmButtonText: 'Close'
         });
     });
 
-    $('.view-salary-details').on('click', function() {
-        Swal.fire({
-            title: 'Salary Details',
-            html: '<div class="text-start"><strong>Basic Pay:</strong> ' + $('#view_basic').text() + 
-                  '<br><strong>HRA:</strong> ' + $('#view_hra').text() + 
-                  '<br><strong>Other:</strong> ' + $('#view_allow').text() + 
-                  '<br><strong>Gross:</strong> ' + $('#view_gross').text() + '</div>',
-            confirmButtonText: 'Close'
-        });
+    $('#editServiceModal').on('show.bs.modal', function() {
+        $('#check_new_record').prop('checked', false);
     });
 
-    $('.view-deduction-details').on('click', function() {
-        Swal.fire({
-            title: 'Deduction Details',
-            html: '<div class="text-start"><strong>PF:</strong> ' + $('#view_pf').text() + 
-                  '<br><strong>ESI:</strong> ' + $('#view_esi').text() + 
-                  '<br><strong>Prof. Tax:</strong> ' + $('#view_pt').text() + 
-                  '<br><strong>Total:</strong> ' + $('#view_total_ded').text() + '</div>',
-            confirmButtonText: 'Close'
-        });
-    });
 });
 </script>
 @endpush

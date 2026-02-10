@@ -140,6 +140,8 @@ Route::group(['middleware' => 'auth'], function () {
   Route::post('/project/edit/{id}', $controller_path . '\Client\ProjectController@update')->name('project-update');
   
   // Project Employee Global Store
+  Route::get('/pms/employees/projects', [ProjectEmployeeController::class, 'projectList'])->name('pms.employees.projects');
+  Route::get('/pms/employees/project/{id}', [ProjectEmployeeController::class, 'index'])->name('pms.employees.project-index');
   Route::post('/pms/employees/store', [ProjectEmployeeController::class, 'globalStore'])->name('pms.employees.store');
   Route::get('/pms/employees/list', [ProjectEmployeeController::class, 'globalList'])->name('pms.employees.list');
   Route::get('/pms/employees/details/{id}', [ProjectEmployeeController::class, 'globalDetails'])->name('pms.employees.details');
@@ -147,8 +149,7 @@ Route::group(['middleware' => 'auth'], function () {
   
   Route::post('/pms/employees/update-master/{id}', [ProjectEmployeeController::class, 'updateMaster'])->name('pms.employees.update-master');
   Route::post('/pms/employees/update-service/{id}', [ProjectEmployeeController::class, 'updateService'])->name('pms.employees.update-service');
-  Route::post('/pms/employees/update-salary/{id}', [ProjectEmployeeController::class, 'updateSalary'])->name('pms.employees.update-salary');
-  Route::post('/pms/employees/update-deduction/{id}', [ProjectEmployeeController::class, 'updateDeduction'])->name('pms.employees.update-deduction');
+  Route::post('/pms/employees/update-payroll/{id}', [ProjectEmployeeController::class, 'updatePayroll'])->name('pms.employees.update-payroll');
 
   //Project Managaement
   Route::get('/project/dashboard/{project_id}', $controller_path . '\Client\ProjectController@dashboard')->name(
@@ -1324,3 +1325,12 @@ Route::prefix('audit')
       ])->name('projects.document.download');
     });
   });
+
+// Salary Management Routes
+Route::prefix('pms/salary-management')->name('pms.salary-management.')->middleware(['auth'])->group(function () {
+    Route::get('/{project_id?}', [App\Http\Controllers\Project\SalaryManagementController::class, 'index'])->name('index');
+    Route::post('/select-employees/{project_id?}', [App\Http\Controllers\Project\SalaryManagementController::class, 'selectEmployees'])->name('select-employees');
+    Route::post('/calculation/{project_id?}', [App\Http\Controllers\Project\SalaryManagementController::class, 'calculation'])->name('calculation');
+    Route::post('/summary/{project_id?}', [App\Http\Controllers\Project\SalaryManagementController::class, 'summary'])->name('summary');
+    Route::post('/store/{project_id?}', [App\Http\Controllers\Project\SalaryManagementController::class, 'store'])->name('store');
+});
